@@ -82,7 +82,7 @@ const Page = () => {
 
       <div className="w-[900px] p-10 font-sans">
 
-        {/* Header */}
+        
         <div className="flex justify-between items-center bg-white shadow-md rounded-xl p-6 mb-8">
           <h1 className="text-3xl font-semibold text-blue-900">
             Officer Dashboard
@@ -100,7 +100,7 @@ const Page = () => {
 
           <div className="bg-white shadow-md rounded-xl p-6">
 
-            {/* Back Button */}
+            
             <button
               onClick={() => setSelectedLoan(null)}
               className="mb-4 px-4 py-2 rounded-lg text-2xl cursor-pointer hover:bg-red-500 transition"
@@ -108,7 +108,7 @@ const Page = () => {
               🔙
             </button>
 
-            {/* Applicant Details */}
+           
             <h2 className="mt-4 mb-4 text-gray-800 text-2xl border-l-4 border-blue-600 pl-2 font-bold">
               Application Details
             </h2>
@@ -129,7 +129,7 @@ const Page = () => {
 
             </div>
 
-            {/* Submitted Documents */}
+            
             <h3 className="mt-6 mb-4 text-gray-800 text-2xl border-l-4 border-blue-600 pl-2 font-bold">
               Submitted Documents
             </h3>
@@ -139,11 +139,7 @@ const Page = () => {
               {selectedLoan.id_proof && (
                 <div className="bg-green-50 border border-green-200 p-4 rounded-xl shadow-sm">
                   <p className="font-bold text-gray-700 mb-2">ID Proof</p>
-                  <a
-                    className="text-blue-600 hover:font-bold"
-                    href={selectedLoan.id_proof}
-                    target="_blank"
-                  >
+                  <a className="text-blue-600 hover:font-bold" href={selectedLoan.id_proof} target="_blank" rel="noopener noreferrer">
                     View Document
                   </a>
                 </div>
@@ -152,11 +148,7 @@ const Page = () => {
               {selectedLoan.address_proof && (
                 <div className="bg-green-50 border border-green-200 p-4 rounded-xl shadow-sm">
                   <p className="font-bold text-gray-700 mb-2">Address Proof</p>
-                  <a
-                    className="text-blue-600 hover:font-bold"
-                    href={selectedLoan.address_proof}
-                    target="_blank"
-                  >
+                  <a className="text-blue-600 hover:font-bold" href={selectedLoan.address_proof} target="_blank" rel="noopener noreferrer">
                     View Document
                   </a>
                 </div>
@@ -165,11 +157,7 @@ const Page = () => {
               {selectedLoan.salary_slips && (
                 <div className="bg-green-50 border border-green-200 p-4 rounded-xl shadow-sm">
                   <p className="font-bold text-gray-700 mb-2">Salary Slips</p>
-                  <a
-                    className="text-blue-600 hover:font-bold"
-                    href={selectedLoan.salary_slips}
-                    target="_blank"
-                  >
+                  <a className="text-blue-600 hover:font-bold" href={selectedLoan.salary_slips} target="_blank" rel="noopener noreferrer">
                     View Document
                   </a>
                 </div>
@@ -178,11 +166,7 @@ const Page = () => {
               {selectedLoan.emp_id_card && (
                 <div className="bg-green-50 border border-green-200 p-4 rounded-xl shadow-sm">
                   <p className="font-bold text-gray-700 mb-2">Employee ID</p>
-                  <a
-                    className="text-blue-600 hover:font-bold"
-                    href={selectedLoan.emp_id_card}
-                    target="_blank"
-                  >
+                  <a className="text-blue-600 hover:font-bold" href={selectedLoan.emp_id_card} target="_blank" rel="noopener noreferrer">
                     View Document
                   </a>
                 </div>
@@ -190,8 +174,43 @@ const Page = () => {
 
             </div>
 
-            {/* Risk Section */}
-            <h3 className="mt-6 mb-4 text-gray-800 text-2xl border-l-4 border-blue-600 pl-2 font-bold">
+            <h4 className="mt-6 mb-3 text-gray-700 text-xl font-bold">
+              Nominee Details: <span className="text-blue-600">{selectedLoan.nominee_name || 'N/A'}</span>
+            </h4>
+            
+            <div className="grid grid-cols-2 gap-4">
+
+              {selectedLoan.nominee_id_card && (
+                <div className="bg-blue-50 border border-blue-200 p-4 rounded-xl shadow-sm">
+                  <p className="font-bold text-gray-700 mb-2">Nominee ID Proof</p>
+                  <a className="text-blue-600 hover:font-bold" href={selectedLoan.nominee_id_card} target="_blank">
+                    View Document
+                  </a>
+                </div>
+              )}
+
+              {selectedLoan.nominee_address_proof && (
+                <div className="bg-blue-50 border border-blue-200 p-4 rounded-xl shadow-sm">
+                  <p className="font-bold text-gray-700 mb-2">Nominee Address Proof</p>
+                  <a className="text-blue-600 hover:font-bold" href={selectedLoan.nominee_address_proof} target="_blank">
+                    View Document
+                  </a>
+                </div>
+              )}
+
+              {selectedLoan.nominee_sign && (
+                <div className="bg-blue-50 border border-blue-200 p-4 rounded-xl shadow-sm">
+                  <p className="font-bold text-gray-700 mb-2">Nominee Signature</p>
+                  <a className="text-blue-600 hover:font-bold" href={selectedLoan.nominee_sign} target="_blank">
+                    View Document
+                  </a>
+                </div>
+              )}
+
+            </div>
+
+            
+            <h3 className="mt-8 mb-4 text-gray-800 text-2xl border-l-4 border-blue-600 pl-2 font-bold">
               Risk Assessment (ML Model)
             </h3>
 
@@ -208,7 +227,7 @@ const Page = () => {
               </div>
             )}
 
-            {/* Officer Decision */}
+           
             <h3 className="mt-6 mb-4 text-gray-800 text-2xl border-l-4 border-blue-600 pl-2 font-bold">
               Officer Decision
             </h3>
