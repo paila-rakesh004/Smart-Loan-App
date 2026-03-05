@@ -1,0 +1,141 @@
+.container {
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+  justify-content: center;
+  align-items: center;
+  font-family: 'Times New Roman', Times, serif;
+  background: linear-gradient(to right, #eef2f7, #d9e4f5);
+}
+
+
+.card {
+  width: 600px;
+  background: linear-gradient(100deg, rgb(175, 175, 233), rgb(3, 3, 109));
+  border-radius: 12px;
+  box-shadow: 0 15px 35px rgba(229, 32, 32, 0.1);
+  padding: 30px;
+  border: 1px solid #f1f5f9;
+}
+
+
+.title {
+  border-radius: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+
+.input {
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  transition: 0.2s;
+}
+
+.input:focus {
+  border-color: #04068a;
+  outline: none;
+}
+
+.inp{
+  display: flex;
+  flex-direction: column;
+  gap : 10px;
+
+}
+.s1 {
+  width: 535px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 15px 35px rgba(229, 32, 32, 0.08);
+  padding: 25px;
+  border: 1px solid #f1f5f9;
+}
+
+.s1:hover{
+  transform: translateY(-2px);
+}
+
+.headings {
+  font-size: 22px;
+  color: #0c489c;
+  margin-bottom: 15px;
+  border-left: 5px solid blue;
+  padding-left: 10px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-weight: bold;
+}
+
+
+.btn {
+  display: flex;
+  justify-content: center;
+  gap : 75px;
+  margin-top: 15px;
+}
+
+
+.sbtn {
+  width: 200px;
+  height: 50px;
+  color: white;
+  background: #2563eb;
+  border: none;
+  border-radius: 10px;
+  font-size: 18px;
+  transition: 0.2s;
+}
+
+.sbtn:hover {
+  cursor: pointer;
+  transform: translateY(-2px);
+  background: #1e40af;
+  transform: translateY(-4px);
+  border-radius: 20px;
+}
+
+
+.cbtn {
+  width: 120px;
+  height: 45px;
+  background: rgb(217, 217, 217);
+  border: none;
+  border-radius: 10px;
+  color: black;
+  font-size: 16px;
+  transition: 0.2s;
+  cursor: pointer;
+}
+
+.cbtn:hover {
+  transform: translateY(-2px);
+  background: #ed2d06;
+  transform: translateY(-4px);
+  border-radius: 20px;
+  color: white;
+}
+
+
+.can {
+  text-decoration: none;
+  color: white;
+}
+.span{
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-size: large;
+  color: #310202;
+}
+
+

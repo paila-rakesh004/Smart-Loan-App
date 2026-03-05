@@ -1,0 +1,68 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+
+# Django
+db.sqlite3
+media/
+staticfiles/
+
+# Virtual Environment
+venv/
+env/
+ENV/
+
+# Environment Variables
+.env
+
+# Node.js
+node_modules/
+
+# Next.js
+.next/
+out/
+
+# Logs
+*.log
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# VS Code
+.vscode/
+
+# Build files
+dist/
+build/
+
+# Coverage
+coverage/
+
+# Temporary files
+*.swp
+*.tmp
+
+backend/venv/
+frontend/node_modules/
+frontend/.next/
+backend/documents/
+.env
+
+# Next.js build output
+frontend/.next/
+.next/
+
+# Node dependencies
+node_modules/
+frontend/node_modules/
+
+# Python / Django / Environments
+backend/venv/
+venv/
+__pycache__/
+*.pyc
+db.sqlite3
