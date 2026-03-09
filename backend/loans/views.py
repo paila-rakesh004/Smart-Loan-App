@@ -6,6 +6,10 @@ from .serializers import LoanApplicationSerializer
 from .models import LoanApplication
 from django.db import connection
 from django.contrib.auth import get_user_model
+import os
+import pickle
+import pandas as pd
+from django.conf import settings
 
 class ApplyLoanView(APIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -76,3 +80,59 @@ class OfficerUpdateLoanView(APIView):
 
         loan.save()
         return Response({"message": "Loan updated successfully"})
+    
+
+MODEL_PATH = os.path.join(settings.BASE_DIR, 'loans', 'ml_model', 'risk_model.pkl')
+LE_PATH = os.path.join(settings.BASE_DIR, 'loans', 'ml_model', 'label_encoder.pkl')
+
+with open(MODEL_PATH, 'rb') as f:
+    risk_model = pickle.load(f)
+with open(LE_PATH, 'rb') as f:
+    label_encoder = pickle.load(f)
+
+class CalculateRiskView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, pk):
+        try:
+            loan = LoanApplication.objects.get(id=pk)
+            user = User.objects.get(id=loan.user_id)
+        except LoanApplication.DoesNotExist:
+            return Response({"error": "Loan not found"}, status=status.HTTP_404_NOT_FOUND)
+
+       
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT years_as_customer, total_transaction_amount, pending_loan, fixed_deposits, credit_score 
+                FROM user_financial_data 
+                WHERE username = %s
+            """, [user.username])
+            row = cursor.fetchone()
+
+        if not row:
+            return Response({"error": "Financial data not found for user."}, status=status.HTTP_400_BAD_REQUEST)
+
+        years_as_customer, total_transaction_amount, pending_loan, fixed_deposits, credit_score = row
+
+       
+        input_data = {
+            'years_as_customer': float(years_as_customer),
+            'total_transaction_amount': float(total_transaction_amount),
+            'total_loan_amount': float(loan.loan_amount),
+            'tenure_months': float(loan.tenure),
+            'income': float(loan.monthly_income * 12), 
+            'pending_loan': float(pending_loan),
+            'fixed_deposits': float(fixed_deposits),
+            'credit_score': float(credit_score)
+        }
+
+        
+        input_df = pd.DataFrame([input_data])
+        prediction = risk_model.predict(input_df)
+        predicted_label = label_encoder.inverse_transform(prediction)[0]
+
+        
+        loan.risk_score = predicted_label
+        loan.save()
+
+        return Response({"risk_score": predicted_label}, status=status.HTTP_200_OK)

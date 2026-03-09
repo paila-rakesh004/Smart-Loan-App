@@ -60,11 +60,11 @@ const Page = () => {
       <div className="w-[800px] p-10 font-sans">
         
         <div className="text-center mb-2 text-blue-900">
-          <h1 className="text-3xl font-semibold mb-10">Customer Dashboard</h1>
+          <h1 className="text-3xl font-semibold mb-10 bg-white rounded-xl p-6">Customer Dashboard</h1>
         </div>
 
         <div className="text-center mb-8 text-gray-700 text-xl font-bold">
-          <h2>Welcome {user}</h2>
+          <h2>Welcome <span className="text-red-500">{user}</span></h2>
         </div>
 
         <h3 className="mt-5 mb-4 text-gray-800 text-2xl border-l-4 border-blue-600 pl-2 font-bold">
@@ -122,13 +122,13 @@ const Page = () => {
         <div className="flex items-center justify-center gap-6 mt-6">
           <button
             onClick={handleLogout}
-            className="bg-red-500 text-white w-[200px] h-[50px] font-bold rounded-lg text-lg hover:bg-red-700 transition transform hover:-translate-y-1 hover:rounded-2xl"
+            className="bg-red-500 cursor-pointer text-white w-[200px] h-[50px] font-bold rounded-lg text-lg hover:bg-red-700 transition transform hover:-translate-y-1 hover:rounded-2xl"
           >
             Logout
           </button>
           <button
             onClick={handleLoan}
-            className="bg-blue-600 text-white w-[200px] h-[50px] font-bold rounded-lg text-lg hover:bg-blue-800 transition transform hover:-translate-y-1 hover:rounded-2xl"
+            className="bg-blue-600 cursor-pointer text-white w-[200px] h-[50px] font-bold rounded-lg text-lg hover:bg-blue-800 transition transform hover:-translate-y-1 hover:rounded-2xl"
           >
             Apply Loan
           </button>

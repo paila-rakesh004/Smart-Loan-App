@@ -55,10 +55,12 @@ export default function ApplyLoan() {
     if (form.addressProof) dataToSend.append("address_proof", form.addressProof);
     if (form.salarySlips) dataToSend.append("salary_slips", form.salarySlips);
     if (form.EmpIDcard) dataToSend.append("emp_id_card", form.EmpIDcard);
-    if (form.nomineeIDcard) dataToSend.append("nominee_id_card", form.nomineeIDcard);
+    if (form.nomineeIDcard)
+      dataToSend.append("nominee_id_card", form.nomineeIDcard);
     if (form.nomineeAddressproof)
       dataToSend.append("nominee_address_proof", form.nomineeAddressproof);
-    if (form.nomineesign) dataToSend.append("nominee_sign", form.nomineesign);
+    if (form.nomineesign)
+      dataToSend.append("nominee_sign", form.nomineesign);
 
     try {
       const response = await API.post("loans/apply/", dataToSend, {
@@ -83,18 +85,14 @@ export default function ApplyLoan() {
 
   return (
     <div className="flex w-full min-h-screen justify-center items-center font-serif bg-gradient-to-r from-slate-100 to-blue-200">
-
       <div className="w-[600px] bg-gradient-to-r from-indigo-300 to-blue-900 rounded-xl shadow-xl p-8 border border-slate-200">
-
         <div className="flex justify-center items-center text-white mb-4">
           <h1 className="text-3xl font-semibold">Apply for a Loan</h1>
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
 
-          
           <div className="w-full bg-white rounded-2xl shadow-lg p-6 border hover:-translate-y-1 transition">
-
             <div className="text-xl text-blue-800 font-bold border-l-4 border-blue-600 pl-2 mb-4">
               Employment Details
             </div>
@@ -137,9 +135,7 @@ export default function ApplyLoan() {
             </div>
           </div>
 
-          
           <div className="bg-white rounded-2xl shadow-lg p-6 border hover:-translate-y-1 transition">
-
             <div className="text-xl text-blue-800 font-bold border-l-4 border-blue-600 pl-2 mb-4">
               Loan Request
             </div>
@@ -190,9 +186,7 @@ export default function ApplyLoan() {
             </div>
           </div>
 
-          
           <div className="bg-white rounded-2xl shadow-lg p-6 border hover:-translate-y-1 transition">
-
             <div className="text-xl text-blue-800 font-bold border-l-4 border-blue-600 pl-2 mb-4">
               Your Documents (PDF/Image)
             </div>
@@ -202,29 +196,51 @@ export default function ApplyLoan() {
               <label className="font-medium text-red-900">
                 ID Proof (PAN / Aadhaar)
               </label>
-              <input className="block w-full text-sm text-gray-700 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700" type="file" name="idproof" onChange={handleFileChange} required />
+              <input
+                className="block w-full text-sm text-gray-700 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700"
+                type="file"
+                name="idproof"
+                onChange={handleFileChange}
+                required
+              />
 
               <label className="font-medium text-red-900">
                 Address Proof
               </label>
-              <input className="block w-full text-sm text-gray-700 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700" type="file" name="addressProof" onChange={handleFileChange} required />
+              <input
+                className="block w-full text-sm text-gray-700 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700"
+                type="file"
+                name="addressProof"
+                onChange={handleFileChange}
+                required
+              />
 
               <label className="font-medium text-red-900">
                 Salary Slips (Last 3 Months)
               </label>
-              <input className="block w-full text-sm text-gray-700 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700" type="file" name="salarySlips" onChange={handleFileChange} required />
+              <input
+                className="block w-full text-sm text-gray-700 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700"
+                type="file"
+                name="salarySlips"
+                onChange={handleFileChange}
+                required
+              />
 
               <label className="font-medium text-red-900">
                 Employee ID Card
               </label>
-              <input className="block w-full text-sm text-gray-700 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700" type="file" name="EmpIDcard" onChange={handleFileChange} required />
+              <input
+                className="block w-full text-sm text-gray-700 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700"
+                type="file"
+                name="EmpIDcard"
+                onChange={handleFileChange}
+                required
+              />
 
             </div>
           </div>
 
-          
           <div className="bg-white rounded-2xl shadow-lg p-6 border hover:-translate-y-1 transition">
-
             <div className="text-xl text-blue-800 font-bold border-l-4 border-blue-600 pl-2 mb-4">
               Nominee Details
             </div>
@@ -245,22 +261,39 @@ export default function ApplyLoan() {
               <label className="font-medium text-red-900">
                 Nominee ID Proof
               </label>
-              <input className="block w-full text-sm text-gray-700 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700" type="file" name="nomineeIDcard" onChange={handleFileChange} required />
+              <input
+                className="block w-full text-sm text-gray-700 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700"
+                type="file"
+                name="nomineeIDcard"
+                onChange={handleFileChange}
+                required
+              />
 
               <label className="font-medium text-red-900">
                 Nominee Address Proof
               </label>
-              <input className="block w-full text-sm text-gray-700 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700" type="file" name="nomineeAddressproof" onChange={handleFileChange} required />
+              <input
+                className="block w-full text-sm text-gray-700 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700"
+                type="file"
+                name="nomineeAddressproof"
+                onChange={handleFileChange}
+                required
+              />
 
               <label className="font-medium text-red-900">
                 Nominee Signature
               </label>
-              <input className="block w-full text-sm text-gray-700 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700" type="file" name="nomineesign" onChange={handleFileChange} required />
+              <input
+                className="block w-full text-sm text-gray-700 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700"
+                type="file"
+                name="nomineesign"
+                onChange={handleFileChange}
+                required
+              />
 
             </div>
           </div>
 
-          
           <div className="flex justify-center gap-16 mt-4">
 
             <button

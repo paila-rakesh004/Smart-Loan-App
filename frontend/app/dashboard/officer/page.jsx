@@ -25,8 +25,29 @@ const Page = () => {
     setNotes(loan.officer_notes || '');
   };
 
-  const handleCalculateRisk = () => {
-    alert("ML Model Not Integrated yet");
+  const handleCalculateRisk = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      
+      const res = await API.get(`loans/officer/${selectedLoan.id}/calculate-risk/`, {
+        headers: { Authorization: `Token ${token}` },
+      });
+
+      setRiskScore(res.data.risk_score);
+      toast.success("Risk Score calculated successfully!");
+   
+      setLoans(loans.map(loan => 
+        loan.id === selectedLoan.id ? { ...loan, risk_score: res.data.risk_score } : loan
+      ));
+
+    } catch (error) {
+      toast.error("Unable to Calculate risk Score 🥺")
+      setTimeout(() => {
+        toast.error("Cibil Score may not exist yet!");
+    }, 3500);
+      
+      
+    }
   };
 
   const handleStatusUpdate = async (newStatus) => {
@@ -84,7 +105,7 @@ const Page = () => {
 
         
         <div className="flex justify-between items-center bg-white shadow-md rounded-xl p-6 mb-8">
-          <h1 className="text-3xl font-semibold text-blue-900">
+          <h1 className="text-3xl font-semibold text-blue-900 pl-65">
             Officer Dashboard
           </h1>
 
@@ -103,7 +124,7 @@ const Page = () => {
             
             <button
               onClick={() => setSelectedLoan(null)}
-              className="mb-4 px-4 py-2 rounded-lg text-2xl cursor-pointer hover:bg-red-500 transition"
+              className="mb-4 px-4 py-2 rounded-lg text-2xl cursor-pointer hover:bg-red-200 transition"
             >
               🔙
             </button>
@@ -174,11 +195,11 @@ const Page = () => {
 
             </div>
 
-            <h4 className="mt-6 mb-3 text-gray-700 text-xl font-bold">
-              Nominee Details: <span className="text-blue-600">{selectedLoan.nominee_name || 'N/A'}</span>
+            <h4 className="mt-6 mb-3 text-gray-700 text-2xl font-bold">
+              Nominee Details: <br></br> <span className="text-blue-600 text-xl">Nominee Name : {selectedLoan.nominee_name || 'N/A'}</span>
             </h4>
             
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
 
               {selectedLoan.nominee_id_card && (
                 <div className="bg-blue-50 border border-blue-200 p-4 rounded-xl shadow-sm">
@@ -211,19 +232,19 @@ const Page = () => {
 
             
             <h3 className="mt-8 mb-4 text-gray-800 text-2xl border-l-4 border-blue-600 pl-2 font-bold">
-              Risk Assessment (ML Model)
+              Risk Assessment
             </h3>
 
             <button
               onClick={handleCalculateRisk}
-              className="bg-blue-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-800 transition transform hover:-translate-y-1"
+              className="bg-blue-600 text-white px-6 py-2 rounded-lg cursor-pointer font-bold hover:bg-blue-800 transition transform hover:-translate-y-1"
             >
               Calculate Risk Score
             </button>
 
             {riskScore && (
               <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-                <p><span className="font-bold">Model Prediction :</span> {riskScore}</p>
+                <p><span className="font-bold">Prediction :</span> {riskScore} risk</p>
               </div>
             )}
 
