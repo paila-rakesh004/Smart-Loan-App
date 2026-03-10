@@ -5,6 +5,8 @@ from django.contrib.auth import authenticate
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from .serializers import CustomerRegisterSerializer, LoginSerializer, UserProfileSerializer
+from rest_framework import permissions
+from django.db import connection
 
 class RegisterView(APIView):
     permission_classes = [AllowAny]
@@ -43,3 +45,20 @@ class UserProfileView(APIView):
     def get(self, request):
         serializer = UserProfileSerializer(request.user)
         return Response(serializer.data)
+
+        
+class CheckUserStatus(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self,request):
+        user = request.user
+
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT 1 FROM user_financial_data WHERE username = %s",[user.username])
+            row = cursor.fetchone()
+
+            if row is None:
+                is_new = True
+            else:
+                is_new = False
+        return Response({"is_new_user" : is_new})
