@@ -18,7 +18,9 @@ const Page = () => {
     localStorage.removeItem('username');
     router.push('/login');
   };
-
+  const handleProfile = () => {
+    router.push('/profile/officer');
+  }
   const handleRowClick = (loan) => {
     setSelectedLoan(loan);
     setRiskScore(loan.risk_score || null);
@@ -99,15 +101,22 @@ const Page = () => {
   }, [router]);
 
   return (
-    <div className="flex items-center justify-center font-serif bg-gradient-to-r from-[#eef2f7] to-[#d9e4f5] min-h-screen">
+    <div className="flex  font-serif bg-gradient-to-r from-[#eef2f7] to-[#d9e4f5] min-h-screen">
 
-      <div className="w-[900px] p-10 font-sans">
+      <div className="w-full p-10 font-sans">
 
         
-        <div className="flex justify-between items-center bg-white shadow-md rounded-xl p-6 mb-8">
-          <h1 className="text-3xl font-semibold text-blue-900 pl-65">
+        <div className="flex justify-between items-center bg-white shadow-md rounded-xl p-6 mb-8 w-full">
+          <h1 className="text-3xl font-semibold text-blue-900 pl-145">
             Officer Dashboard
           </h1>
+
+          <button
+            onClick={handleProfile}
+            className="bg-indigo-500 cursor-pointer ml-90 text-white px-6 py-2 rounded-lg font-bold hover:bg-indigo-700 transition transform hover:-translate-y-1"
+          >
+            Profile
+          </button>
 
           <button
             onClick={handleLogout}
@@ -119,12 +128,12 @@ const Page = () => {
 
         {selectedLoan ? (
 
-          <div className="bg-white shadow-md rounded-xl p-6">
+          <div className="bg-white shadow-md rounded-4xl p-6 overflow-y-auto max-h-132 px-90">
 
-            
+           
             <button
               onClick={() => setSelectedLoan(null)}
-              className="mb-4 px-4 py-2 rounded-lg text-2xl cursor-pointer hover:bg-red-200 transition"
+              className="mb-4 px-4 py-2 rounded-lg text-4xl cursor-pointer transition hover:-translate-y-1"
             >
               🔙
             </button>
@@ -283,7 +292,7 @@ const Page = () => {
 
         ) : (
 
-          <div className="bg-white shadow-md rounded-xl p-6">
+          <div className="bg-white shadow-md rounded-4xl px-65 py-10 overflow-y-auto max-h-132">
 
             <h2 className="mt-2 mb-6 text-gray-800 text-2xl border-l-4 border-blue-600 pl-2 font-bold">
               Loan Applications
