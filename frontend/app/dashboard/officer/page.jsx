@@ -23,8 +23,8 @@ const Page = () => {
   }
   const handleRowClick = (loan) => {
     setSelectedLoan(loan);
-    setRiskScore(loan.risk_score || null);
-    setNotes(loan.officer_notes || '');
+    setRiskScore(null);
+    setNotes('');
   };
 
   const handleCalculateRisk = async () => {
@@ -58,7 +58,7 @@ const Page = () => {
       
       await API.patch(`loans/officer/${selectedLoan.id}/update-status/`, {
         status: newStatus,
-        cibil_score: selectedLoan.cibil_score !== "N/A" ? selectedLoan.cibil_score : null,
+        cibil_score: selectedLoan.actual_cibil !== "N/A" ? selectedLoan.actual_cibil : null,
         officer_notes: notes,
         risk_score: riskScore
       }, {
@@ -101,44 +101,57 @@ const Page = () => {
   }, [router]);
 
   return (
-    <div className="flex  font-serif bg-gradient-to-r from-[#eef2f7] to-[#d9e4f5] min-h-screen">
+    <div className="relative font-serif bg-gradient-to-r from-[#eef2f7] to-[#d9e4f5] min-h-screen pb-10">
+ 
+  <div className="fixed top-0 left-0 w-full h-10 bg-gradient-to-r from-[#eef2f7] to-[#d9e4f5] z-[60]"></div>
 
       <div className="w-full p-10 font-sans">
 
         
-        <div className="flex justify-between items-center bg-white shadow-md rounded-xl p-6 mb-8 w-full">
-          <h1 className="text-3xl font-semibold text-blue-900 pl-145">
-            Officer Dashboard
-          </h1>
+        <div className="fixed top-0 left-0 w-full h-24 bg-gradient-to-r from-[#eef2f7] to-[#d9e4f5] z-[60] flex items-center justify-center">
+  <div className="w-full bg-white shadow-xl rounded-xl p-6 flex justify-between items-center">
+    
+    <div className="flex-1">
+       <h1 className="text-3xl font-semibold text-blue-900 text-center ml-40">
+         Officer Dashboard
+       </h1>
+    </div>
 
-          <button
-            onClick={handleProfile}
-            className="bg-indigo-500 cursor-pointer ml-90 text-white px-6 py-2 rounded-lg font-bold hover:bg-indigo-700 transition transform hover:-translate-y-1"
-          >
-            Profile
-          </button>
+    
+    <div className="flex gap-4">
+      <button
+        onClick={handleProfile}
+        className="bg-indigo-500 cursor-pointer text-white px-6 py-2 rounded-lg font-bold hover:bg-indigo-700 transition transform hover:-translate-y-1 shadow-md"
+      >
+        Profile
+      </button>
 
-          <button
-            onClick={handleLogout}
-            className="bg-red-500 cursor-pointer text-white px-6 py-2 rounded-lg font-bold hover:bg-red-700 transition transform hover:-translate-y-1"
-          >
-            Logout
-          </button>
-        </div>
+      <button
+        onClick={handleLogout}
+        className="bg-red-500 cursor-pointer text-white px-6 py-2 rounded-lg font-bold hover:bg-red-700 transition transform hover:-translate-y-1 shadow-md"
+      >
+        Logout
+      </button>
+    </div>
+  </div>
+</div>
+
+
+<div className="h-16 mb-4"></div>
 
         {selectedLoan ? (
 
-          <div className="bg-white shadow-md rounded-4xl p-6 overflow-y-auto max-h-132 px-90">
+          <div className="bg-white shadow-md rounded-4xl p-10 px-90">
 
-           
+            
             <button
               onClick={() => setSelectedLoan(null)}
-              className="mb-4 px-4 py-2 rounded-lg text-4xl cursor-pointer transition hover:-translate-y-1"
+              className="mb-4 px-4 py-2 rounded-lg text-6xl cursor-pointer transition hover:-translate-y-1"
             >
-              🔙
+              ←
             </button>
 
-           
+            
             <h2 className="mt-4 mb-4 text-gray-800 text-2xl border-l-4 border-blue-600 pl-2 font-bold">
               Application Details
             </h2>
@@ -154,7 +167,7 @@ const Page = () => {
               <div className="space-y-2">
                 <p><span className="font-bold">Tenure :</span> {selectedLoan.tenure} months</p>
                 <p><span className="font-bold">Status :</span> {selectedLoan.status}</p>
-                <p><span className="font-bold">CIBIL Score :</span> {selectedLoan.cibil_score}</p>
+                <p><span className="font-bold">CIBIL Score :</span> {selectedLoan.actual_cibil || "N/A"}</p>
               </div>
 
             </div>
@@ -257,7 +270,7 @@ const Page = () => {
               </div>
             )}
 
-           
+            
             <h3 className="mt-6 mb-4 text-gray-800 text-2xl border-l-4 border-blue-600 pl-2 font-bold">
               Officer Decision
             </h3>
@@ -292,7 +305,7 @@ const Page = () => {
 
         ) : (
 
-          <div className="bg-white shadow-md rounded-4xl px-65 py-10 overflow-y-auto max-h-132">
+          <div className="bg-white shadow-md rounded-4xl px-65 py-10">
 
             <h2 className="mt-2 mb-6 text-gray-800 text-2xl border-l-4 border-blue-600 pl-2 font-bold">
               Loan Applications
