@@ -24,7 +24,7 @@ class LoginView(APIView):
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
         if serializer.is_valid():
-            # FIXED: We must use validated_data to read write_only fields
+            
             username = serializer.validated_data['username']
             password = serializer.validated_data['password']
             user = authenticate(username=username, password=password)
@@ -62,3 +62,34 @@ class CheckUserStatus(APIView):
             else:
                 is_new = False
         return Response({"is_new_user" : is_new})
+    
+
+class UpdateProfileView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def put(self, request):
+        user = request.user
+
+        new_username = request.data.get('username', user.username)
+        
+        user.username = new_username
+       
+        user.save()
+        
+        return Response({"message": "Profile updated successfully!", "username": user.username}, status=status.HTTP_200_OK)
+
+class ChangePasswordView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def put(self, request):
+        user = request.user
+        old_password = request.data.get("old_password")
+        new_password = request.data.get("new_password")
+
+        if not user.check_password(old_password):
+            return Response({"error": "Incorrect old password."}, status=status.HTTP_400_BAD_REQUEST)
+
+        user.set_password(new_password)
+        user.save()
+        
+        return Response({"message": "Password updated successfully!"}, status=status.HTTP_200_OK)

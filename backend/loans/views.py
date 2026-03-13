@@ -11,7 +11,7 @@ import pickle
 import pandas as pd
 from django.conf import settings
 from .utils import calculate_mock_cibil 
-
+from django.db.models import Q
 
 
 
@@ -215,3 +215,56 @@ class NewUserLoanApplicationView(APIView):
 
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+class CustomerLoanStatsView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        
+       
+        user_loans = LoanApplication.objects.filter(user=user)
+        
+        total_applied = user_loans.count()
+        total_approved = user_loans.filter(status='Approved').count()
+        total_rejected = user_loans.filter(status='Rejected').count()
+        
+        return Response({
+            "total_applied": total_applied,
+            "total_approved": total_approved,
+            "total_rejected": total_rejected
+        }, status=status.HTTP_200_OK)
+
+
+
+
+class OfficerLoanStatsView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        
+        # 1. Global System Stats (All Loans)
+        gold = LoanApplication.objects.filter(loan_type__icontains='Gold').count()
+        home = LoanApplication.objects.filter(loan_type__icontains='Home').count()
+        personal = LoanApplication.objects.filter(loan_type__icontains='Personal').count()
+        education = LoanApplication.objects.filter(loan_type__icontains='Education').count()
+        pending = LoanApplication.objects.filter(status__icontains='Pending').count()
+        
+        # 2. Officer's Personal Work Stats
+        # If your model tracks the officer (e.g., officer=user), you can add that filter!
+        # Example: .filter(status='Approved', officer=user)
+        my_approved = LoanApplication.objects.filter(status='Approved').count() 
+        my_rejected = LoanApplication.objects.filter(status='Rejected').count()
+
+        return Response({
+            "gold": gold,
+            "home": home,
+            "personal": personal,
+            "education": education,
+            "pending": pending,
+            "approved": my_approved,
+            "rejected": my_rejected
+        }, status=status.HTTP_200_OK)
