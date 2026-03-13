@@ -11,7 +11,7 @@ export default function Login() {
   const [role, setRole] = useState("customer");
   const [loading, setLoading] = useState(false);
   
-
+  const [showpass,setShowpass] = useState(false);
   const [formData, setFormData] = useState({
     username: "",
     password: ""
@@ -116,12 +116,19 @@ export default function Login() {
             <input
               className="p-2 border border-gray-300 rounded-xl focus:border-indigo-500 outline-none"
               name="password"
-              type="password"
+              type={showpass ? "text" : "password"}
               placeholder="Enter Password"
               onChange={handleChange}
               required
               disabled={loading}
             />
+            <div className="flex items-center gap-2">
+             <input
+                type = "checkbox"
+                name = "hide"
+                onClick={() => {setShowpass(!showpass)}}
+                className="w-3 h-3 accent-red-400 cursor-pointer"
+                /> <label className='text-xs'>{showpass ? "Hide password" : "Show password" }</label></div>
 
             <button
               type="submit"

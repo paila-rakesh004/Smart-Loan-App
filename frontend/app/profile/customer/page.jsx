@@ -4,17 +4,17 @@ import { useRouter } from 'next/navigation';
 import API from '@/lib/api'; 
 import { toast } from "react-toastify";
 
-const OfficerProfile = () => {
+const CustomerProfile = () => {
   const router = useRouter();
   
-  const [showpassword, setShowpassword] = useState(false);
+  const[showpassword,setShowpassword] = useState(false);
   const [profile, setProfile] = useState({ username: '', email: '' });
-  const [newUsername, setNewUsername] = useState('');
-  const [passwords, setPasswords] = useState({ old_password: '', new_password: '' });
+  const [stats, setStats] = useState({ total_applied: 0, total_approved: 0, total_rejected: 0 });
   
-  const [stats, setStats] = useState({ 
-    gold: 0, home: 0, personal: 0, education: 0, pending: 0, approved: 0, rejected: 0 
-  });
+ 
+  const [newUsername, setNewUsername] = useState('');
+  
+  const [passwords, setPasswords] = useState({ old_password: '', new_password: '' });
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -25,14 +25,14 @@ const OfficerProfile = () => {
 
     const fetchProfileData = async () => {
       try {
+      
         const profileRes = await API.get('users/profile/', {
           headers: { Authorization: `Token ${token}` },
         });
         setProfile(profileRes.data);
         setNewUsername(profileRes.data.username);
 
-       
-        const statsRes = await API.get('loans/officer/stats/', {
+        const statsRes = await API.get('loans/customer/stats/', {
           headers: { Authorization: `Token ${token}` },
         });
         setStats(statsRes.data);
@@ -56,9 +56,9 @@ const OfficerProfile = () => {
       
       setProfile({ ...profile, username: res.data.username});
       localStorage.setItem('username', res.data.username); 
-      toast.success("Profile updated successfully!");
+      toast.success("updated successfully!");
     } catch (error) {
-      toast.error("Failed to update profile.");
+      toast.error("Failed to update.");
     }
   };
 
@@ -77,83 +77,67 @@ const OfficerProfile = () => {
     }
   };
 
-  const avatarInitial = profile.username ? profile.username.charAt(0).toUpperCase() : "O";
+  
+  const avatarInitial = profile.username ? profile.username.charAt(0).toUpperCase() : "U";
 
   return (
     <div className="min-h-screen font-sans bg-gradient-to-r from-[#eef2f7] to-[#d9e4f5] p-10">
       
+      
       <div className="max-w-6xl mx-auto mb-8 flex justify-between items-center">
         <button
-          onClick={() => router.push('/dashboard/officer')}
+          onClick={() => router.push('/dashboard/customer')}
           className="px-6 py-2 bg-white text-blue-900 font-bold rounded-lg shadow-md cursor-pointer hover:-translate-y-1 transition transform"
         >
           ← Back to Dashboard
         </button>
-        <h1 className="text-3xl font-bold text-indigo-900">Officer Profile</h1>
+        <h1 className="text-3xl font-bold text-indigo-900">My Profile</h1>
       </div>
 
+     
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
         
-       
+        
         <div className="col-span-1 space-y-6">
           
+          
           <div className="bg-white rounded-3xl shadow-xl p-6 flex flex-col items-center text-center">
-            <div className="w-28 h-28 rounded-full bg-gradient-to-br from-blue-700 to-indigo-800 flex items-center justify-center text-white text-5xl font-bold shadow-lg mb-4">
+            <div className="w-28 h-28 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-5xl font-bold shadow-lg mb-4">
               {avatarInitial}
             </div>
             <h2 className="text-2xl font-bold text-gray-800">{profile.username}</h2>
-            <p className="text-gray-500 mt-1">{profile.email || "Officer Account"}</p>
+            <p className="text-gray-500 mt-1">{profile.email || "No email provided"}</p>
           </div>
 
+          
           <div className="bg-white rounded-3xl shadow-xl p-6">
             <h3 className="text-xl font-bold text-gray-800 border-l-4 border-blue-600 pl-3 mb-6">
-              Loans Stats
+              Loan Statistics
             </h3>
             
-            
-            <div className="grid grid-cols-2 gap-3 mb-6">
-              <div className="flex flex-col p-3 bg-yellow-50 rounded-xl border border-yellow-200 text-center">
-                <span className="font-semibold text-gray-600 text-sm">Gold</span>
-                <span className="text-xl font-bold text-yellow-600">{stats.gold}</span>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center p-4 bg-orange-200 rounded-xl border border-gray-100">
+                <span className="font-semibold text-gray-600">Total Applied</span>
+                <span className="text-2xl font-bold text-blue-600">{stats.total_applied}</span>
               </div>
-              <div className="flex flex-col p-3 bg-indigo-50 rounded-xl border border-indigo-200 text-center">
-                <span className="font-semibold text-gray-600 text-sm">Home</span>
-                <span className="text-xl font-bold text-indigo-600">{stats.home}</span>
+              
+              <div className="flex justify-between items-center p-4 bg-green-200 rounded-xl border border-green-100">
+                <span className="font-semibold text-gray-600">Approved</span>
+                <span className="text-2xl font-bold text-green-600">{stats.total_approved}</span>
               </div>
-              <div className="flex flex-col p-3 bg-pink-50 rounded-xl border border-pink-200 text-center">
-                <span className="font-semibold text-gray-600 text-sm">Personal</span>
-                <span className="text-xl font-bold text-pink-600">{stats.personal}</span>
-              </div>
-              <div className="flex flex-col p-3 bg-blue-50 rounded-xl border border-blue-200 text-center">
-                <span className="font-semibold text-gray-600 text-sm">Education</span>
-                <span className="text-xl font-bold text-blue-600">{stats.education}</span>
+              
+              <div className="flex justify-between items-center p-4 bg-red-200 rounded-xl border border-red-100">
+                <span className="font-semibold text-gray-600">Rejected</span>
+                <span className="text-2xl font-bold text-red-600">{stats.total_rejected}</span>
               </div>
             </div>
-
-            <h3 className="text-xl font-bold text-gray-800 border-l-4 border-indigo-600 pl-3 mb-4 mt-2">
-              My Actions
-            </h3>
-
-            <div className="space-y-3">
-              <div className="flex justify-between items-center p-3 bg-orange-100 rounded-xl border border-orange-200">
-                <span className="font-semibold text-gray-700 text-sm">Pending Loans</span>
-                <span className="text-lg font-bold text-orange-600">{stats.pending}</span>
-              </div>
-              <div className="flex justify-between items-center p-3 bg-green-100 rounded-xl border border-green-200">
-                <span className="font-semibold text-gray-700 text-sm">Approved Loans</span>
-                <span className="text-lg font-bold text-green-600">{stats.approved}</span>
-              </div>
-              <div className="flex justify-between items-center p-3 bg-red-100 rounded-xl border border-red-200">
-                <span className="font-semibold text-gray-700 text-sm">Rejected Loans</span>
-                <span className="text-lg font-bold text-red-600">{stats.rejected}</span>
-              </div>
-            </div>
-
           </div>
+
         </div>
 
-        
+    
         <div className="col-span-2 space-y-6">
+          
           
           <div className="bg-white rounded-3xl shadow-xl p-6">
             <h3 className="text-2xl font-bold text-gray-800 border-l-4 border-indigo-500 pl-3 mb-4">
@@ -177,6 +161,7 @@ const OfficerProfile = () => {
             </form>
           </div>
 
+          
           <div className="bg-white rounded-3xl shadow-xl p-6">
             <h3 className="text-2xl font-bold text-gray-800 border-l-4 border-red-500 pl-3 mb-4">
               Security
@@ -195,18 +180,19 @@ const OfficerProfile = () => {
               <div>
                 <label className="block text-gray-700 font-semibold mb-2">New Password</label>
                 <input
-                  type={showpassword ? "text" : "password"}
+                  type={showpassword ?"text" : 'password'}
                   value={passwords.new_password}
                   onChange={(e) => setPasswords({ ...passwords, new_password: e.target.value })}
                   className="w-full border border-gray-300 rounded-xl p-2 pr-14 focus:outline-none focus:ring-2 focus:ring-red-400"
                   required
                 />
                 <input
-                type="checkbox"
-                name="hide"
+                type = "checkbox"
+                name = "hide"
                 onClick={() => {setShowpassword(!showpassword)}}
                 className="w-3 h-3 accent-red-400 cursor-pointer mt-2"
-                /> <label className='text-xs'>{showpassword ? "Hide password" : "Show password" }</label>
+                /> <label className='text-xs '>{showpassword ? "Hide password" : "Show password" }</label>
+       
               </div>
               <button
                 type="submit"
@@ -224,4 +210,4 @@ const OfficerProfile = () => {
   );
 };
 
-export default OfficerProfile;
+export default CustomerProfile;

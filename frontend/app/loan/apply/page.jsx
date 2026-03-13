@@ -48,7 +48,9 @@ export default function ApplyLoan() {
   const handleFileChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.files[0] });
   };
-
+  const handleProfile = () =>{
+    router.push('/profile/customer')
+  }
   const handleSubmit = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem("token");
@@ -140,18 +142,24 @@ export default function ApplyLoan() {
       
         <div className="w-full bg-white shadow-xl rounded-xl p-6 flex justify-between items-center">
           <div className="flex-1">
-             <h1 className="text-3xl font-semibold text-blue-900 text-center ml-40">
+             <h1 className="text-3xl font-semibold text-blue-900 text-center ml-40 pl-50">
                Loan Application
              </h1>
           </div>
           <div className="flex gap-4">
-            <button 
-              type="button"
-              onClick={() => router.push("/dashboard/customer")}
-              className="bg-gray-500 cursor-pointer text-white px-6 py-2 rounded-lg font-bold hover:bg-gray-700 transition transform hover:-translate-y-1 shadow-md"
-            >
-              Back to Dashboard
+            <button
+            type = "button"
+            onClick={handleProfile} 
+            className="bg-indigo-500 cursor-pointer text-white px-6 py-2 rounded-lg font-bold hover:bg-indigo-700 transition transform hover:-translate-y-1">
+              Profile
             </button>
+            <button 
+                type="button" 
+                onClick={() => router.push("/dashboard/customer")} 
+                className="bg-indigo-500 cursor-pointer text-white px-6 py-2 rounded-lg font-bold hover:bg-red-500 transition transform hover:-translate-y-1"
+              >
+                Back
+              </button>
             <button 
               type="button"
               onClick={handleLogout}

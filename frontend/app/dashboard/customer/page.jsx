@@ -14,7 +14,9 @@ const Page = () => {
     localStorage.removeItem("username");
     router.push("/login");
   };
-
+  const handleProfile = () =>{
+    router.push('/profile/customer')
+  }
   const handleLoan = () => {
     router.push("/loan/apply");
   };
@@ -59,14 +61,15 @@ const Page = () => {
     <div className="font-serif bg-gradient-to-r from-[#eef2f7] to-[#d9e4f5] min-h-screen">
       <div className="w-full p-10 font-sans">
         
-       
         <div className="sticky top-10 z-50 flex justify-between items-center bg-white shadow-xl rounded-xl p-6 mb-8 w-full">
-          <h1 className="text-3xl font-semibold text-blue-900">
+          <h1 className="text-3xl font-semibold text-blue-900 pl-143">
             Customer Dashboard
           </h1>
 
           <div className="flex gap-4">
-            <button className="bg-indigo-500 cursor-pointer text-white px-6 py-2 rounded-lg font-bold hover:bg-indigo-700 transition transform hover:-translate-y-1">
+            <button
+             onClick={handleProfile}
+             className="bg-indigo-500 cursor-pointer text-white px-6 py-2 rounded-lg font-bold hover:bg-indigo-700 transition transform hover:-translate-y-1">
               Profile
             </button>
             <button
