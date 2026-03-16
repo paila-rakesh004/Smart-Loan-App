@@ -128,7 +128,10 @@ export default function Login() {
                 name = "hide"
                 onClick={() => {setShowpass(!showpass)}}
                 className="w-3 h-3 accent-red-400 cursor-pointer"
-                /> <label className='text-xs'>{showpass ? "Hide password" : "Show password" }</label></div>
+                /> <label className='text-sm'>{showpass ? "Hide password" : "Show password" }</label>
+
+              <button type="button" className="ml-8 text-sm text-indigo-700 hover:underline cursor-pointer" onClick={() => router.push('/forgot-password')}>Forgot Password?</button>  
+              </div>
 
             <button
               type="submit"

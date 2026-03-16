@@ -185,7 +185,7 @@ const OfficerProfile = () => {
               <div>
                 <label className="block text-gray-700 font-semibold mb-2">Current Password</label>
                 <input
-                  type="password"
+                  type={showpassword?"text":"password"}
                   value={passwords.old_password}
                   onChange={(e) => setPasswords({ ...passwords, old_password: e.target.value })}
                   className="w-full border border-gray-300 rounded-xl p-2 focus:outline-none focus:ring-2 focus:ring-red-400"

@@ -7,6 +7,8 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from .serializers import CustomerRegisterSerializer, LoginSerializer, UserProfileSerializer
 from rest_framework import permissions
 from django.db import connection
+from django.contrib.auth import get_user_model
+
 
 class RegisterView(APIView):
     permission_classes = [AllowAny]
@@ -93,3 +95,41 @@ class ChangePasswordView(APIView):
         user.save()
         
         return Response({"message": "Password updated successfully!"}, status=status.HTTP_200_OK)
+
+
+User = get_user_model()
+class VerifyAadharView(APIView):
+    permission_classes = []
+
+    def post(self, request):
+        username = request.data.get('username')
+        aadhar_number = request.data.get('aadhar_number')
+
+        if not username or not aadhar_number:
+            return Response({"error": "Please provide both Username and Aadhaar Number."}, status=status.HTTP_400_BAD_REQUEST)
+
+       
+        if User.objects.filter(username=username, aadhar_number=aadhar_number).exists():
+            return Response({"message": "Aadhaar verified successfully!"}, status=status.HTTP_200_OK)
+        
+        return Response({"error": "Invalid Username or Aadhaar Number."}, status=status.HTTP_404_NOT_FOUND)
+
+
+
+class ResetPasswordView(APIView):
+    permission_classes = [] 
+
+    def post(self, request):
+        username = request.data.get('username')
+        aadhar_number = request.data.get('aadhar_number')
+        new_password = request.data.get('new_password')
+
+        try:
+            
+            user = User.objects.get(username=username, aadhar_number=aadhar_number)
+            user.set_password(new_password)
+            user.save()
+            return Response({"message": "Password reset successfully!"}, status=status.HTTP_200_OK)
+            
+        except User.DoesNotExist:
+            return Response({"error": "Security check failed."}, status=status.HTTP_400_BAD_REQUEST)
