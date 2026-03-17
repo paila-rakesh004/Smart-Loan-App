@@ -340,13 +340,13 @@ export default function ApplyLoan() {
               <button 
                 type="button" 
                 onClick={() => router.push("/dashboard/customer")} 
-                className="w-48 h-12 bg-gray-200 text-gray-700 rounded-xl font-bold hover:bg-red-500 hover:text-white transition transform hover:-translate-y-1 shadow-sm"
+                className="w-48 h-12 cursor-pointer bg-gray-200 text-gray-700 rounded-xl font-bold hover:bg-red-500 hover:text-white transition transform hover:-translate-y-1 shadow-sm"
               >
                 Discard
               </button>
               <button 
                 type="submit" 
-                className="w-64 h-12 text-white bg-blue-600 rounded-xl font-bold shadow-md hover:bg-blue-800 transition transform hover:-translate-y-1"
+                className="w-64 cursor-pointer h-12 text-white bg-blue-600 rounded-xl font-bold shadow-md hover:bg-blue-800 transition transform hover:-translate-y-1"
               >
                 Submit Application
               </button>

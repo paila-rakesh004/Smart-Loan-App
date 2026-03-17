@@ -12,7 +12,7 @@ const Page = () => {
   
   const [riskScore, setRiskScore] = useState(null);
   const [notes, setNotes] = useState('');
-
+  
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('username');
@@ -34,8 +34,8 @@ const Page = () => {
       const res = await API.get(`loans/officer/${selectedLoan.id}/calculate-risk/`, {
         headers: { Authorization: `Token ${token}` },
       });
-
-      setRiskScore(res.data.risk_score);
+      const score = res.data.risk_score;
+      setRiskScore(score);
       toast.success("Risk Score calculated successfully!");
    
       setLoans(loans.map(loan => 
@@ -265,8 +265,14 @@ const Page = () => {
             </button>
 
             {riskScore && (
-              <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-                <p><span className="font-bold">Prediction :</span> {riskScore} risk</p>
+              <div  className={`mt-4 p-4 rounded-lg text-white ${
+                                        riskScore === 'high'
+                                        ? 'bg-red-600'
+                                        : riskScore === 'medium'
+                                        ? 'bg-orange-400'
+                                        : 'bg-green-500'
+                                    }`}>
+                <p><span className="font-bold">Prediction :</span> <span className='font-bold capitalize'>{riskScore} risk</span></p>
               </div>
             )}
 

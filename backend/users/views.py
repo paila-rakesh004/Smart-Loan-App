@@ -1,14 +1,13 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status,permissions
 from django.contrib.auth import authenticate
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from .serializers import CustomerRegisterSerializer, LoginSerializer, UserProfileSerializer
-from rest_framework import permissions
 from django.db import connection
 from django.contrib.auth import get_user_model
-
+from django.db import connection 
 
 class RegisterView(APIView):
     permission_classes = [AllowAny]
@@ -71,12 +70,23 @@ class UpdateProfileView(APIView):
 
     def put(self, request):
         user = request.user
+        new_username = request.data.get('username')
+        old_username = user.username 
 
-        new_username = request.data.get('username', user.username)
-        
-        user.username = new_username
+        if not new_username:
+            return Response({"error": "Username is required."}, status=status.HTTP_400_BAD_REQUEST)
+
        
-        user.save()
+        if new_username != old_username:
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    UPDATE user_financial_data 
+                    SET username = %s 
+                    WHERE username = %s
+                """, [new_username, old_username])
+            
+            user.username = new_username
+            user.save()
         
         return Response({"message": "Profile updated successfully!", "username": user.username}, status=status.HTTP_200_OK)
 
