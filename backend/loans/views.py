@@ -155,7 +155,7 @@ class CalculateRiskView(APIView):
 
 class NewUserLoanApplicationView(APIView):
     permission_classes = [permissions.IsAuthenticated]
-
+    parser_classes = (MultiPartParser, FormParser)
     def post(self, request):
         data = request.data
         files = request.FILES
@@ -199,7 +199,8 @@ class NewUserLoanApplicationView(APIView):
                 tenure=data.get('tenure'),
                 monthly_income=float(data.get('monthly_income', 0)),
                 cibil_score=str(cibil_score),  
-                
+                occupation = data.get('occupation'),
+                organization_name = data.get('organization_name'),
                 
                 id_proof=files.get('id_proof'),
                 address_proof=files.get('address_proof'),
@@ -246,16 +247,14 @@ class OfficerLoanStatsView(APIView):
     def get(self, request):
         user = request.user
         
-        # 1. Global System Stats (All Loans)
+        
         gold = LoanApplication.objects.filter(loan_type__icontains='Gold').count()
         home = LoanApplication.objects.filter(loan_type__icontains='Home').count()
         personal = LoanApplication.objects.filter(loan_type__icontains='Personal').count()
         education = LoanApplication.objects.filter(loan_type__icontains='Education').count()
         pending = LoanApplication.objects.filter(status__icontains='Pending').count()
         
-        # 2. Officer's Personal Work Stats
-        # If your model tracks the officer (e.g., officer=user), you can add that filter!
-        # Example: .filter(status='Approved', officer=user)
+        
         my_approved = LoanApplication.objects.filter(status='Approved').count() 
         my_rejected = LoanApplication.objects.filter(status='Rejected').count()
 

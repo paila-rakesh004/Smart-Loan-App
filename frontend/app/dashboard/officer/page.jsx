@@ -22,6 +22,7 @@ const Page = () => {
     router.push('/profile/officer');
   }
   const handleRowClick = (loan) => {
+    console.log(loan);
     setSelectedLoan(loan);
     setRiskScore(null);
     setNotes('');
@@ -43,12 +44,7 @@ const Page = () => {
       ));
 
     } catch (error) {
-      toast.error("Unable to Calculate risk Score 🥺")
-      setTimeout(() => {
-        toast.error("Cibil Score may not exist yet!");
-    }, 3500);
-      
-      
+      toast.error(error.response?.data?.error)
     }
   };
 
@@ -162,12 +158,16 @@ const Page = () => {
                 <p><span className="font-bold">Applicant Name :</span> {selectedLoan.applicant_name}</p>
                 <p><span className="font-bold">Loan Type :</span> {selectedLoan.loan_type}</p>
                 <p><span className="font-bold">Loan Amount :</span> ₹{selectedLoan.loan_amount}</p>
+                <p><span className="font-bold">Monthly Income : </span>₹{selectedLoan.monthly_income}</p>
+                <p><span className="font-bold">Occupation :</span> {selectedLoan.occupation}</p>
               </div>
 
               <div className="space-y-2">
+                <p><span className="font-bold">Applicant ID :</span> {selectedLoan.id}</p>
                 <p><span className="font-bold">Tenure :</span> {selectedLoan.tenure} months</p>
                 <p><span className="font-bold">Status :</span> {selectedLoan.status}</p>
                 <p><span className="font-bold">CIBIL Score :</span> {selectedLoan.actual_cibil || "N/A"}</p>
+                <p><span className="font-bold">Working At :</span> {selectedLoan.organization_name}</p>
               </div>
 
             </div>
@@ -217,6 +217,61 @@ const Page = () => {
 
             </div>
 
+           {(selectedLoan.income_proof) && (
+              <>
+                <h3 className="mt-8 mb-4 text-gray-800 text-2xl border-l-4 border-indigo-600 pl-2 font-bold">
+                  Additional Financial Proofs
+                </h3>
+                
+                <div className="grid grid-cols-2 gap-4 mb-6">
+                  
+                  {selectedLoan.proof_of_oldbank && (
+                    <div className="bg-gradient-to-r from-white to-cyan-400 border border-indigo-200 p-4 rounded-xl shadow-sm">
+                      <p className="font-bold text-gray-700 mb-2">Vintage Proof</p>
+                      <a className="text-indigo-600 hover:font-bold" href={selectedLoan.proof_of_oldbank} target="_blank" rel="noopener noreferrer">
+                        View Document
+                      </a>
+                    </div>
+                  )}
+
+                  {selectedLoan.income_proof && (
+                    <div className="bg-gradient-to-r from-cyan-400 to-white border border-indigo-200 p-4 rounded-xl shadow-sm">
+                      <p className="font-bold text-gray-700 mb-2">Income Proof</p>
+                      <a className="text-indigo-600 hover:font-bold" href={selectedLoan.income_proof} target="_blank" rel="noopener noreferrer">
+                        View Document
+                      </a>
+                    </div>
+                  )}
+
+                  {selectedLoan.bank_statements && (
+                    <div className="bg-gradient-to-r from-white to-cyan-400 border border-indigo-200 p-4 rounded-xl shadow-sm">
+                      <p className="font-bold text-gray-700 mb-2">Bank Statements</p>
+                      <a className="text-indigo-600 hover:font-bold" href={selectedLoan.bank_statements} target="_blank" rel="noopener noreferrer">
+                        View Document
+                      </a>
+                    </div>
+                  )}
+
+                  {selectedLoan.fd_receipts && (
+                    <div className="bg-gradient-to-r from-cyan-400 to-white border border-indigo-200 p-4 rounded-xl shadow-sm">
+                      <p className="font-bold text-gray-700 mb-2">FD Receipts</p>
+                      <a className="text-indigo-600 hover:font-bold" href={selectedLoan.fd_receipts} target="_blank" rel="noopener noreferrer">
+                        View Document
+                      </a>
+                    </div>
+                  )}
+                </div>
+                {selectedLoan.pending_loan_docs && (
+                    <div className="bg-gradient-to-r from-cyan-300 to-white border border-indigo-200 p-4 rounded-xl shadow-sm w-full flex justify-center items-center flex-col">
+                      <p className="font-bold text-gray-700 mb-2">Pending Loan Reports</p>
+                      <a className="text-indigo-600 hover:font-bold" href={selectedLoan.pending_loan_docs} target="_blank" rel="noopener noreferrer">
+                        View Document
+                      </a>
+                    </div>
+                  )}
+              </>
+            )}
+
             <h4 className="mt-6 mb-3 text-gray-700 text-2xl font-bold">
               Nominee Details: <br></br> <span className="text-blue-600 text-xl">Nominee Name : {selectedLoan.nominee_name || 'N/A'}</span>
             </h4>
@@ -251,8 +306,7 @@ const Page = () => {
               )}
 
             </div>
-
-            
+          
             <h3 className="mt-8 mb-4 text-gray-800 text-2xl border-l-4 border-blue-600 pl-2 font-bold">
               Risk Assessment
             </h3>

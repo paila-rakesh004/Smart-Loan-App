@@ -293,7 +293,7 @@ export default function ApplyLoan() {
                       { label: "Bank Statements", name: "bankStatements" },
                       { label: "Income Proof (ITR)", name: "incomeProof" },
                       { label: "FD Receipts", name: "fdReceipts" },
-                      { label: "Pending Loan Docs", name: "pendingLoanDocs" }
+                      { label: "Pending Loan Reports", name: "pendingLoanDocs" }
                     ].map((doc) => (
                       <div key={doc.name} className="flex flex-col gap-2">
                         <label className="font-bold text-gray-600">{doc.label}</label>
