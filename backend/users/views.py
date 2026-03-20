@@ -8,6 +8,13 @@ from .serializers import CustomerRegisterSerializer, LoginSerializer, UserProfil
 from django.db import connection
 from django.contrib.auth import get_user_model
 from django.db import connection 
+import random
+from django.utils import timezone
+from datetime import timedelta
+from django.core.mail import send_mail
+from django.conf import settings
+
+
 
 class RegisterView(APIView):
     permission_classes = [AllowAny]
@@ -108,38 +115,87 @@ class ChangePasswordView(APIView):
 
 
 User = get_user_model()
-class VerifyAadharView(APIView):
-    permission_classes = []
-
-    def post(self, request):
-        username = request.data.get('username')
-        aadhar_number = request.data.get('aadhar_number')
-
-        if not username or not aadhar_number:
-            return Response({"error": "Please provide both Username and Aadhaar Number."}, status=status.HTTP_400_BAD_REQUEST)
-
-       
-        if User.objects.filter(username=username, aadhar_number=aadhar_number).exists():
-            return Response({"message": "Aadhaar verified successfully!"}, status=status.HTTP_200_OK)
-        
-        return Response({"error": "Invalid Username or Aadhaar Number."}, status=status.HTTP_404_NOT_FOUND)
 
 
-
-class ResetPasswordView(APIView):
+class SendOTPView(APIView):
     permission_classes = [] 
 
     def post(self, request):
         username = request.data.get('username')
-        aadhar_number = request.data.get('aadhar_number')
+        
+        try:
+            user = User.objects.get(username=username)
+            
+            
+            otp = str(random.randint(100000, 999999))
+            
+            
+            user.reset_otp = otp
+            user.otp_expiry = timezone.now() + timedelta(minutes=2)
+            user.save()
+
+            
+            if user.email:
+                send_mail(
+                    subject="Your Password Reset OTP",
+                    message=f"Hello {user.username},\n\nYour OTP for password reset is: {otp}\n\nThis OTP is valid for exactly 2 minutes. Do not share this code with anyone.",
+                    from_email=settings.EMAIL_HOST_USER,
+                    recipient_list=[user.email],
+                    fail_silently=False,
+                )
+                return Response({"message": "OTP sent successfully to your registered email."}, status=status.HTTP_200_OK)
+            else:
+                return Response({"error": "No email address linked to this username."}, status=status.HTTP_400_BAD_REQUEST)
+                
+        except User.DoesNotExist:
+            
+            return Response({"message": "If this username exists, an OTP has been sent to the registered email."}, status=status.HTTP_200_OK)
+
+
+class VerifyOTPView(APIView):
+    permission_classes = []
+
+    def post(self, request):
+        username = request.data.get('username')
+        otp = request.data.get('otp')
+
+        try:
+            user = User.objects.get(username=username, reset_otp=otp)
+            
+            
+            if user.otp_expiry and timezone.now() > user.otp_expiry:
+                return Response({"error": "This OTP has expired. Please request a new one."}, status=status.HTTP_400_BAD_REQUEST)
+                
+            return Response({"message": "OTP Verified! You can now reset your password."}, status=status.HTTP_200_OK)
+            
+        except User.DoesNotExist:
+            return Response({"error": "Invalid OTP or Username."}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ResetPasswordWithOTPView(APIView):
+    permission_classes = []
+
+    def post(self, request):
+        username = request.data.get('username')
+        otp = request.data.get('otp')
         new_password = request.data.get('new_password')
 
         try:
+            user = User.objects.get(username=username, reset_otp=otp)
             
-            user = User.objects.get(username=username, aadhar_number=aadhar_number)
+            
+            if user.otp_expiry and timezone.now() > user.otp_expiry:
+                return Response({"error": "OTP expired."}, status=status.HTTP_400_BAD_REQUEST)
+
+            
             user.set_password(new_password)
+            
+            
+            user.reset_otp = None
+            user.otp_expiry = None
             user.save()
+            
             return Response({"message": "Password reset successfully!"}, status=status.HTTP_200_OK)
             
         except User.DoesNotExist:
-            return Response({"error": "Security check failed."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Security validation failed. Please try again."}, status=status.HTTP_400_BAD_REQUEST)

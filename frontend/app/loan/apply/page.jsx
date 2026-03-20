@@ -8,6 +8,7 @@ export default function ApplyLoan() {
   const router = useRouter();
   const [isNewUser, setIsNewUser] = useState(false);
   const [loadingStatus, setLoadingStatus] = useState(true);
+  const [click,setClick] = useState(false);
 
   const [form, setForm] = useState({
     occupation: "",
@@ -88,7 +89,7 @@ export default function ApplyLoan() {
       if (form.fdReceipts) dataToSend.append("fd_receipts", form.fdReceipts);
       if (form.pendingLoanDocs) dataToSend.append("pending_loan_docs", form.pendingLoanDocs);
     }
-
+    setClick(true);
     try {
       const endpoint = isNewUser ? "loans/apply-new-user/" : "loans/apply/";
       await API.post(endpoint, dataToSend, {
@@ -101,6 +102,9 @@ export default function ApplyLoan() {
       router.push("/dashboard/customer");
     } catch (error) {
       toast.error("Something went wrong!");
+    }
+    finally{
+      setClick(false);
     }
   };
 
@@ -345,8 +349,13 @@ export default function ApplyLoan() {
                 Discard
               </button>
               <button 
-                type="submit" 
-                className="w-64 cursor-pointer h-12 text-white bg-blue-600 rounded-xl font-bold shadow-md hover:bg-blue-800 transition transform hover:-translate-y-1"
+                type="submit"
+                disabled = {click}
+                className={`w-64 cursor-pointer h-12 text-white transition transform hover:-translate-y-1 ${
+                  click ? 'bg-gray-400 cursor-not-allowed'
+                  : 'bg-indigo-500 rounded-2xl cursor-pointer hover:bg-blue-700'
+                }`}
+                
               >
                 Submit Application
               </button>

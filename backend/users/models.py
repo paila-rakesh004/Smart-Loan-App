@@ -9,5 +9,10 @@ class User(AbstractUser):
     aadhar_number = models.CharField(max_length=12, blank=True, null=True)
     address = models.TextField(blank=True, null=True)
 
+
+    reset_otp = models.CharField(max_length=6, blank=True, null=True)
+    otp_expiry = models.DateTimeField(blank=True, null=True)
+
+    
     def __str__(self):
         return self.username

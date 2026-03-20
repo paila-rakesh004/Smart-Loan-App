@@ -11,12 +11,54 @@ const CustomerProfile = () => {
   const [profile, setProfile] = useState({ username: '', email: '' });
   const [stats, setStats] = useState({ total_applied: 0, total_approved: 0, total_rejected: 0 });
   
+  const[click,setClick] = useState(false);
  
   const [newUsername, setNewUsername] = useState('');
   
   const [passwords, setPasswords] = useState({ old_password: '', new_password: '' });
 
-  useEffect(() => {
+
+
+  const handleUpdateUsername = async (e) => {
+    e.preventDefault();
+    try {
+      const token = localStorage.getItem('token');
+      const res = await API.put('users/update-profile/', { username: newUsername },{
+        headers: { Authorization: `Token ${token}` },
+      });
+      
+      setProfile({ ...profile, username: res.data.username});
+      localStorage.setItem('username', res.data.username); 
+      toast.success("updated successfully!");
+    } catch (error) {
+      toast.error("Failed to update.");
+    }
+  };
+
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+    try {
+      setClick(true);
+      const token = localStorage.getItem('token');
+      await API.put('users/change-password/', passwords, {
+        headers: { Authorization: `Token ${token}` },
+      });
+      
+      setPasswords({ old_password: '', new_password: '' });
+      
+      toast.success("Password changed securely!");
+    } catch (error) {
+      toast.error(error.response?.data?.error || "Failed to change password.");
+    }
+    finally{
+      setClick(false);
+    }
+  };
+
+  
+  const avatarInitial = profile.username ? profile.username.charAt(0).toUpperCase() : "U";
+
+    useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) {
       router.push('/login');
@@ -45,41 +87,6 @@ const CustomerProfile = () => {
 
     fetchProfileData();
   }, [router]);
-
-  const handleUpdateUsername = async (e) => {
-    e.preventDefault();
-    try {
-      const token = localStorage.getItem('token');
-      const res = await API.put('users/update-profile/', { username: newUsername },{
-        headers: { Authorization: `Token ${token}` },
-      });
-      
-      setProfile({ ...profile, username: res.data.username});
-      localStorage.setItem('username', res.data.username); 
-      toast.success("updated successfully!");
-    } catch (error) {
-      toast.error("Failed to update.");
-    }
-  };
-
-  const handleChangePassword = async (e) => {
-    e.preventDefault();
-    try {
-      const token = localStorage.getItem('token');
-      await API.put('users/change-password/', passwords, {
-        headers: { Authorization: `Token ${token}` },
-      });
-      
-      setPasswords({ old_password: '', new_password: '' });
-      toast.success("Password changed securely!");
-    } catch (error) {
-      toast.error(error.response?.data?.error || "Failed to change password.");
-    }
-  };
-
-  
-  const avatarInitial = profile.username ? profile.username.charAt(0).toUpperCase() : "U";
-
   return (
     <div className="min-h-screen font-sans bg-gradient-to-r from-[#eef2f7] to-[#d9e4f5] p-10">
       
@@ -196,7 +203,12 @@ const CustomerProfile = () => {
               </div>
               <button
                 type="submit"
-                className="bg-red-500 text-white px-8 py-3 rounded-xl font-bold cursor-pointer hover:bg-red-700 transition transform hover:-translate-y-1 w-full md:w-auto"
+                disabled = {click}
+                className={`w-full py-3 rounded-xl font-bold transition transform shadow-md ${
+                click
+                  ? 'bg-gray-400 cursor-not-allowed text-white' 
+                  : 'bg-red-500 text-white cursor-pointer hover:bg-red-700 hover:-translate-y-1'
+              }`}
               >
                 Update Password
               </button>
