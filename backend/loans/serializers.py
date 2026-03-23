@@ -3,10 +3,14 @@ from django.db import connection
 from .models import LoanApplication, ExternalFinancialHistory
 
 class LoanApplicationSerializer(serializers.ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(read_only=True)
+
     class Meta:
         model = LoanApplication
         fields = '__all__'
+        read_only_fields = ['user']
 
+        
     def to_representation(self, instance):
         
         data = super().to_representation(instance)
@@ -14,6 +18,8 @@ class LoanApplicationSerializer(serializers.ModelSerializer):
         
         
         request = self.context.get('request')
+        
+
         
         try:
             ext_data = ExternalFinancialHistory.objects.get(user=user)

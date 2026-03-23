@@ -226,8 +226,8 @@ const Page = () => {
                 <div className="grid grid-cols-2 gap-4 mb-6">
                   
                   {selectedLoan.proof_of_oldbank && (
-                    <div className="bg-gradient-to-r from-white to-cyan-400 border border-indigo-200 p-4 rounded-xl shadow-sm">
-                      <p className="font-bold text-gray-700 mb-2">Vintage Proof</p>
+                    <div className="bg-red-100 border border-indigo-200 p-4 rounded-xl shadow-sm">
+                      <p className="font-bold text-gray-700 mb-2">Vintage Proof<span className='text-xs font-normal'>(number of years in previous bank)</span></p>
                       <a className="text-indigo-600 hover:font-bold" href={selectedLoan.proof_of_oldbank} target="_blank" rel="noopener noreferrer">
                         View Document
                       </a>
@@ -235,7 +235,7 @@ const Page = () => {
                   )}
 
                   {selectedLoan.income_proof && (
-                    <div className="bg-gradient-to-r from-cyan-400 to-white border border-indigo-200 p-4 rounded-xl shadow-sm">
+                    <div className="bg-red-100 to-white border border-indigo-200 p-4 rounded-xl shadow-sm">
                       <p className="font-bold text-gray-700 mb-2">Income Proof</p>
                       <a className="text-indigo-600 hover:font-bold" href={selectedLoan.income_proof} target="_blank" rel="noopener noreferrer">
                         View Document
@@ -244,7 +244,7 @@ const Page = () => {
                   )}
 
                   {selectedLoan.bank_statements && (
-                    <div className="bg-gradient-to-r from-white to-cyan-400 border border-indigo-200 p-4 rounded-xl shadow-sm">
+                    <div className="bg-red-100 border border-indigo-200 p-4 rounded-xl shadow-sm">
                       <p className="font-bold text-gray-700 mb-2">Bank Statements</p>
                       <a className="text-indigo-600 hover:font-bold" href={selectedLoan.bank_statements} target="_blank" rel="noopener noreferrer">
                         View Document
@@ -253,7 +253,7 @@ const Page = () => {
                   )}
 
                   {selectedLoan.fd_receipts && (
-                    <div className="bg-gradient-to-r from-cyan-400 to-white border border-indigo-200 p-4 rounded-xl shadow-sm">
+                    <div className="bg-red-100 to-white border border-indigo-200 p-4 rounded-xl shadow-sm">
                       <p className="font-bold text-gray-700 mb-2">FD Receipts</p>
                       <a className="text-indigo-600 hover:font-bold" href={selectedLoan.fd_receipts} target="_blank" rel="noopener noreferrer">
                         View Document
@@ -262,7 +262,7 @@ const Page = () => {
                   )}
                 </div>
                 {selectedLoan.pending_loan_docs && (
-                    <div className="bg-gradient-to-r from-cyan-300 to-white border border-indigo-200 p-4 rounded-xl shadow-sm w-full flex justify-center items-center flex-col">
+                    <div className="bg-red-100 border border-indigo-200 p-4 rounded-xl shadow-sm w-full flex justify-center items-center flex-col">
                       <p className="font-bold text-gray-700 mb-2">Pending Loan Reports</p>
                       <a className="text-indigo-600 hover:font-bold" href={selectedLoan.pending_loan_docs} target="_blank" rel="noopener noreferrer">
                         View Document
