@@ -12,8 +12,8 @@ import pandas as pd
 from django.conf import settings
 from .utils import calculate_mock_cibil 
 from django.db.models import Q
-
-
+from .utility.document_pipeline import process_loan_document
+from rest_framework.permissions import IsAuthenticated
 
 class ApplyLoanView(APIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -270,3 +270,33 @@ class OfficerLoanStatsView(APIView):
         }, status=status.HTTP_200_OK)
     
 
+class VerifyDocumentView(APIView):
+   
+    permission_classes = [IsAuthenticated]
+
+    parser_classes = (MultiPartParser, FormParser)
+
+    def post(self, request):
+        document = request.FILES.get('document')
+        
+        if not document:
+            return Response(
+                {"error": "No document provided."}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            ai_result = process_loan_document(document,request.user)
+            
+            
+            if ai_result.get("status") == "failed":
+                return Response(ai_result, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+
+            
+            return Response(ai_result, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response(
+                {"error": f"Server Error during AI processing: {str(e)}"}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )

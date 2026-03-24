@@ -38,6 +38,7 @@ export default function Register() {
       router.push("/login");
     } catch (error) {
       // setErrorMsg("Registration failed. Existing User details 🤔.");
+      console.log(error.response.data)
       toast.error("Details already exist🤔....unable to register");
     } finally {
       setLoading(false);

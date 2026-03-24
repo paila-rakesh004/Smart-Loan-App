@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import ApplyLoanView, MyLoansView, OfficerAllLoansView, OfficerUpdateLoanView, CalculateRiskView, NewUserLoanApplicationView, CustomerLoanStatsView, OfficerLoanStatsView
+from .views import ApplyLoanView, MyLoansView, OfficerAllLoansView, OfficerUpdateLoanView, CalculateRiskView, NewUserLoanApplicationView, CustomerLoanStatsView, OfficerLoanStatsView,VerifyDocumentView
 
 urlpatterns = [
     path('apply/', ApplyLoanView.as_view(), name='apply-loan'),
@@ -10,4 +10,5 @@ urlpatterns = [
     path('apply-new-user/', NewUserLoanApplicationView.as_view(), name='apply-new-user'),
     path('customer/stats/', CustomerLoanStatsView.as_view(), name='customer-stats'),
     path('officer/stats/', OfficerLoanStatsView.as_view(), name='officer-stats'),
+    path('verify-document/', VerifyDocumentView.as_view(), name='verify-document'),
 ]
