@@ -69,7 +69,7 @@ class CheckUserStatus(APIView):
                 is_new = True
             else:
                 is_new = False
-        return Response({"is_new_user" : is_new})
+        return Response({"is_new_user" : is_new, "first_name" : request.user.first_name, "last_name" : request.user.last_name})
     
 
 class UpdateProfileView(APIView):

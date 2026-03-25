@@ -1,4 +1,5 @@
 "use client";
+
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import API from "@/lib/api";
@@ -10,10 +11,12 @@ export default function ApplyLoan() {
   const [loadingStatus, setLoadingStatus] = useState(true);
   const [click, setClick] = useState(false);
 
- 
   const [aiStatuses, setAiStatuses] = useState({});
+  const [isNameLocked, setIsNameLocked] = useState(false);
 
   const [form, setForm] = useState({
+    firstName: "",
+    lastName: "",
     occupation: "",
     organizationName: "",
     monthlyIncome: "",
@@ -39,7 +42,6 @@ export default function ApplyLoan() {
     pendingLoanDocs: null,
   });
 
-
   const isFarmer = form.occupation.trim().toLowerCase() === "farmer";
 
   const handleLogout = () => {
@@ -52,17 +54,26 @@ export default function ApplyLoan() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  const handleLockIdentity = () => {
+    if (!form.firstName.trim() || !form.lastName.trim()) {
+      toast.error("Please enter both First and Last Name.");
+      return;
+    }
+    setIsNameLocked(true);
+    toast.success("Legal identity confirmed & locked for AI verification.");
+  };
 
   const verifyDocumentWithAI = async (fieldName, file) => {
-    if (!file) return;
-
-    setAiStatuses((prev) => ({
-      ...prev,
-      [fieldName]: { loading: true },
-    }));
+    setAiStatuses((prev) => ({ ...prev, [fieldName]: { loading: true } }));
 
     const formData = new FormData();
     formData.append("document", file);
+    
+    formData.append("first_name", form.firstName);
+    formData.append("last_name", form.lastName);
+    formData.append("organization_name", form.organizationName);
+    formData.append("monthly_income", form.monthlyIncome);
+    formData.append("years_at_previous_bank", form.yearsAtPreviousBank);
 
     try {
       const token = localStorage.getItem("token");
@@ -106,10 +117,37 @@ export default function ApplyLoan() {
     const file = e.target.files[0];
     const fieldName = e.target.name;
     
+    if (!file) return;
+
+    const aiWorthyDocs = ["idproof", "addressProof", "salarySlips", "EmpIDcard", "incomeProof", "proofOfOldbank"];
+
+    if (aiWorthyDocs.includes(fieldName)) {
+      if (!form.firstName || !form.lastName) {
+        toast.error("Please enter and lock your Legal First and Last Name before uploading documents!");
+        e.target.value = ""; 
+        return;
+      }
+    }
+
+    if (fieldName === "salarySlips" || fieldName === "EmpIDcard") {
+      if (!form.organizationName || !form.monthlyIncome) {
+        toast.error("Please enter your Organization and Monthly Income first!");
+        e.target.value = "";
+        return;
+      }
+    }
+
+    if (fieldName === "proofOfOldbank" && !form.yearsAtPreviousBank) {
+      toast.error("Please enter 'Years at Previous Bank' before uploading vintage proof!");
+      e.target.value = ""; 
+      return;
+    }
+
+    
     setForm({ ...form, [fieldName]: file });
 
-    const aiWorthyDocs = ["idproof", "addressProof", "salarySlips", "incomeProof", "proofOfOldbank"];
-    if (file && aiWorthyDocs.includes(fieldName)) {
+    
+    if (aiWorthyDocs.includes(fieldName)) {
       verifyDocumentWithAI(fieldName, file);
     }
   };
@@ -144,9 +182,7 @@ export default function ApplyLoan() {
     if (form.idproof) dataToSend.append("id_proof", form.idproof);
     if (form.addressProof) dataToSend.append("address_proof", form.addressProof);
     if (form.salarySlips) dataToSend.append("salary_slips", form.salarySlips);
-    
     if (form.EmpIDcard && !isFarmer) dataToSend.append("emp_id_card", form.EmpIDcard);
-    
     if (form.nomineeIDcard) dataToSend.append("nominee_id_card", form.nomineeIDcard);
     if (form.nomineeAddressproof) dataToSend.append("nominee_address_proof", form.nomineeAddressproof);
     if (form.nomineesign) dataToSend.append("nominee_sign", form.nomineesign);
@@ -193,7 +229,19 @@ export default function ApplyLoan() {
         const res = await API.get("users/check-status/", {
           headers: { Authorization: `Token ${token}` },
         });
+        
         setIsNewUser(res.data.is_new_user);
+
+        
+        if (res.data.first_name || res.data.last_name) {
+          setForm((prev) => ({
+            ...prev,
+            firstName: res.data.first_name || "",
+            lastName: res.data.last_name || "",
+          }));
+          setIsNameLocked(true); 
+        }
+
       } catch (error) {
         toast.error("Failed to fetch user status");
       } finally {
@@ -246,20 +294,18 @@ export default function ApplyLoan() {
     return null;
   };
 
-
   const baseDocuments = [
     { label: "PAN Card (ID Proof)", name: "idproof" },
     { label: "Aadhaar Card (Front & Back)", name: "addressProof" },
     { label: "Salary Slips", name: "salarySlips" },
   ];
   
-
   const documentsToRender = isFarmer ? baseDocuments : [...baseDocuments, { label: "Employee ID Card", name: "EmpIDcard" }];
 
   return (
     <div className="font-serif bg-gradient-to-r from-[#eef2f7] to-[#d9e4f5] min-h-screen pb-10">
       
-   
+      {/* HEADER */}
       <div className="fixed w-full h-24 bg-gradient-to-r from-[#eef2f7] to-[#d9e4f5] z-50 flex items-center justify-center">
         <div className="w-full bg-white shadow-xl rounded-xl p-6 flex justify-between items-center">
           <div className="flex-1">
@@ -284,6 +330,56 @@ export default function ApplyLoan() {
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-8">
             
+            {/* LEGAL IDENTITY DETAILS */}
+            <div className="bg-blue-50/50 p-8 rounded-2xl border border-blue-100">
+              <div className="text-xl text-blue-800 font-bold border-l-4 border-blue-600 pl-3 mb-6">
+                Legal Identity <span className="text-sm font-normal text-gray-500 ml-2">(Must match your PAN/Aadhaar exactly)</span>
+              </div>
+              <div className="grid grid-cols-2 gap-x-8 gap-y-6">
+                <div className="flex flex-col gap-2">
+                  <label className="font-bold text-gray-700">First Name</label>
+                  <input 
+                    name="firstName" 
+                    value={form.firstName}
+                    placeholder="e.g., Name" 
+                    onChange={handlevalueChange} 
+                    disabled={isNameLocked}
+                    className={`p-3 rounded-lg border border-gray-300 outline-none transition ${isNameLocked ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'focus:border-blue-500 focus:ring-2 focus:ring-blue-200 bg-white'}`} 
+                    required 
+                  />
+                </div>
+                <div className="flex flex-col gap-2">
+                  <label className="font-bold text-gray-700">Last Name</label>
+                  <input 
+                    name="lastName" 
+                    value={form.lastName}
+                    placeholder="e.g., SurName" 
+                    onChange={handlevalueChange} 
+                    disabled={isNameLocked}
+                    className={`p-3 rounded-lg border border-gray-300 outline-none transition ${isNameLocked ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'focus:border-blue-500 focus:ring-2 focus:ring-blue-200 bg-white'}`} 
+                    required 
+                  />
+                </div>
+              </div>
+
+              
+              <div className="mt-6 flex justify-end">
+                {!isNameLocked ? (
+                  <button
+                    type="button"
+                    onClick={handleLockIdentity}
+                    className="bg-blue-600 cursor-pointer text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-800 transition transform hover:-translate-y-1 shadow-md"
+                  >
+                    Confirm & Lock Identity
+                  </button>
+                ) : (
+                  <span className="text-green-600 font-bold flex items-center gap-2 bg-green-50 px-4 py-2 rounded-lg border border-green-200">
+                    ✅ Identity Locked
+                  </span>
+                )}
+              </div>
+            </div>
+
             
             <div className="bg-blue-50/50 p-8 rounded-2xl border border-blue-100">
               <div className="text-xl text-blue-800 font-bold border-l-4 border-blue-600 pl-3 mb-6">Employment Details</div>
@@ -303,6 +399,7 @@ export default function ApplyLoan() {
               </div>
             </div>
 
+            
             <div className="bg-blue-50/50 p-8 rounded-2xl border border-blue-100">
               <div className="text-xl text-blue-800 font-bold border-l-4 border-blue-600 pl-3 mb-6">Loan Request Details</div>
               <div className="grid grid-cols-2 gap-x-8 gap-y-6">
@@ -333,7 +430,6 @@ export default function ApplyLoan() {
                   Previous Bank History <span className="text-sm font-normal text-gray-500 ml-2">(Required for new users)</span>
                 </div>
                 <div className="grid grid-cols-2 gap-x-8 gap-y-6">
-                  
                   <div className="flex flex-col gap-2">
                     <label className="font-bold text-gray-700">Years at Previous Bank</label>
                     <input name="yearsAtPreviousBank" type="number" placeholder="Years" onChange={handlevalueChange} className="p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition" required={isNewUser} />
@@ -364,7 +460,6 @@ export default function ApplyLoan() {
               </div>
               
               <div className="grid grid-cols-2 gap-x-8 gap-y-6">
-    
                 {documentsToRender.map((doc) => (
                   <div key={doc.name} className="flex flex-col gap-2">
                     <label className="font-bold text-gray-600">{doc.label}</label>
@@ -386,7 +481,7 @@ export default function ApplyLoan() {
                   <div className="text-lg text-indigo-700 font-bold mb-6 italic">Previous Bank History Proofs</div>
                   <div className="grid grid-cols-2 gap-x-8 gap-y-6">
                     {[
-                      { label: "Vintage Proof", name: "proofOfOldbank" },
+                      { label: <> Vintage Proof <span className="font-normal text-xs">(years with previous bank)</span></>, name: "proofOfOldbank" },
                       { label: "Bank Statements", name: "bankStatements" },
                       { label: "Income Proof (ITR)", name: "incomeProof" },
                       { label: "FD Receipts", name: "fdReceipts" },
@@ -410,7 +505,7 @@ export default function ApplyLoan() {
               )}
             </div>
 
-            {/* NOMINEE DETAILS */}
+        
             <div className="bg-blue-50/50 p-8 rounded-2xl border border-blue-100">
               <div className="text-xl text-blue-800 font-bold border-l-4 border-blue-600 pl-3 mb-6">Nominee Details</div>
               <div className="grid grid-cols-2 gap-x-8 gap-y-6">
@@ -434,14 +529,14 @@ export default function ApplyLoan() {
             </div>
 
             <div className="flex justify-center items-center gap-8 mt-6 pt-8 border-t border-gray-200">
-              <button type="button" onClick={() => router.push("/dashboard/customer")} className="w-48 h-12 cursor-pointer bg-gray-200 text-gray-700 rounded-xl font-bold hover:bg-red-500 hover:text-white transition transform hover:-translate-y-1 shadow-sm">
+              <button type="button" onClick={() => router.push("/dashboard/customer")} className="w-48 h-12 cursor-pointer bg-gray-200 text-gray-700 rounded-xl hover:font-bold hover:bg-red-500 hover:text-white transition transform hover:-translate-y-1 shadow-sm">
                 Discard
               </button>
               
               <button 
                 type="submit"
                 disabled={isSubmitDisabled}
-                className={`w-64 cursor-pointer h-12 text-white transition transform hover:-translate-y-1 ${
+                className={`w-64 cursor-pointer h-12 text-white transition transform hover:-translate-y-1 hover:font-bold ${
                   isSubmitDisabled ? 'bg-gray-400 cursor-not-allowed' : 'bg-indigo-500 rounded-2xl cursor-pointer hover:bg-blue-700'
                 }`}
               >

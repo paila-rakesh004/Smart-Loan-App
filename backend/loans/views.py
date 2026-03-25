@@ -278,15 +278,23 @@ class VerifyDocumentView(APIView):
 
     def post(self, request):
         document = request.FILES.get('document')
-        
+        declared_org = request.POST.get('organization_name', '')
+        declared_income = request.POST.get('monthly_income', '')
+        declared_years = request.POST.get('years_at_previous_bank', '')
+        first_name = request.POST.get('first_name', '').strip()
+        last_name = request.POST.get('last_name', '').strip()
         if not document:
-            return Response(
-                {"error": "No document provided."}, 
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({"error": "No document provided."}, status=status.HTTP_400_BAD_REQUEST)
 
+        if first_name and last_name:
+            
+            if not request.user.first_name or not request.user.last_name:
+                request.user.first_name = first_name
+                request.user.last_name = last_name
+                request.user.save() 
+                print(f"Permanently saved Legal Name for {request.user.username}: {first_name} {last_name}")
         try:
-            ai_result = process_loan_document(document,request.user)
+            ai_result = process_loan_document(image_file=document,user=request.user,declared_org=declared_org,declared_income=declared_income,declared_years=declared_years)
             
             
             if ai_result.get("status") == "failed":

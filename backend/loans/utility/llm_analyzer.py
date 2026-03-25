@@ -15,20 +15,30 @@ def analyze_document_with_llm(masked_ocr_text):
     You are an expert AI compliance officer for a bank. 
     Analyze the following OCR text. The text has been masked for privacy.
     
-    CRITICAL RULES FOR ANOMALIES:
-    1. The current year is 2026. Do NOT flag any 2026 dates as "future dates".
-    2. Completely IGNORE any text related to "Signature Valid", "Digitally signed by", or verification timestamps. These are standard on e-Aadhaar downloads.
-    3. Ignore minor OCR typos or garbage text caused by complex backgrounds.
-    
+    CRITICAL RULES:
+    1. The current year is 2026. Do NOT flag 2026 dates as future.
+    2. If Salary Slip: Count distinct months. Extract Employer name and Net Monthly Income.
+    3. If Employee ID: Look for expiration date. Extract Employer Name and Employee Number.
+    4. If ITR (Income Tax Return): Extract the Assessment Year (e.g., 2025) and the Gross Total Income (numeric only).
+    5. If Vintage Proof (Bank Statement/Welcome Letter): Extract the Account Opening Year or the oldest transaction year shown (YYYY format).
+    6. While verifying Aadhar card, consider only address, aadhar number and whether it is faked or original. ignore the date of issue.
+    7. If you feel any document is inappropriate or faked document, then flag it.
     You MUST return a strict JSON object with this exact structure:
     {{
-        "document_type": "Aadhaar Card, PAN Card, Salary Slip, Employee ID, or Unknown",
+        "document_type": "Aadhaar Card, PAN Card, Salary Slip, Employee ID, ITR, Vintage Proof, or Unknown",
         "extracted_fields": {{
-            "name": "Extract the person's name",
-            "id_number": "Extract the masked ID number (e.g. XXXX-XXXX-1234)",
-            "address": "Extract the full street address and PIN code if found, otherwise null"
+            "name": "Person's name",
+            "id_number": "PAN, Aadhaar, or Employee ID Number",
+            "address": "Full address or null",
+            "organization_name": "Employer name",
+            "monthly_income": "Net monthly income (numeric)",
+            "months_present": 1,
+            "is_expired": false,
+            "assessment_year": "YYYY (for ITR)",
+            "gross_income": "Numeric annual income (for ITR)",
+            "account_opening_year": "YYYY (for Vintage Proof)"
         }},
-        "anomalies": ["List ONLY severe issues like missing name, missing ID, or explicit 'Fake/Sample' watermarks. Empty list if none."],
+        "anomalies": ["List strict severe issues ONLY. Empty list if none."],
         "confidence_score": 0.0 to 1.0,
         "ai_reasoning": "Explain your decision."
     }}
@@ -36,7 +46,6 @@ def analyze_document_with_llm(masked_ocr_text):
     Here is the OCR text:
     {masked_ocr_text}
     """
-
     try:
         response = client.models.generate_content(
             model='gemini-2.5-flash',
