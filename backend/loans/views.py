@@ -7,6 +7,7 @@ from .models import LoanApplication, ExternalFinancialHistory
 from django.db import connection
 from django.contrib.auth import get_user_model
 import os
+import json
 import pickle
 import pandas as pd
 from django.conf import settings
@@ -20,9 +21,14 @@ class ApplyLoanView(APIView):
     parser_classes = (MultiPartParser, FormParser)
 
     def post(self, request):
+        ai_statuses_str = request.data.get('ai_statuses', '{}')
+        try:
+            ai_data = json.loads(ai_statuses_str)
+        except json.JSONDecodeError:
+            ai_data = {}
         serializer = LoanApplicationSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save(user=request.user)
+            serializer.save(user=request.user,ai_verification_data = ai_data)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         print(serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -162,6 +168,12 @@ class NewUserLoanApplicationView(APIView):
         files = request.FILES
         user = request.user
 
+        ai_statuses_str = data.get('ai_statuses', '{}')
+        try:
+            ai_data = json.loads(ai_statuses_str)
+        except json.JSONDecodeError:
+            ai_data = {}
+
         try:
            
             cibil_score = calculate_mock_cibil(
@@ -211,6 +223,8 @@ class NewUserLoanApplicationView(APIView):
                 nominee_id_card=files.get('nominee_id_card'),
                 nominee_address_proof=files.get('nominee_address_proof'),
                 nominee_sign=files.get('nominee_sign'),
+
+                ai_verification_data = ai_data,
             )
 
             return Response({"message": "Application submitted!"}, status=status.HTTP_201_CREATED)
@@ -278,6 +292,7 @@ class VerifyDocumentView(APIView):
 
     def post(self, request):
         document = request.FILES.get('document')
+        expected_doc_type = request.POST.get('expected_doc_type','Unknown')
         declared_org = request.POST.get('organization_name', '')
         declared_income = request.POST.get('monthly_income', '')
         declared_years = request.POST.get('years_at_previous_bank', '')
@@ -294,7 +309,7 @@ class VerifyDocumentView(APIView):
                 request.user.save() 
                 print(f"Permanently saved Legal Name for {request.user.username}: {first_name} {last_name}")
         try:
-            ai_result = process_loan_document(image_file=document,user=request.user,declared_org=declared_org,declared_income=declared_income,declared_years=declared_years)
+            ai_result = process_loan_document(image_file=document,user=request.user,declared_org=declared_org,declared_income=declared_income,declared_years=declared_years,expected_doc_type=expected_doc_type)
             
             
             if ai_result.get("status") == "failed":
@@ -304,6 +319,7 @@ class VerifyDocumentView(APIView):
             return Response(ai_result, status=status.HTTP_200_OK)
             
         except Exception as e:
+            print(f"CRASH IN AI PROCESSING: {str(e)}")
             return Response(
                 {"error": f"Server Error during AI processing: {str(e)}"}, 
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR

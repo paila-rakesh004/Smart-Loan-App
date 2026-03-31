@@ -39,7 +39,7 @@ export default function Login() {
         if (data.is_officer) {
           router.push("/dashboard/officer");
         } else {
-          toast.error("You are not authorized as customer");
+          toast.error("You are not authorized as Officer");
         }
       } else {
         if (data.is_customer) {
@@ -64,7 +64,7 @@ export default function Login() {
        
         <div className="flex-[0.5] text-white flex flex-col justify-center px-6 sm:px-10 md:px-16 py-10">
           
-          <h1 className="text-3xl text-red-500 sm:text-4xl md:text-6xl font-bold">
+          <h1 className="text-3xl text-indigo-500 sm:text-4xl md:text-6xl font-bold">
             Smart Loan System
           </h1>
 

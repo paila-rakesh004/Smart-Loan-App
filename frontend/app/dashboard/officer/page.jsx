@@ -17,7 +17,6 @@ const Page = () => {
   
   const handleLogout = () => {
     localStorage.removeItem('token');
-    localStorage.removeItem('username');
     router.push('/login');
   };
   const handleProfile = () => {
@@ -100,6 +99,34 @@ const Page = () => {
     fetchAllLoans();
   }, [router]);
 
+  
+  const renderOfficerAIBadge = (documentKey) => {
+    if (!selectedLoan.ai_verification_data || !selectedLoan.ai_verification_data[documentKey]) {
+      return null; 
+    }
+
+    const aiData = selectedLoan.ai_verification_data[documentKey];
+
+    if (aiData.decision === "AUTO_APPROVE") {
+      return (
+        <div className="mt-2 bg-green-50 border border-green-200 p-2 rounded-lg">
+          <p className="text-xs font-bold text-green-700">✨ AI Pre-Screened: Approved ({aiData.confidence}%)</p>
+        </div>
+      );
+    }
+    
+    if (aiData.decision === "MANUAL_REVIEW") {
+      return (
+        <div className="mt-2 bg-yellow-50 border border-yellow-200 p-2 rounded-lg">
+          <p className="text-xs font-bold text-yellow-700">⚠️ AI Flagged for Review ({aiData.confidence}%)</p>
+          <p className="text-xs text-yellow-600 mt-1 italic">{aiData.reasoning}</p>
+        </div>
+      );
+    }
+
+    return null;
+  };
+
   if(loading){
     return(
       <div className="flex items-center justify-center h-screen bg-gradient-to-r from-[#eef2f7] to-[#d9e4f5]">
@@ -107,6 +134,7 @@ const Page = () => {
     </div>
     )
   }
+  
   return (
     <div className="relative font-serif bg-gradient-to-r from-[#eef2f7] to-[#d9e4f5] min-h-screen pb-10">
  
@@ -186,29 +214,82 @@ const Page = () => {
               {selectedLoan.id_proof && (
                 <div className="bg-red-100 border border-gray-200 p-5 rounded-xl shadow-sm hover:shadow-md transition">
                   <p className="font-bold text-gray-700 mb-2">ID Proof</p>
-                  <a className="text-blue-600 font-normal hover:font-bold hover:text-blue-800 underline" href={selectedLoan.id_proof} target="_blank" rel="noopener noreferrer">View Document</a>
+                  <a className="text-blue-600 font-normal hover:font-bold hover:text-blue-800 underline block mb-2" href={selectedLoan.id_proof} target="_blank" rel="noopener noreferrer">View Document</a>
+                  {renderOfficerAIBadge("idproof")}
                 </div>
               )}
               {selectedLoan.address_proof && (
                 <div className="bg-red-100 border border-gray-200 p-5 rounded-xl shadow-sm hover:shadow-md transition">
                   <p className="font-bold text-gray-700 mb-2">Address Proof</p>
-                  <a className="text-blue-600 font-normal hover:font-bold hover:text-blue-800 underline" href={selectedLoan.address_proof} target="_blank" rel="noopener noreferrer">View Document</a>
+                  <a className="text-blue-600 font-normal hover:font-bold hover:text-blue-800 underline block mb-2" href={selectedLoan.address_proof} target="_blank" rel="noopener noreferrer">View Document</a>
+                  {renderOfficerAIBadge("addressProof")}
                 </div>
               )}
               {selectedLoan.salary_slips && (
                 <div className="bg-red-100 border border-gray-200 p-5 rounded-xl shadow-sm hover:shadow-md transition">
                   <p className="font-bold text-gray-700 mb-2">Salary Slips</p>
-                  <a className="text-blue-600 font-normal hover:font-bold hover:text-blue-800 underline" href={selectedLoan.salary_slips} target="_blank" rel="noopener noreferrer">View Document</a>
+                  <a className="text-blue-600 font-normal hover:font-bold hover:text-blue-800 underline block mb-2" href={selectedLoan.salary_slips} target="_blank" rel="noopener noreferrer">View Document</a>
+                  {renderOfficerAIBadge("salarySlips")}
                 </div>
               )}
               {selectedLoan.emp_id_card && (
                 <div className="bg-red-100 border border-gray-200 p-5 rounded-xl shadow-sm hover:shadow-md transition">
                   <p className="font-bold text-gray-700 mb-2">Employee ID</p>
-                  <a className="text-blue-600 font-normal hover:font-bold hover:text-blue-800 underline" href={selectedLoan.emp_id_card} target="_blank" rel="noopener noreferrer">View Document</a>
+                  <a className="text-blue-600 font-normal hover:font-bold hover:text-blue-800 underline block mb-2" href={selectedLoan.emp_id_card} target="_blank" rel="noopener noreferrer">View Document</a>
+                  {renderOfficerAIBadge("EmpIDcard")}
                 </div>
               )}
             </div>
 
+           {(selectedLoan.income_proof || selectedLoan.proof_of_oldbank || selectedLoan.bank_statements || selectedLoan.fd_receipts || selectedLoan.pending_loan_docs) && (
+              <>
+                <h3 className="mt-10 mb-6 text-gray-800 text-xl sm:text-2xl border-l-4 border-indigo-600 pl-3 font-bold">
+                  Additional Financial Proofs
+                </h3>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                  {selectedLoan.proof_of_oldbank && (
+                    <div className="bg-green-100 border border-indigo-100 p-5 rounded-xl shadow-sm hover:shadow-md transition">
+                      <p className="font-bold text-gray-700 mb-2 flex flex-col">Vintage Proof <span className='text-xs font-normal text-gray-500'>(Previous bank history)</span></p>
+                      <a className="text-indigo-600 font-normal hover:font-bold hover:text-indigo-800 underline block mb-2" href={selectedLoan.proof_of_oldbank} target="_blank" rel="noopener noreferrer">View Document</a>
+                      {renderOfficerAIBadge("proofOfOldbank")}
+                    </div>
+                  )}
+                  {selectedLoan.income_proof && (
+                    <div className="bg-green-100 border border-indigo-100 p-5 rounded-xl shadow-sm hover:shadow-md transition">
+                      <p className="font-bold text-gray-700 mb-2">Income Proof (ITR)</p>
+                      <a className="text-indigo-600 font-normal hover:font-bold hover:text-indigo-800 underline block mb-2" href={selectedLoan.income_proof} target="_blank" rel="noopener noreferrer">View Document</a>
+                      {renderOfficerAIBadge("incomeProof")}
+                    </div>
+                  )}
+                  {selectedLoan.bank_statements && (
+                    <div className="bg-green-100 border border-indigo-100 p-5 rounded-xl shadow-sm hover:shadow-md transition">
+                      <p className="font-bold text-gray-700 mb-2">Bank Statements</p>
+                      <a className="text-indigo-600 font-normal hover:font-bold hover:text-indigo-800 underline block mb-2" href={selectedLoan.bank_statements} target="_blank" rel="noopener noreferrer">View Document</a>
+                    </div>
+                  )}
+                  {selectedLoan.fd_receipts && (
+                    <div className="bg-green-100 border border-indigo-100 p-5 rounded-xl shadow-sm hover:shadow-md transition">
+                      <p className="font-bold text-gray-700 mb-2">FD Receipts</p>
+                      <a className="text-indigo-600 font-normal hover:font-bold hover:text-indigo-800 underline block mb-2" href={selectedLoan.fd_receipts} target="_blank" rel="noopener noreferrer">View Document</a>
+                    </div>
+                  )}
+                  {selectedLoan.pending_loan_docs && (
+                    <div className="bg-green-100 border border-indigo-100 p-5 rounded-xl shadow-sm hover:shadow-md transition">
+                      <p className="font-bold text-gray-700 mb-2">Pending Loan Reports</p>
+                      <a className="text-indigo-600 font-normal hover:font-bold hover:text-indigo-800 underline block mb-2" href={selectedLoan.pending_loan_docs} target="_blank" rel="noopener noreferrer">View Document</a>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+
+            
+            <div className="mt-8 mb-8 bg-gray-50 border border-gray-200 p-4 rounded-xl text-center shadow-sm">
+              <p className="text-xs sm:text-sm text-gray-500">
+                <span className="font-bold text-gray-700">Note:</span> The "AI Pre-Screened" tags are generated by automated LLM analysis. AI can occasionally make mistakes or hallucinate data. Please reverify flagged documents for quality assurance purposes.
+              </p>
+            </div>
            {(selectedLoan.income_proof) && (
               <>
                 <h3 className="mt-10 mb-6 text-gray-800 text-xl sm:text-2xl border-l-4 border-indigo-600 pl-3 font-bold">
@@ -219,13 +300,15 @@ const Page = () => {
                   {selectedLoan.proof_of_oldbank && (
                     <div className="bg-green-100 border border-indigo-100 p-5 rounded-xl shadow-sm hover:shadow-md transition">
                       <p className="font-bold text-gray-700 mb-2 flex flex-col">Vintage Proof <span className='text-xs font-normal text-gray-500'>(Previous bank history)</span></p>
-                      <a className="text-indigo-600 font-normal hover:font-bold hover:text-indigo-800 underline" href={selectedLoan.proof_of_oldbank} target="_blank" rel="noopener noreferrer">View Document</a>
+                      <a className="text-indigo-600 font-normal hover:font-bold hover:text-indigo-800 underline" href={selectedLoan.proof_of_oldbank} target="_blank" rel="noopener noreferrer">View Document</a>.
+                      {renderOfficerAIBadge("proof_of_oldbank")}
                     </div>
                   )}
                   {selectedLoan.income_proof && (
                     <div className="bg-green-100 border border-indigo-100 p-5 rounded-xl shadow-sm hover:shadow-md transition">
                       <p className="font-bold text-gray-700 mb-2">Income Proof (ITR)</p>
                       <a className="text-indigo-600 font-normal hover:font-bold hover:text-indigo-800 underline" href={selectedLoan.income_proof} target="_blank" rel="noopener noreferrer">View Document</a>
+                      {renderOfficerAIBadge("income_proof")}
                     </div>
                   )}
                   {selectedLoan.bank_statements && (
@@ -254,7 +337,7 @@ const Page = () => {
               Nominee Details
             </h4>
             <span className="block m-1 text-red-600 text-lg sm:text-xl font-medium">Nominee Name: {selectedLoan.nominee_name || 'N/A'}</span>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"> 
               {selectedLoan.nominee_id_card && (
                 <div className="bg-blue-50/50 border border-blue-100 p-5 rounded-xl shadow-sm hover:shadow-md transition">
                   <p className="font-bold text-gray-700 mb-2">Nominee ID Proof</p>
@@ -289,7 +372,7 @@ const Page = () => {
             {riskScore && (
               <div className={`mt-6 p-5 rounded-xl text-white shadow-md max-w-full ${
                                         riskScore === 'high' ? 'bg-red-600' : 
-                                        riskScore === 'medium' ? 'bg-orange-500' : 'bg-green-500'
+                                        riskScore === 'medium' ? 'bg-yellow-500' : 'bg-green-500'
                                     }`}>
                 <p className="text-lg"><span className="font-bold">Prediction:</span> <span className='font-bold capitalize ml-2'>{riskScore} Risk</span></p>
               </div>

@@ -58,7 +58,7 @@ const Page = () => {
   if (loading) {
   return (
     <div className="flex items-center justify-center h-screen bg-gradient-to-r from-[#eef2f7] to-[#d9e4f5]">
-      <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+      <div className="w-15 h-15 border-6 border-blue-500 border-b-transparent rounded-full animate-ping"></div>
     </div>
   );
 }

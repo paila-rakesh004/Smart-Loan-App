@@ -38,6 +38,8 @@ class LoanApplication(models.Model):
     nominee_name = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
 
+
+    ai_verification_data = models.JSONField(default=dict, blank=True, null=True)
     def __str__(self):
         return f"{self.user.username} - {self.loan_type} ({self.status})"
 

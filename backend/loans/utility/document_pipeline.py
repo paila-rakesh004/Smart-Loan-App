@@ -3,15 +3,27 @@ from .masker import mask_sensitive_data
 from .llm_analyzer import analyze_document_with_llm
 from thefuzz import fuzz 
 
-def process_loan_document(image_file, user,declared_org="",declared_income="",declared_years=""):
- 
+def process_loan_document(image_file, user,declared_org="",declared_income="",declared_years="",expected_doc_type="Unknown"):
+    
+    
+
     raw_text = extract_text_from_image(image_file)
     if not raw_text:
         return {"status": "failed", "decision": "MANUAL_REVIEW", "reason": "OCR failed."}
 
     safe_text = mask_sensitive_data(raw_text)
     
-    llm_result = analyze_document_with_llm(safe_text)
+    llm_result = analyze_document_with_llm(safe_text,expected_doc_type=expected_doc_type)
+
+    actual_doc_type = llm_result.get('document_type', 'Unknown')
+
+    if expected_doc_type != "Unknown" and actual_doc_type != "Unknown":
+        if expected_doc_type.lower() not in actual_doc_type.lower() and actual_doc_type.lower() not in expected_doc_type.lower():
+            llm_result["confidence_score"] = 0.0
+            llm_result["decision"] = "REJECTED_PLEASE_REUPLOAD"
+            llm_result["ai_reasoning"] = f"Document Mismatch: Expected {expected_doc_type}, but found {actual_doc_type}."
+            
+            return llm_result
     if "error" in llm_result:
         return {"status": "failed", "decision": "MANUAL_REVIEW", "reason": "AI Error"}
 

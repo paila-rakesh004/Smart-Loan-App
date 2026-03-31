@@ -51,7 +51,7 @@ export default function Register() {
        
         <div className="flex-[0.5] text-white flex flex-col justify-center px-6 sm:px-10 md:px-16 py-10">
           
-          <h1 className="text-3xl text-red-500 sm:text-4xl md:text-5xl font-bold">
+          <h1 className="text-3xl text-indigo-500 sm:text-4xl md:text-5xl font-bold">
             Join Smart Loan
           </h1>
 
@@ -71,7 +71,7 @@ export default function Register() {
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-3">
 
-              <h2 className="text-center text-xl sm:text-2xl font-semibold mb-2 text-white">
+              <h2 className="text-center text-xl sm:text-2xl font-semibold mb-2 text-blue-500">
                 Customer Register
               </h2>
 

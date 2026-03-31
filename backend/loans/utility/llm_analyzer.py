@@ -6,23 +6,28 @@ from google.genai import types
 
 client = genai.Client(api_key=settings.GEMINI_API_KEY)
 
-def analyze_document_with_llm(masked_ocr_text):
+def analyze_document_with_llm(masked_ocr_text,expected_doc_type="Unknown"):
    
     if not masked_ocr_text:
         return {"error": "No text provided to LLM"}
+
 
     prompt = f"""
     You are an expert AI compliance officer for a bank. 
     Analyze the following OCR text. The text has been masked for privacy.
     
+    EXPECTED DOCUMENT TYPE: {expected_doc_type}
+    
     CRITICAL RULES:
-    1. The current year is 2026. Do NOT flag 2026 dates as future.
-    2. If Salary Slip: Count distinct months. Extract Employer name and Net Monthly Income.
-    3. If Employee ID: Look for expiration date. Extract Employer Name and Employee Number.
-    4. If ITR (Income Tax Return): Extract the Assessment Year (e.g., 2025) and the Gross Total Income (numeric only).
-    5. If Vintage Proof (Bank Statement/Welcome Letter): Extract the Account Opening Year or the oldest transaction year shown (YYYY format).
-    6. While verifying Aadhar card, consider only address, aadhar number and whether it is faked or original. ignore the date of issue.
-    7. If you feel any document is inappropriate or faked document, then flag it.
+    1. VALIDATE DOCUMENT TYPE FIRST: You MUST compare the document you are reading against the EXPECTED DOCUMENT TYPE. If they do NOT match (e.g., expected Aadhaar Card but found a Salary Slip), you MUST return a confidence_score of 0.0, set ai_reasoning to "Document Mismatch", and list exactly "Document Mismatch: Expected {expected_doc_type}, but found [Insert Actual Type]" in the anomalies array.
+    2. The current year is 2026. Do NOT flag 2026 dates as future.
+    3. If Salary Slip: Count distinct months. Extract Employer name and Net Monthly Income.
+    4. If Employee ID: Look for expiration date. Extract Employer Name and Employee Number.
+    5. If ITR (Income Tax Return): Extract the Assessment Year (e.g., 2025) and the Gross Total Income (numeric only).
+    6. If Vintage Proof (Bank Statement/Welcome Letter): Extract the Account Opening Year or the oldest transaction year shown (YYYY format).
+    7. While verifying Aadhar card, consider only address, aadhar number and whether it is faked or original. ignore the date of issue.
+    8. If you feel any document is inappropriate or faked document, then flag it.
+    
     You MUST return a strict JSON object with this exact structure:
     {{
         "document_type": "Aadhaar Card, PAN Card, Salary Slip, Employee ID, ITR, Vintage Proof, or Unknown",

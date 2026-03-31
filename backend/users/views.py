@@ -125,8 +125,7 @@ User = get_user_model()
 
 
 class SendOTPView(APIView):
-    permission_classes = [] 
-
+   
     def post(self, request):
         username = request.data.get('username')
         
@@ -160,7 +159,6 @@ class SendOTPView(APIView):
 
 
 class VerifyOTPView(APIView):
-    permission_classes = []
 
     def post(self, request):
         username = request.data.get('username')

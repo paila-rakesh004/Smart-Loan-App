@@ -92,7 +92,7 @@ REST_FRAMEWORK = {
 MEDIA_URL = '/documents/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'documents')
 
-GEMINI_API_KEY = "AIzaSyCdVe3QOiMg98nnpelGPNJuoYjQi2pOPcA"
+GEMINI_API_KEY = "AIzaSyDLhqc_VL1HdMIkn0M2_KoK-qnLLyMk63c"
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'

@@ -67,8 +67,24 @@ export default function ApplyLoan() {
     toast.success("Legal identity confirmed & locked for AI verification.");
   };
 
-  const verifyDocumentWithAI = async (fieldName, file) => {
+  const verifyDocumentWithAI = async (fieldName, file, inputElement) => {
     setAiStatuses((prev) => ({ ...prev, [fieldName]: { loading: true } }));
+
+    const documentTypeMap = {
+      idproof: "PAN Card",
+      addressProof: "Aadhaar Card",
+      salarySlips: "Salary Slip",
+      EmpIDcard: "Employee ID",
+      incomeProof: "ITR",
+      proofOfOldbank: "Vintage Proof",
+      bankStatements: "Bank Statement",
+      fdReceipts: "FD Receipt",
+      pendingLoanDocs: "Pending Loan Report"
+    };
+
+    const expectedDocType = documentTypeMap[fieldName] || "Unknown";
+
+
 
     const formData = new FormData();
     formData.append("document", file);
@@ -78,7 +94,7 @@ export default function ApplyLoan() {
     formData.append("organization_name", form.organizationName);
     formData.append("monthly_income", form.monthlyIncome);
     formData.append("years_at_previous_bank", form.yearsAtPreviousBank);
-
+    formData.append("expected_doc_type", expectedDocType);
     try {
       const token = localStorage.getItem("token");
       const res = await API.post("loans/verify-document/", formData, {
@@ -104,6 +120,7 @@ export default function ApplyLoan() {
       if (decision === "REJECTED_PLEASE_REUPLOAD") {
         toast.error(`Document Rejected: ${ai_reasoning}`);
         setForm((prev) => ({ ...prev, [fieldName]: null }));
+        if (inputElement) inputElement.value = "";
       }
     } catch (error) {
       setAiStatuses((prev) => ({
@@ -123,7 +140,7 @@ export default function ApplyLoan() {
     
     if (!file) return;
 
-    const aiWorthyDocs = ["idproof", "addressProof", "salarySlips", "EmpIDcard", "incomeProof", "proofOfOldbank"];
+    const aiWorthyDocs = ["idproof", "addressProof", "salarySlips", "EmpIDcard", "incomeProof", "proofOfOldbank","bankStatements","fdReceipts","pendingLoanDocs"];
 
     if (aiWorthyDocs.includes(fieldName)) {
       if (!form.firstName || !form.lastName) {
@@ -150,7 +167,7 @@ export default function ApplyLoan() {
     setForm({ ...form, [fieldName]: file });
 
     if (aiWorthyDocs.includes(fieldName)) {
-      verifyDocumentWithAI(fieldName, file);
+      verifyDocumentWithAI(fieldName, file, e.target);
     }
   };
 
@@ -201,7 +218,7 @@ export default function ApplyLoan() {
       if (form.fdReceipts) dataToSend.append("fd_receipts", form.fdReceipts);
       if (form.pendingLoanDocs) dataToSend.append("pending_loan_docs", form.pendingLoanDocs);
     }
-    
+    dataToSend.append("ai_statuses", JSON.stringify(aiStatuses));
     setClick(true);
     try {
       const endpoint = isNewUser ? "loans/apply-new-user/" : "loans/apply/";
@@ -257,7 +274,7 @@ export default function ApplyLoan() {
   if (loadingStatus) {
     return (
       <div className="flex w-full min-h-screen justify-center items-center bg-gradient-to-r from-[#eef2f7] to-[#d9e4f5]">
-        <div className="w-15 h-15 border-6 border-gray-300 border-t-indigo-700 rounded-full animate-spin"></div>
+        <div className="w-15 h-15 border-6 border-indigo-500 border-b-transparent rounded-full animate-ping"></div>
       </div>
     );
   }
