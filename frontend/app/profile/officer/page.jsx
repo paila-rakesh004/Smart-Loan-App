@@ -11,40 +11,11 @@ const OfficerProfile = () => {
   const [profile, setProfile] = useState({ username: '', email: '' });
   const [newUsername, setNewUsername] = useState('');
   const [passwords, setPasswords] = useState({ old_password: '', new_password: '' });
-  
+  const [loading,setLoading] = useState(true)
+
   const [stats, setStats] = useState({ 
     gold: 0, home: 0, personal: 0, education: 0, pending: 0, approved: 0, rejected: 0 
   });
-
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      router.push('/login');
-      return;
-    }
-
-    const fetchProfileData = async () => {
-      try {
-        const profileRes = await API.get('users/profile/', {
-          headers: { Authorization: `Token ${token}` },
-        });
-        setProfile(profileRes.data);
-        setNewUsername(profileRes.data.username);
-
-       
-        const statsRes = await API.get('loans/officer/stats/', {
-          headers: { Authorization: `Token ${token}` },
-        });
-        setStats(statsRes.data);
-
-      } catch (error) {
-        console.error("Failed to load profile data", error);
-        toast.error("Could not load profile details.");
-      }
-    };
-
-    fetchProfileData();
-  }, [router]);
 
   const handleUpdateUsername = async (e) => {
     e.preventDefault();
@@ -76,75 +47,120 @@ const OfficerProfile = () => {
       toast.error(error.response?.data?.error || "Failed to change password.");
     }
   };
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      router.push('/login');
+      return;
+    }
 
+    const fetchProfileData = async () => {
+      try {
+        const profileRes = await API.get('users/profile/', {
+          headers: { Authorization: `Token ${token}` },
+        });
+        setProfile(profileRes.data);
+        setNewUsername(profileRes.data.username);
+
+        const statsRes = await API.get('loans/officer/stats/', {
+          headers: { Authorization: `Token ${token}` },
+        });
+        setStats(statsRes.data);
+
+      } catch (error) {
+        console.error("Failed to load profile data", error);
+        toast.error("Could not load profile details.");
+      }
+      finally{
+        setLoading(false)
+      }
+    };
+
+    fetchProfileData();
+  }, [router]);
   const avatarInitial = profile.username ? profile.username.charAt(0).toUpperCase() : "O";
+  if(loading){
+    return(
+      <div className='flex justify-center items-center h-screen bg-gradient-to-r from-[#eef2f7] to-[#d9e4f5]'>
+        <div className='animate-spin rounded-full border-6 border-blue-500 border-t-transparent border-b-transparent border-l-transparent h-15 w-15'></div>
+      </div>
+    )
+  }
 
   return (
-    <div className="min-h-screen font-sans bg-gradient-to-r from-[#eef2f7] to-[#d9e4f5] p-10">
+    <div className="min-h-screen font-sans bg-gradient-to-r from-[#eef2f7] to-[#d9e4f5] p-4 sm:p-6 lg:p-10">
       
-      <div className="max-w-6xl mx-auto mb-8 flex justify-between items-center">
+    
+      <div className="max-w-6xl mx-auto mb-8 flex flex-col md:flex-row justify-between items-center gap-4">
+        
+        {/* Title is forced to the top on mobile using order-1, flips to right on desktop */}
+        <h1 className="text-2xl sm:text-3xl font-bold text-indigo-900 order-1 md:order-2 text-center md:text-right">
+          Officer Profile
+        </h1>
+        
+        
         <button
           onClick={() => router.push('/dashboard/officer')}
-          className="px-6 py-2 bg-white text-blue-900 font-bold rounded-lg shadow-md cursor-pointer hover:-translate-y-1 transition transform"
+          className="px-6 py-2 bg-white text-blue-900 font-bold rounded-lg shadow-md cursor-pointer hover:-translate-y-1 transition transform order-2 md:order-1 w-full md:w-auto text-center"
         >
           ← Back to Dashboard
         </button>
-        <h1 className="text-3xl font-bold text-indigo-900">Officer Profile</h1>
       </div>
 
-      <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
+     
+      <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
         
-       
+      
         <div className="col-span-1 space-y-6">
           
           <div className="bg-white rounded-3xl shadow-xl p-6 flex flex-col items-center text-center">
-            <div className="w-28 h-28 rounded-full bg-gradient-to-br from-blue-700 to-indigo-800 flex items-center justify-center text-white text-5xl font-bold shadow-lg mb-4">
+            <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-gradient-to-br from-blue-700 to-indigo-800 flex items-center justify-center text-white text-4xl sm:text-5xl font-bold shadow-lg mb-4">
               {avatarInitial}
             </div>
-            <h2 className="text-2xl font-bold text-gray-800">{profile.username}</h2>
-            <p className="text-gray-500 mt-1">{profile.email || "Officer Account"}</p>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-800">{profile.username}</h2>
+            <p className="text-gray-500 mt-1 text-sm sm:text-base">{profile.email || "Officer Account"}</p>
           </div>
 
           <div className="bg-white rounded-3xl shadow-xl p-6">
-            <h3 className="text-xl font-bold text-gray-800 border-l-4 border-blue-600 pl-3 mb-6">
+            <h3 className="text-lg sm:text-xl font-bold text-gray-800 border-l-4 border-blue-600 pl-3 mb-6">
               Loans Stats
             </h3>
             
             
-            <div className="grid grid-cols-2 gap-3 mb-6">
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-2 gap-3 mb-6">
               <div className="flex flex-col p-3 bg-yellow-50 rounded-xl border border-yellow-200 text-center">
-                <span className="font-semibold text-gray-600 text-sm">Gold</span>
-                <span className="text-xl font-bold text-yellow-600">{stats.gold}</span>
+                <span className="font-semibold text-gray-600 text-xs sm:text-sm">Gold</span>
+                <span className="text-lg sm:text-xl font-bold text-yellow-600">{stats.gold}</span>
               </div>
               <div className="flex flex-col p-3 bg-indigo-50 rounded-xl border border-indigo-200 text-center">
-                <span className="font-semibold text-gray-600 text-sm">Home</span>
-                <span className="text-xl font-bold text-indigo-600">{stats.home}</span>
+                <span className="font-semibold text-gray-600 text-xs sm:text-sm">Home</span>
+                <span className="text-lg sm:text-xl font-bold text-indigo-600">{stats.home}</span>
               </div>
               <div className="flex flex-col p-3 bg-pink-50 rounded-xl border border-pink-200 text-center">
-                <span className="font-semibold text-gray-600 text-sm">Personal</span>
-                <span className="text-xl font-bold text-pink-600">{stats.personal}</span>
+                <span className="font-semibold text-gray-600 text-xs sm:text-sm">Personal</span>
+                <span className="text-lg sm:text-xl font-bold text-pink-600">{stats.personal}</span>
               </div>
               <div className="flex flex-col p-3 bg-blue-50 rounded-xl border border-blue-200 text-center">
-                <span className="font-semibold text-gray-600 text-sm">Education</span>
-                <span className="text-xl font-bold text-blue-600">{stats.education}</span>
+                <span className="font-semibold text-gray-600 text-xs sm:text-sm">Education</span>
+                <span className="text-lg sm:text-xl font-bold text-blue-600">{stats.education}</span>
               </div>
             </div>
 
-            <h3 className="text-xl font-bold text-gray-800 border-l-4 border-indigo-600 pl-3 mb-4 mt-2">
+            <h3 className="text-lg sm:text-xl font-bold text-gray-800 border-l-4 border-indigo-600 pl-3 mb-4 mt-2">
               My Actions
             </h3>
 
             <div className="space-y-3">
               <div className="flex justify-between items-center p-3 bg-orange-100 rounded-xl border border-orange-200">
-                <span className="font-semibold text-gray-700 text-sm">Pending Loans</span>
+                <span className="font-semibold text-gray-700 text-sm">Pending</span>
                 <span className="text-lg font-bold text-orange-600">{stats.pending}</span>
               </div>
               <div className="flex justify-between items-center p-3 bg-green-100 rounded-xl border border-green-200">
-                <span className="font-semibold text-gray-700 text-sm">Approved Loans</span>
+                <span className="font-semibold text-gray-700 text-sm">Approved</span>
                 <span className="text-lg font-bold text-green-600">{stats.approved}</span>
               </div>
               <div className="flex justify-between items-center p-3 bg-red-100 rounded-xl border border-red-200">
-                <span className="font-semibold text-gray-700 text-sm">Rejected Loans</span>
+                <span className="font-semibold text-gray-700 text-sm">Rejected</span>
                 <span className="text-lg font-bold text-red-600">{stats.rejected}</span>
               </div>
             </div>
@@ -152,11 +168,11 @@ const OfficerProfile = () => {
           </div>
         </div>
 
-        
-        <div className="col-span-2 space-y-6">
+      
+        <div className="col-span-1 lg:col-span-2 space-y-6">
           
-          <div className="bg-white rounded-3xl shadow-xl p-6">
-            <h3 className="text-2xl font-bold text-gray-800 border-l-4 border-indigo-500 pl-3 mb-4">
+          <div className="bg-white rounded-3xl shadow-xl p-6 sm:p-8">
+            <h3 className="text-xl sm:text-2xl font-bold text-gray-800 border-l-4 border-indigo-500 pl-3 mb-6">
               Account Details
             </h3>
             <form onSubmit={handleUpdateUsername} className="space-y-4">
@@ -165,30 +181,30 @@ const OfficerProfile = () => {
                   type="text"
                   value={newUsername}
                   onChange={(e) => setNewUsername(e.target.value)}
-                  className="w-full border border-gray-300 rounded-xl p-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                  className="w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition"
                   required
                 />
               <button
                 type="submit"
-                className="bg-indigo-600 text-white px-6 py-3 cursor-pointer rounded-xl font-bold hover:bg-indigo-800 transition transform hover:-translate-y-1 w-full md:w-auto"
+                className="bg-indigo-600 text-white px-6 py-3 cursor-pointer rounded-xl font-bold hover:bg-indigo-800 transition transform hover:-translate-y-1 w-full sm:w-auto"
               >
                 Save Changes
               </button>
             </form>
           </div>
 
-          <div className="bg-white rounded-3xl shadow-xl p-6">
-            <h3 className="text-2xl font-bold text-gray-800 border-l-4 border-red-500 pl-3 mb-4">
+          <div className="bg-white rounded-3xl shadow-xl p-6 sm:p-8">
+            <h3 className="text-xl sm:text-2xl font-bold text-gray-800 border-l-4 border-red-500 pl-3 mb-6">
               Security
             </h3>
             <form onSubmit={handleChangePassword} className="space-y-6">
               <div>
                 <label className="block text-gray-700 font-semibold mb-2">Current Password</label>
                 <input
-                  type={showpassword?"text":"password"}
+                  type={showpassword ? "text" : "password"}
                   value={passwords.old_password}
                   onChange={(e) => setPasswords({ ...passwords, old_password: e.target.value })}
-                  className="w-full border border-gray-300 rounded-xl p-2 focus:outline-none focus:ring-2 focus:ring-red-400"
+                  className="w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-red-400 transition"
                   required
                 />
               </div>
@@ -198,19 +214,24 @@ const OfficerProfile = () => {
                   type={showpassword ? "text" : "password"}
                   value={passwords.new_password}
                   onChange={(e) => setPasswords({ ...passwords, new_password: e.target.value })}
-                  className="w-full border border-gray-300 rounded-xl p-2 pr-14 focus:outline-none focus:ring-2 focus:ring-red-400"
+                  className="w-full border border-gray-300 rounded-xl p-3 pr-14 focus:outline-none focus:ring-2 focus:ring-red-400 transition"
                   required
                 />
-                <input
-                type="checkbox"
-                name="hide"
-                onClick={() => {setShowpassword(!showpassword)}}
-                className="w-3 h-3 accent-red-400 cursor-pointer mt-2"
-                /> <label className='text-xs'>{showpassword ? "Hide password" : "Show password" }</label>
+                <div className="mt-3 flex items-center">
+                  <input
+                    type="checkbox"
+                    id="showPasswordToggle"
+                    onClick={() => {setShowpassword(!showpassword)}}
+                    className="w-4 h-4 accent-red-500 cursor-pointer"
+                  /> 
+                  <label htmlFor="showPasswordToggle" className="text-sm text-gray-600 ml-2 cursor-pointer select-none">
+                    {showpassword ? "Hide password" : "Show password" }
+                  </label>
+                </div>
               </div>
               <button
                 type="submit"
-                className="bg-red-500 text-white px-8 py-3 rounded-xl font-bold cursor-pointer hover:bg-red-700 transition transform hover:-translate-y-1 w-full md:w-auto"
+                className="bg-red-500 text-white px-8 py-3 rounded-xl font-bold cursor-pointer hover:bg-red-700 transition transform hover:-translate-y-1 w-full sm:w-auto mt-2"
               >
                 Update Password
               </button>

@@ -8,11 +8,11 @@ from .serializers import CustomerRegisterSerializer, LoginSerializer, UserProfil
 from django.db import connection
 from django.contrib.auth import get_user_model
 from django.db import connection 
-import random
 from django.utils import timezone
 from datetime import timedelta
 from django.core.mail import send_mail
 from django.conf import settings
+import random
 
 
 
@@ -37,7 +37,7 @@ class LoginView(APIView):
             password = serializer.validated_data['password']
             user = authenticate(username=username, password=password)
             if user:
-                token, created = Token.objects.get_or_create(user=user)
+                token,create = Token.objects.get_or_create(user=user)
                 return Response({
                     "token": token.key,
                     "is_customer": user.is_customer,
@@ -80,8 +80,11 @@ class UpdateProfileView(APIView):
         new_username = request.data.get('username')
         old_username = user.username 
 
+        email = request.data.get('email')
+        phone_number = request.data.get('phone_number')
         if not new_username:
             return Response({"error": "Username is required."}, status=status.HTTP_400_BAD_REQUEST)
+
 
        
         if new_username != old_username:
@@ -93,9 +96,13 @@ class UpdateProfileView(APIView):
                 """, [new_username, old_username])
             
             user.username = new_username
-            user.save()
+        if email:
+            user.email = email
+        if phone_number:
+            user.phone_number = phone_number
         
-        return Response({"message": "Profile updated successfully!", "username": user.username}, status=status.HTTP_200_OK)
+        user.save()
+        return Response({"message": "Profile updated successfully!", "username": user.username,"email" : user.email, "phone_number" : user.phone_number}, status=status.HTTP_200_OK)
 
 class ChangePasswordView(APIView):
     permission_classes = [permissions.IsAuthenticated]

@@ -2,7 +2,6 @@
 import { useState } from "react";
 import API from "@/lib/api";
 import { useRouter } from "next/navigation";
-// import Link from "next/link";
 import { toast } from "react-toastify";
 
 export default function Login() {
@@ -10,25 +9,25 @@ export default function Login() {
 
   const [role, setRole] = useState("customer");
   const [loading, setLoading] = useState(false);
-  
-  const [showpass,setShowpass] = useState(false);
+  const [showpass, setShowpass] = useState(false);
+
   const [formData, setFormData] = useState({
     username: "",
     password: ""
   });
 
   const handleChange = (e) => {
-    // setErrorMsg("");
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
+
   const handleHome = () => {
     router.push('/');
   }
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    // setErrorMsg("");
-  
+
     try {
       const res = await API.post("users/login/", formData);
       const data = res.data;
@@ -40,20 +39,17 @@ export default function Login() {
         if (data.is_officer) {
           router.push("/dashboard/officer");
         } else {
-          // setErrorMsg("You are not authorized as an Officer.");
           toast.error("You are not authorized as customer");
         }
       } else {
         if (data.is_customer) {
           router.push("/dashboard/customer");
         } else {
-          // setErrorMsg("You are not authorized as a Customer.");
           toast.error("You are not authorized as customer");
         }
       }
 
     } catch (error) {
-      // setErrorMsg("Invalid username or password");
       toast.error("Invalid Credentials");
     } finally {
       setLoading(false);
@@ -61,109 +57,143 @@ export default function Login() {
   };
 
   return (
-    <div className="flex h-screen w-full font-serif">
+    <div className="min-h-screen w-full bg-[url('/bgimg.png')] bg-cover bg-center font-serif">
 
-      <div
-        className="flex-1 bg-cover bg-center relative"
-        style={{ backgroundImage: "url('/bank.webp')" }}
-      >
-        <div className="bg-black/50 h-full text-white flex flex-col justify-center items-center gap-3">
-          <h1 className="text-4xl font-bold">Smart Loan System</h1>
-          <p className="text-lg">Fast • Secure • Reliable</p>
+      <div className="min-h-screen w-full bg-black/70 flex flex-col md:flex-row">
+
+       
+        <div className="flex-[0.5] text-white flex flex-col justify-center px-6 sm:px-10 md:px-16 py-10">
+          
+          <h1 className="text-3xl text-red-500 sm:text-4xl md:text-6xl font-bold">
+            Smart Loan System
+          </h1>
+
+          <p className="mt-4 text-base sm:text-lg md:text-2xl text-white max-w-xl">
+            A smarter way to manage your loan applications with speed, security, and simplicity. 
+          </p>
+
+
+        </div>
+
+       
+        <div className="flex-[0.5] flex justify-center items-center px-6 py-10">
+
+          <div className="w-full max-w-sm backdrop-blur-lg bg-white/20 border border-white/30 rounded-2xl shadow-xl p-5 sm:p-6">
+
+            
+            <div className="flex flex-col sm:flex-row gap-2 sm:justify-between mb-4">
+              <button
+                className={`px-4 py-2 rounded-md font-bold transition transform ${
+                  role === "customer"
+                    ? "bg-indigo-500 text-white lg:hover:translate-x-2"
+                    : "bg-indigo-100 hover:bg-indigo-500 hover:text-white hover:cursor-pointer lg:hover:translate-x-2"
+                }`}
+                onClick={() => setRole("customer")}
+              >
+                Customer Login
+              </button>
+
+              <button
+                className={`px-4 py-2 rounded-md font-bold transition transform ${
+                  role === "officer"
+                    ? "bg-indigo-500 text-white lg:hover:-translate-x-2"
+                    : "bg-indigo-100 hover:bg-indigo-500 hover:text-white hover:cursor-pointer lg:hover:-translate-x-2"
+                }`}
+                onClick={() => setRole("officer")}
+              >
+                Officer Login
+              </button>
+            </div>
+
+            
+            <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+
+              <label className="text-sm font-medium text-white">
+                {role === "customer" ? "Username" : "Bank Officer ID"}
+              </label>
+
+              <input
+                className="p-2 border border-white/40 bg-white/30 rounded-xl outline-none text-white placeholder-white/70 focus:border-indigo-400 w-full"
+                name="username"
+                placeholder={role === "customer" ? "Enter Username" : "Enter Officer ID"}
+                onChange={handleChange}
+                required
+                disabled={loading}
+              />
+
+              <label className="text-sm font-medium text-white">Password</label>
+
+              <input
+                className="p-2 border border-white/40 bg-white/30 rounded-xl outline-none text-white placeholder-white/70 focus:border-indigo-400 w-full"
+                name="password"
+                type={showpass ? "text" : "password"}
+                placeholder="Enter Password"
+                onChange={handleChange}
+                required
+                disabled={loading}
+              />
+
+              
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-sm text-white">
+
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    onClick={() => setShowpass(!showpass)}
+                    className="w-4 h-4 accent-indigo-500 cursor-pointer"
+                  />
+                  <label>
+                    {showpass ? "Hide password" : "Show password"}
+                  </label>
+                </div>
+
+                <button
+                  type="button"
+                  className="text-indigo-200 hover:underline cursor-pointer"
+                  onClick={() => router.push('/forgot-password')}
+                >
+                  Forgot Password?
+                </button>
+
+              </div>
+
+              
+              <button
+                type="submit"
+                disabled={loading}
+                className="mt-3 py-2 rounded-md cursor-pointer bg-indigo-500 text-white text-base sm:text-lg hover:bg-indigo-700 transition transform hover:-translate-y-1"
+              >
+                {loading
+                  ? "Signing in..."
+                  : `Login as ${role === "customer" ? "Customer" : "Officer"}`}
+              </button>
+
+              
+              <button
+                type="button"
+                className="text-center cursor-pointer text-white mt-2 bg-blue-500 py-2 rounded-md hover:bg-blue-700 transition transform hover:-translate-y-1"
+                onClick={handleHome}
+              >
+                Home
+              </button>
+
+            </form>
+          </div>
         </div>
       </div>
 
       
-      <div className="flex-1 bg-black flex justify-center items-center">
-
-        <div className="w-[350px] bg-white rounded-xl shadow-lg p-5">
-
-        
-          <div className="flex justify-around mb-4">
-            <button
-              className="px-4 py-2 rounded-md bg-indigo-100 cursor-pointer font-bold hover:bg-indigo-500 hover:text-white transition hover:-translate-x-2"
-              onClick={() => setRole("customer")}
-            >
-              Customer Login
-            </button>
-
-            <button
-              className="px-4 py-2 rounded-md bg-indigo-100 cursor-pointer font-bold hover:bg-indigo-500 hover:text-white transition hover:translate-x-2"
-              onClick={() => setRole("officer")}
-            >
-              Officer Login
-            </button>
-          </div>
-
-         
-          <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-
-            <label>
-              {role === "customer" ? "Username" : "Bank Officer ID"}
-            </label>
-
-            <input
-              className="p-2 border border-gray-300 rounded-xl focus:border-indigo-500 outline-none"
-              name="username"
-              placeholder={role === "customer" ? "Enter Username" : "Enter Officer ID"}
-              onChange={handleChange}
-              required
-              disabled={loading}
-            />
-
-            <label>Password</label>
-
-            <input
-              className="p-2 border border-gray-300 rounded-xl focus:border-indigo-500 outline-none"
-              name="password"
-              type={showpass ? "text" : "password"}
-              placeholder="Enter Password"
-              onChange={handleChange}
-              required
-              disabled={loading}
-            />
-            <div className="flex items-center gap-2">
-             <input
-                type = "checkbox"
-                name = "hide"
-                onClick={() => {setShowpass(!showpass)}}
-                className="w-3 h-3 accent-red-400 cursor-pointer"
-                /> <label className='text-sm'>{showpass ? "Hide password" : "Show password" }</label>
-
-              <button type="button" className="ml-8 text-sm text-indigo-700 hover:underline cursor-pointer" onClick={() => router.push('/forgot-password')}>Forgot Password?</button>  
-              </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="mt-3 p-2 rounded-md bg-indigo-500 text-white text-lg hover:bg-red-500 transition hover:-translate-y-1"
-            >
-              {loading
-                ? "Signing in..."
-                : `Login as ${role === "customer" ? "Customer" : "Officer"}`}
-            </button>
-
-            <button type = 'button' className="text-center text-white mt-3 bg-blue-500 py-1 rounded-md cursor-pointer hover:-translate-y-1 hover:bg-red-400" onClick={handleHome}>
-                Home
-            </button>
-
-          </form>
-        </div>
-      </div>
-
-     
       {loading && (
         <div className="fixed inset-0 bg-black/40 flex flex-col justify-center items-center z-50">
 
-          <div className="w-16 h-16 border-[6px] border-gray-200 border-t-indigo-600 rounded-full animate-spin"></div>
+          <div className="w-14 h-14 border-4 border-gray-200 border-t-indigo-600 rounded-full animate-spin"></div>
 
-          <p className="text-white text-lg font-medium mt-4">
+          <p className="text-white text-base sm:text-lg font-medium mt-4">
             Signing you in...
           </p>
 
         </div>
       )}
-
     </div>
   );
 }

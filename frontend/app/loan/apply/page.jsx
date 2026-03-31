@@ -4,6 +4,10 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import API from "@/lib/api";
 import { toast } from "react-toastify";
+import { UserCircleIcon } from '@heroicons/react/24/solid';
+import { ArrowRightOnRectangleIcon } from '@heroicons/react/24/solid';
+import { ArrowLeftIcon } from '@heroicons/react/24/solid';
+
 
 export default function ApplyLoan() {
   const router = useRouter();
@@ -143,10 +147,8 @@ export default function ApplyLoan() {
       return;
     }
 
-    
     setForm({ ...form, [fieldName]: file });
 
-    
     if (aiWorthyDocs.includes(fieldName)) {
       verifyDocumentWithAI(fieldName, file);
     }
@@ -232,7 +234,6 @@ export default function ApplyLoan() {
         
         setIsNewUser(res.data.is_new_user);
 
-        
         if (res.data.first_name || res.data.last_name) {
           setForm((prev) => ({
             ...prev,
@@ -256,7 +257,7 @@ export default function ApplyLoan() {
   if (loadingStatus) {
     return (
       <div className="flex w-full min-h-screen justify-center items-center bg-gradient-to-r from-[#eef2f7] to-[#d9e4f5]">
-        <h2 className="text-2xl font-bold text-blue-900 animate-pulse">Loading Application Form...</h2>
+        <div className="w-15 h-15 border-6 border-gray-300 border-t-indigo-700 rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -279,7 +280,7 @@ export default function ApplyLoan() {
       return (
         <div className="mt-1 p-2 bg-yellow-50 border border-yellow-200 rounded-md">
           <p className="text-sm font-semibold text-yellow-700">⚠️ Flagged for manual review</p>
-          <p className="text-xs text-yellow-600 mt-1 italic">AI Notes: {status.reasoning}</p>
+          <p className="text-xs text-yellow-600 mt-1 ">AI Notes: {status.reasoning}</p>
         </div>
       );
     }
@@ -287,7 +288,7 @@ export default function ApplyLoan() {
       return (
         <div className="mt-1 p-2 bg-red-50 border border-red-200 rounded-md">
           <p className="text-sm font-bold text-red-600">❌ Invalid Document. Please reupload.</p>
-          <p className="text-xs text-red-500 mt-1 italic">Reason: {status.reasoning}</p>
+          <p className="text-xs text-red-500 mt-1 ">Reason: {status.reasoning}</p>
         </div>
       );
     }
@@ -305,107 +306,118 @@ export default function ApplyLoan() {
   return (
     <div className="font-serif bg-gradient-to-r from-[#eef2f7] to-[#d9e4f5] min-h-screen pb-10">
       
-      {/* HEADER */}
-      <div className="fixed w-full h-24 bg-gradient-to-r from-[#eef2f7] to-[#d9e4f5] z-50 flex items-center justify-center">
-        <div className="w-full bg-white shadow-xl rounded-xl p-6 flex justify-between items-center">
-          <div className="flex-1">
-             <h1 className="text-3xl font-semibold text-blue-900 text-center ml-40 pl-50">Loan Application</h1>
+      
+      <div className="fixed top-0 left-0 w-full bg-gradient-to-r from-[#eef2f7] to-[#d9e4f5] z-[60] py-4 px-4 sm:px-8 shadow-sm">
+        <div className="max-w-7xl mx-auto bg-white shadow-xl rounded-xl p-4 sm:p-6 flex flex-col md:flex-row justify-between items-center gap-4">
+          <div className="flex-1 flex justify-center md:justify-start">
+             <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold text-blue-900 text-center">Loan Application</h1>
           </div>
-          <div className="flex gap-4">
-            <button type="button" onClick={handleProfile} className="bg-indigo-500 cursor-pointer text-white px-6 py-2 rounded-lg font-bold hover:bg-indigo-700 transition transform hover:-translate-y-1">Profile</button>
-            <button type="button" onClick={() => router.push("/dashboard/customer")} className="bg-indigo-500 cursor-pointer text-white px-6 py-2 rounded-lg font-bold hover:bg-red-500 transition transform hover:-translate-y-1">Back</button>
-            <button type="button" onClick={handleLogout} className="bg-red-500 cursor-pointer text-white px-6 py-2 rounded-lg font-bold hover:bg-red-700 transition transform hover:-translate-y-1 shadow-md">Logout</button>
+          <div className="flex flex-wrap justify-center gap-2 sm:gap-4">
+            <button type="button" onClick={() => router.push("/dashboard/customer")} 
+            className="cursor-pointer mr-45 md:m-0 transition transform hover:-translate-y-1">
+              <ArrowLeftIcon className="w-7 h-7 text-gray-700" />
+            </button>
+            <button type="button" onClick={handleProfile} 
+            className="cursor-pointer rounded-full transition transform hover:-translate-y-1 ">
+              <UserCircleIcon className="w-10 h-10 text-blue-700" />
+            </button>
+            
+            <button type="button" onClick={handleLogout} 
+            className="cursor-pointer font-bold transition transform hover:-translate-y-1">
+                <ArrowRightOnRectangleIcon className="w-9 h-9 text-red-600" />
+            </button>
           </div>
         </div>
       </div>
-      <div className="h-16 mb-10"></div>
 
-      <div className="w-full max-w-5xl mx-auto px-10 font-sans">
-        <div className="bg-white shadow-lg rounded-[2rem] p-10">
+      
+      <div className="h-44 md:h-32"></div>
+
+      <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 font-sans">
+        <div className="bg-white shadow-lg rounded-2xl sm:rounded-[2rem] p-6 sm:p-10">
           
-          <div className="mb-10 text-center">
-             <h2 className="text-3xl font-bold text-gray-800">Submit Your Request</h2>
-             <p className="text-gray-500 mt-2 italic">Please fill in all the details accurately for faster processing.</p>
+          <div className="mb-8 sm:mb-10 text-center">
+             <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">Submit Your Request</h2>
+             <p className="text-gray-500 mt-2 text-sm sm:text-base ">Please fill in all the details accurately for faster processing.</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="flex flex-col gap-8">
+          <form onSubmit={handleSubmit} className="flex flex-col gap-6 sm:gap-8">
             
-            {/* LEGAL IDENTITY DETAILS */}
-            <div className="bg-blue-50/50 p-8 rounded-2xl border border-blue-100">
-              <div className="text-xl text-blue-800 font-bold border-l-4 border-blue-600 pl-3 mb-6">
-                Legal Identity <span className="text-sm font-normal text-gray-500 ml-2">(Must match your PAN/Aadhaar exactly)</span>
+            
+            <div className="bg-blue-50/50 p-5 sm:p-8 rounded-2xl border border-blue-100">
+              <div className="text-lg sm:text-xl text-blue-800 font-bold border-l-4 border-blue-600 pl-3 mb-6">
+                Legal Identity <span className="block sm:inline text-xs sm:text-sm font-normal text-gray-500 sm:ml-2 mt-1 sm:mt-0">(Must match your PAN/Aadhaar exactly)</span>
               </div>
-              <div className="grid grid-cols-2 gap-x-8 gap-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
                 <div className="flex flex-col gap-2">
-                  <label className="font-bold text-gray-700">First Name</label>
+                  <label className="font-bold text-gray-700 text-sm sm:text-base">First Name</label>
                   <input 
                     name="firstName" 
                     value={form.firstName}
                     placeholder="e.g., Name" 
                     onChange={handlevalueChange} 
                     disabled={isNameLocked}
-                    className={`p-3 rounded-lg border border-gray-300 outline-none transition ${isNameLocked ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'focus:border-blue-500 focus:ring-2 focus:ring-blue-200 bg-white'}`} 
+                    className={`p-3 rounded-lg border border-gray-300 outline-none transition w-full ${isNameLocked ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'focus:border-blue-500 focus:ring-2 focus:ring-blue-200 bg-white'}`} 
                     required 
                   />
                 </div>
                 <div className="flex flex-col gap-2">
-                  <label className="font-bold text-gray-700">Last Name</label>
+                  <label className="font-bold text-gray-700 text-sm sm:text-base">Last Name</label>
                   <input 
                     name="lastName" 
                     value={form.lastName}
                     placeholder="e.g., SurName" 
                     onChange={handlevalueChange} 
                     disabled={isNameLocked}
-                    className={`p-3 rounded-lg border border-gray-300 outline-none transition ${isNameLocked ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'focus:border-blue-500 focus:ring-2 focus:ring-blue-200 bg-white'}`} 
+                    className={`p-3 rounded-lg border border-gray-300 outline-none transition w-full ${isNameLocked ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'focus:border-blue-500 focus:ring-2 focus:ring-blue-200 bg-white'}`} 
                     required 
                   />
                 </div>
               </div>
 
-              
               <div className="mt-6 flex justify-end">
                 {!isNameLocked ? (
                   <button
                     type="button"
                     onClick={handleLockIdentity}
-                    className="bg-blue-600 cursor-pointer text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-800 transition transform hover:-translate-y-1 shadow-md"
+                    className="bg-blue-600 cursor-pointer text-white px-6 py-3 rounded-lg font-bold hover:bg-blue-800 transition transform hover:-translate-y-1 shadow-md w-full sm:w-auto text-sm sm:text-base"
                   >
                     Confirm & Lock Identity
                   </button>
                 ) : (
-                  <span className="text-green-600 font-bold flex items-center gap-2 bg-green-50 px-4 py-2 rounded-lg border border-green-200">
+                  <span className="text-green-600 font-bold flex items-center justify-center sm:justify-start gap-2 bg-green-50 px-4 py-3 rounded-lg border border-green-200 w-full sm:w-auto text-sm sm:text-base">
                     ✅ Identity Locked
                   </span>
                 )}
               </div>
             </div>
 
-            
-            <div className="bg-blue-50/50 p-8 rounded-2xl border border-blue-100">
-              <div className="text-xl text-blue-800 font-bold border-l-4 border-blue-600 pl-3 mb-6">Employment Details</div>
-              <div className="grid grid-cols-2 gap-x-8 gap-y-6">
+           
+            <div className="bg-blue-50/50 p-5 sm:p-8 rounded-2xl border border-blue-100">
+              <div className="text-lg sm:text-xl text-blue-800 font-bold border-l-4 border-blue-600 pl-3 mb-6">Employment Details</div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
                 <div className="flex flex-col gap-2">
-                  <label className="font-bold text-gray-700">Occupation</label>
-                  <input name="occupation" placeholder="e.g., Engineer or Farmer" onChange={handlevalueChange} className="p-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition" required />
+                  <label className="font-bold text-gray-700 text-sm sm:text-base">Occupation</label>
+                  <input name="occupation" placeholder="e.g., Engineer or Farmer" onChange={handlevalueChange} className="p-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition w-full" required />
                 </div>
                 <div className="flex flex-col gap-2">
-                  <label className="font-bold text-gray-700">Organization Name</label>
-                  <input name="organizationName" placeholder="Company Name" onChange={handlevalueChange} className="p-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition" required />
+                  <label className="font-bold text-gray-700 text-sm sm:text-base">Organization Name</label>
+                  <input name="organizationName" placeholder="Company Name" onChange={handlevalueChange} className="p-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition w-full"/>
                 </div>
-                <div className="flex flex-col gap-2 col-span-2 sm:col-span-1">
-                  <label className="font-bold text-gray-700">Monthly Income (₹)</label>
-                  <input name="monthlyIncome" type="number" placeholder="Income" onChange={handlevalueChange} className="p-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition" required />
+                <div className="flex flex-col gap-2 col-span-1 sm:col-span-2">
+                  <label className="font-bold text-gray-700 text-sm sm:text-base">Monthly Income (₹)</label>
+                  <input name="monthlyIncome" type="number" placeholder="Income" onChange={handlevalueChange} className="p-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition w-full" required />
                 </div>
               </div>
             </div>
 
             
-            <div className="bg-blue-50/50 p-8 rounded-2xl border border-blue-100">
-              <div className="text-xl text-blue-800 font-bold border-l-4 border-blue-600 pl-3 mb-6">Loan Request Details</div>
-              <div className="grid grid-cols-2 gap-x-8 gap-y-6">
+            <div className="bg-blue-50/50 p-5 sm:p-8 rounded-2xl border border-blue-100">
+              <div className="text-lg sm:text-xl text-blue-800 font-bold border-l-4 border-blue-600 pl-3 mb-6">Loan Request Details</div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
                 <div className="flex flex-col gap-2">
-                  <label className="font-bold text-gray-700">Loan Type</label>
-                  <select name="LoanType" onChange={handlevalueChange} required defaultValue="" className="p-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none bg-white transition">
+                  <label className="font-bold text-gray-700 text-sm sm:text-base">Loan Type</label>
+                  <select name="LoanType" onChange={handlevalueChange} required defaultValue="" className="p-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none bg-white transition w-full">
                     <option value="" disabled>Select Type</option>
                     <option value="Personal">Personal Loan</option>
                     <option value="Home">Home Loan</option>
@@ -414,61 +426,61 @@ export default function ApplyLoan() {
                   </select>
                 </div>
                 <div className="flex flex-col gap-2">
-                  <label className="font-bold text-gray-700">Tenure (Months)</label>
-                  <input name="tenure" type="number" placeholder="Months" onChange={handlevalueChange} className="p-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition" required />
+                  <label className="font-bold text-gray-700 text-sm sm:text-base">Tenure (Months)</label>
+                  <input name="tenure" type="number" placeholder="Months" onChange={handlevalueChange} className="p-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition w-full" required />
                 </div>
-                <div className="flex flex-col gap-2 col-span-2 sm:col-span-1">
-                  <label className="font-bold text-gray-700">Amount (₹)</label>
-                  <input name="loanAmount" type="number" placeholder="Amount" onChange={handlevalueChange} className="p-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition" required />
+                <div className="flex flex-col gap-2 col-span-1 sm:col-span-2">
+                  <label className="font-bold text-gray-700 text-sm sm:text-base">Amount (₹)</label>
+                  <input name="loanAmount" type="number" placeholder="Amount" onChange={handlevalueChange} className="p-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition w-full" required />
                 </div>
               </div>
             </div>
 
             {isNewUser && (
-              <div className="bg-indigo-50/50 p-8 rounded-2xl border border-indigo-100">
-                <div className="text-xl text-indigo-800 font-bold border-l-4 border-indigo-600 pl-3 mb-6">
-                  Previous Bank History <span className="text-sm font-normal text-gray-500 ml-2">(Required for new users)</span>
+              <div className="bg-indigo-50/50 p-5 sm:p-8 rounded-2xl border border-indigo-100">
+                <div className="text-lg sm:text-xl text-indigo-800 font-bold border-l-4 border-indigo-600 pl-3 mb-6">
+                  Previous Bank History <span className="block sm:inline text-xs sm:text-sm font-normal text-gray-500 sm:ml-2 mt-1 sm:mt-0">(Required for new users)</span>
                 </div>
-                <div className="grid grid-cols-2 gap-x-8 gap-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
                   <div className="flex flex-col gap-2">
-                    <label className="font-bold text-gray-700">Years at Previous Bank</label>
-                    <input name="yearsAtPreviousBank" type="number" placeholder="Years" onChange={handlevalueChange} className="p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition" required={isNewUser} />
+                    <label className="font-bold text-gray-700 text-sm sm:text-base">Years at Previous Bank</label>
+                    <input name="yearsAtPreviousBank" type="number" placeholder="Years" onChange={handlevalueChange} className="p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition w-full" required={isNewUser} />
                   </div>
                   <div className="flex flex-col gap-2">
-                    <label className="font-bold text-gray-700">Total Transaction Amount (Past Year)</label>
-                    <input name="totalTransactionAmount" type="number" placeholder="Total Transactions" onChange={handlevalueChange} className="p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition" required={isNewUser} />
+                    <label className="font-bold text-gray-700 text-sm sm:text-base">Total Transaction Amount (Past Year)</label>
+                    <input name="totalTransactionAmount" type="number" placeholder="Total Transactions" onChange={handlevalueChange} className="p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition w-full" required={isNewUser} />
                   </div>
                   <div className="flex flex-col gap-2">
-                    <label className="font-bold text-gray-700">Fixed Deposits Amount</label>
-                    <input name="fixedDepositsAmount" type="number" placeholder="Total FDs" onChange={handlevalueChange} className="p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition" required={isNewUser} />
+                    <label className="font-bold text-gray-700 text-sm sm:text-base">Fixed Deposits Amount</label>
+                    <input name="fixedDepositsAmount" type="number" placeholder="Total FDs" onChange={handlevalueChange} className="p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition w-full" required={isNewUser} />
                   </div>
                   <div className="flex flex-col gap-2">
-                    <label className="font-bold text-gray-700">Pending Loans Amount</label>
-                    <input name="pendingLoansAmount" type="number" placeholder="Total Pending Loans" onChange={handlevalueChange} className="p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition" required={isNewUser} />
+                    <label className="font-bold text-gray-700 text-sm sm:text-base">Pending Loans Amount</label>
+                    <input name="pendingLoansAmount" type="number" placeholder="Total Pending Loans" onChange={handlevalueChange} className="p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition w-full" required={isNewUser} />
                   </div>
                 </div>
               </div>
             )}
 
             
-            <div className="bg-white p-8 rounded-2xl border border-gray-200 shadow-sm relative overflow-hidden">
+            <div className="bg-white p-5 sm:p-8 rounded-2xl border border-gray-200 shadow-sm relative overflow-hidden">
               <div className="absolute top-0 right-0 bg-indigo-100 text-indigo-800 text-xs font-bold px-3 py-1 rounded-bl-xl border-b border-l border-indigo-200">
-                ✨ AI Powered Security
+                ✨ AI Powered Verfication
               </div>
-              <div className="text-xl text-blue-800 font-bold border-l-4 border-blue-600 pl-3 mb-6 mt-2">
+              <div className="text-lg sm:text-xl text-blue-800 font-bold border-l-4 border-blue-600 pl-3 mb-6 mt-2">
                 Your Documents (PDF/Image)
               </div>
               
-              <div className="grid grid-cols-2 gap-x-8 gap-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
                 {documentsToRender.map((doc) => (
                   <div key={doc.name} className="flex flex-col gap-2">
-                    <label className="font-bold text-gray-600">{doc.label}</label>
+                    <label className="font-bold text-gray-600 text-sm sm:text-base">{doc.label}</label>
                     <input 
                       type="file" 
                       name={doc.name} 
                       onChange={handleFileChange}
                       accept=".jpg,.jpeg,.png,.pdf" 
-                      className="block w-full text-sm text-gray-500 border border-gray-200 rounded-lg bg-gray-50 file:mr-4 file:py-2 file:px-4 file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition cursor-pointer" 
+                      className="block w-full text-xs sm:text-sm text-gray-500 border border-gray-200 rounded-lg bg-gray-50 file:mr-4 file:py-2 file:px-4 file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition cursor-pointer" 
                       required={!form[doc.name]} 
                     />
                     {renderAIBadge(doc.name)}
@@ -477,9 +489,9 @@ export default function ApplyLoan() {
               </div>
 
               {isNewUser && (
-                <div className="mt-8 border-t pt-8">
-                  <div className="text-lg text-indigo-700 font-bold mb-6 italic">Previous Bank History Proofs</div>
-                  <div className="grid grid-cols-2 gap-x-8 gap-y-6">
+                <div className="mt-8 border-t border-gray-200 pt-8">
+                  <div className="text-base sm:text-lg text-indigo-700 font-bold mb-6 ">Previous Bank History Proofs</div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
                     {[
                       { label: <> Vintage Proof <span className="font-normal text-xs">(years with previous bank)</span></>, name: "proofOfOldbank" },
                       { label: "Bank Statements", name: "bankStatements" },
@@ -488,13 +500,13 @@ export default function ApplyLoan() {
                       { label: "Pending Loan Reports", name: "pendingLoanDocs" }
                     ].map((doc) => (
                       <div key={doc.name} className="flex flex-col gap-2">
-                        <label className="font-bold text-gray-600">{doc.label}</label>
+                        <label className="font-bold text-gray-600 text-sm sm:text-base">{doc.label}</label>
                         <input 
                           type="file" 
                           name={doc.name} 
                           onChange={handleFileChange}
                           accept=".jpg,.jpeg,.png,.pdf" 
-                          className="block w-full text-sm text-gray-500 border border-gray-200 rounded-lg bg-gray-50 file:mr-4 file:py-2 file:px-4 file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 transition cursor-pointer" 
+                          className="block w-full text-xs sm:text-sm text-gray-500 border border-gray-200 rounded-lg bg-gray-50 file:mr-4 file:py-2 file:px-4 file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 transition cursor-pointer" 
                           required={isNewUser && !form[doc.name]} 
                         />
                         {renderAIBadge(doc.name)}
@@ -505,38 +517,43 @@ export default function ApplyLoan() {
               )}
             </div>
 
-        
-            <div className="bg-blue-50/50 p-8 rounded-2xl border border-blue-100">
-              <div className="text-xl text-blue-800 font-bold border-l-4 border-blue-600 pl-3 mb-6">Nominee Details</div>
-              <div className="grid grid-cols-2 gap-x-8 gap-y-6">
+           
+            <div className="bg-blue-50/50 p-5 sm:p-8 rounded-2xl border border-blue-100">
+              <div className="text-lg sm:text-xl text-blue-800 font-bold border-l-4 border-blue-600 pl-3 mb-6">Nominee Details</div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
                 <div className="flex flex-col gap-2">
-                  <label className="font-bold text-gray-700">Nominee Name</label>
-                  <input name="nomineeName" placeholder="Full Name" onChange={handlevalueChange} className="p-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition" required />
+                  <label className="font-bold text-gray-700 text-sm sm:text-base">Nominee Name</label>
+                  <input name="nomineeName" placeholder="Full Name" onChange={handlevalueChange} className="p-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition w-full" required />
                 </div>
                 <div className="flex flex-col gap-2">
-                  <label className="font-bold text-gray-700">ID Proof</label>
-                  <input type="file" name="nomineeIDcard" onChange={handleFileChange} accept=".jpg,.jpeg,.png,.pdf" className="block w-full text-sm text-gray-500 border border-gray-200 rounded-lg bg-white file:mr-4 file:py-2 file:px-4 file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition cursor-pointer" required />
+                  <label className="font-bold text-gray-700 text-sm sm:text-base">ID Proof</label>
+                  <input type="file" name="nomineeIDcard" onChange={handleFileChange} accept=".jpg,.jpeg,.png,.pdf" className="block w-full text-xs sm:text-sm text-gray-500 border border-gray-200 rounded-lg bg-white file:mr-4 file:py-2 file:px-4 file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition cursor-pointer" required />
                 </div>
                 <div className="flex flex-col gap-2">
-                  <label className="font-bold text-gray-700">Address Proof</label>
-                  <input type="file" name="nomineeAddressproof" onChange={handleFileChange} accept=".jpg,.jpeg,.png,.pdf" className="block w-full text-sm text-gray-500 border border-gray-200 rounded-lg bg-white file:mr-4 file:py-2 file:px-4 file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition cursor-pointer" required />
+                  <label className="font-bold text-gray-700 text-sm sm:text-base">Address Proof</label>
+                  <input type="file" name="nomineeAddressproof" onChange={handleFileChange} accept=".jpg,.jpeg,.png,.pdf" className="block w-full text-xs sm:text-sm text-gray-500 border border-gray-200 rounded-lg bg-white file:mr-4 file:py-2 file:px-4 file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition cursor-pointer" required />
                 </div>
                 <div className="flex flex-col gap-2">
-                  <label className="font-bold text-gray-700">Signature</label>
-                  <input type="file" name="nomineesign" onChange={handleFileChange} accept=".jpg,.jpeg,.png" className="block w-full text-sm text-gray-500 border border-gray-200 rounded-lg bg-white file:mr-4 file:py-2 file:px-4 file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition cursor-pointer" required />
+                  <label className="font-bold text-gray-700 text-sm sm:text-base">Signature</label>
+                  <input type="file" name="nomineesign" onChange={handleFileChange} accept=".jpg,.jpeg,.png" className="block w-full text-xs sm:text-sm text-gray-500 border border-gray-200 rounded-lg bg-white file:mr-4 file:py-2 file:px-4 file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition cursor-pointer" required />
                 </div>
               </div>
             </div>
 
-            <div className="flex justify-center items-center gap-8 mt-6 pt-8 border-t border-gray-200">
-              <button type="button" onClick={() => router.push("/dashboard/customer")} className="w-48 h-12 cursor-pointer bg-gray-200 text-gray-700 rounded-xl hover:font-bold hover:bg-red-500 hover:text-white transition transform hover:-translate-y-1 shadow-sm">
+           
+            <div className="flex flex-col-reverse sm:flex-row justify-center items-center gap-4 sm:gap-8 mt-4 pt-8 border-t border-gray-200">
+              <button 
+                type="button" 
+                onClick={() => router.push("/dashboard/customer")} 
+                className="w-full sm:w-48 h-12 cursor-pointer bg-gray-200 text-gray-700 rounded-xl hover:font-bold hover:bg-red-500 hover:text-white transition transform hover:-translate-y-1 shadow-sm text-sm sm:text-base"
+              >
                 Discard
               </button>
               
               <button 
                 type="submit"
                 disabled={isSubmitDisabled}
-                className={`w-64 cursor-pointer h-12 text-white transition transform hover:-translate-y-1 hover:font-bold ${
+                className={`w-full sm:w-64 cursor-pointer h-12 text-white transition transform hover:-translate-y-1 hover:font-bold shadow-md text-sm sm:text-base ${
                   isSubmitDisabled ? 'bg-gray-400 cursor-not-allowed' : 'bg-indigo-500 rounded-2xl cursor-pointer hover:bg-blue-700'
                 }`}
               >

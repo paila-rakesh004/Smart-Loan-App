@@ -17,7 +17,7 @@ class CustomerRegisterSerializer(serializers.ModelSerializer):
             pan_number=validated_data.get('pan_number', ''),
             aadhar_number=validated_data.get('aadhar_number', ''),
             address=validated_data.get('address', ''),
-            is_customer=True
+            is_customer=True,
         )
         return user
 
@@ -28,4 +28,4 @@ class LoginSerializer(serializers.Serializer):
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['username', 'email', 'phone_number', 'pan_number', 'aadhar_number', 'address']
+        fields = ['username', 'email', 'phone_number', 'pan_number', 'aadhar_number', 'address','first_name','last_name']

@@ -1,15 +1,17 @@
 "use client";
-import React, { useEffect, useState } from 'react';
+import React, { use, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import API from '@/lib/api'; 
 import { toast } from "react-toastify";
+import { UserCircleIcon } from '@heroicons/react/24/solid';
+import { ArrowRightOnRectangleIcon } from '@heroicons/react/24/solid';
 
 const Page = () => {
   const router = useRouter();
   
   const [loans, setLoans] = useState([]);
   const [selectedLoan, setSelectedLoan] = useState(null);
-  
+  const[loading,setLoading] = useState(true);
   const [riskScore, setRiskScore] = useState(null);
   const [notes, setNotes] = useState('');
   
@@ -22,7 +24,6 @@ const Page = () => {
     router.push('/profile/officer');
   }
   const handleRowClick = (loan) => {
-    console.log(loan);
     setSelectedLoan(loan);
     setRiskScore(null);
     setNotes('');
@@ -91,247 +92,210 @@ const Page = () => {
       } catch (error) {
         console.error(error);
       }
+      finally{
+        setLoading(false);
+      }
     };
 
     fetchAllLoans();
   }, [router]);
 
+  if(loading){
+    return(
+      <div className="flex items-center justify-center h-screen bg-gradient-to-r from-[#eef2f7] to-[#d9e4f5]">
+      <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+    </div>
+    )
+  }
   return (
     <div className="relative font-serif bg-gradient-to-r from-[#eef2f7] to-[#d9e4f5] min-h-screen pb-10">
  
-  <div className="fixed top-0 left-0 w-full h-10 bg-gradient-to-r from-[#eef2f7] to-[#d9e4f5] z-[60]"></div>
+   
+      <div className="fixed top-0 left-0 w-full bg-gradient-to-r from-[#eef2f7] to-[#d9e4f5] z-[60] py-4 px-4 sm:px-8 shadow-sm">
+        <div className="max-w-7xl mx-auto bg-white shadow-xl rounded-xl p-4 sm:p-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+          
+          <div className="w-full sm:w-auto text-center sm:text-left">
+             <h1 className="text-lg sm:text-xl md:text-2xl font-semibold text-blue-900">
+               Officer Dashboard
+             </h1>
+          </div>
 
-      <div className="w-full p-10 font-sans">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <button
+              onClick={handleProfile}
+              className="cursor-pointer transition transform hover:-translate-y-1">
+              <UserCircleIcon className="w-10 h-10 text-blue-700" />
+            </button>
+            <button
+              onClick={handleLogout}
+              className="cursor-pointer rounded-full font-bold transition transform hover:-translate-y-1">
+              <ArrowRightOnRectangleIcon className="w-9 h-9 text-red-600" />
+            </button>
+          </div>
+        </div>
+      </div>
 
-        
-        <div className="fixed top-0 left-0 w-full h-24 bg-gradient-to-r from-[#eef2f7] to-[#d9e4f5] z-[60] flex items-center justify-center">
-  <div className="w-full bg-white shadow-xl rounded-xl p-6 flex justify-between items-center">
+  
+      <div className="h-40 sm:h-32"></div>
+
     
-    <div className="flex-1">
-       <h1 className="text-3xl font-semibold text-blue-900 text-center ml-40">
-         Officer Dashboard
-       </h1>
-    </div>
-
-    
-    <div className="flex gap-4">
-      <button
-        onClick={handleProfile}
-        className="bg-indigo-500 cursor-pointer text-white px-6 py-2 rounded-lg font-bold hover:bg-indigo-700 transition transform hover:-translate-y-1 shadow-md"
-      >
-        Profile
-      </button>
-
-      <button
-        onClick={handleLogout}
-        className="bg-red-500 cursor-pointer text-white px-6 py-2 rounded-lg font-bold hover:bg-red-700 transition transform hover:-translate-y-1 shadow-md"
-      >
-        Logout
-      </button>
-    </div>
-  </div>
-</div>
-
-
-<div className="h-16 mb-4"></div>
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 font-sans">
 
         {selectedLoan ? (
-
-          <div className="bg-white shadow-md rounded-4xl p-10 px-90">
-
+          
+          <div className="bg-white shadow-lg rounded-2xl p-6 sm:p-10 w-full">
             
             <button
               onClick={() => setSelectedLoan(null)}
-              className="mb-4 px-4 py-2 rounded-lg text-6xl cursor-pointer transition hover:-translate-y-1"
+              className="mb-4 px-2 py-1 sm:px-4 sm:py-2 rounded-lg text-4xl sm:text-5xl cursor-pointer text-gray-600 hover:text-blue-600 transition hover:-translate-y-1"
             >
               ←
             </button>
-
             
-            <h2 className="mt-4 mb-4 text-gray-800 text-2xl border-l-4 border-blue-600 pl-2 font-bold">
+            <h2 className="mt-2 mb-6 text-gray-800 text-xl sm:text-2xl border-l-4 border-blue-600 pl-3 font-bold">
               Application Details
             </h2>
 
-            <div className="grid grid-cols-2 gap-6 bg-blue-50 p-6 rounded-xl shadow-md text-gray-800">
-
-              <div className="space-y-2">
-                <p><span className="font-bold">Applicant Name :</span> {selectedLoan.applicant_name}</p>
-                <p><span className="font-bold">Loan Type :</span> {selectedLoan.loan_type}</p>
-                <p><span className="font-bold">Loan Amount :</span> ₹{selectedLoan.loan_amount}</p>
-                <p><span className="font-bold">Monthly Income : </span>₹{selectedLoan.monthly_income}</p>
-                <p><span className="font-bold">Occupation :</span> {selectedLoan.occupation}</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-blue-50/50 p-6 rounded-xl shadow-sm border border-blue-100 text-gray-800">
+              <div className="space-y-3">
+                <p><span className="font-bold text-gray-700">Applicant Name :</span> {selectedLoan.applicant_name}</p>
+                <p><span className="font-bold text-gray-700">Loan Type :</span> {selectedLoan.loan_type}</p>
+                <p><span className="font-bold text-gray-700">Loan Amount :</span> ₹{selectedLoan.loan_amount}</p>
+                <p><span className="font-bold text-gray-700">Monthly Income : </span>₹{selectedLoan.monthly_income}</p>
+                <p><span className="font-bold text-gray-700">Occupation :</span> {selectedLoan.occupation}</p>
               </div>
 
-              <div className="space-y-2">
-                <p><span className="font-bold">Applicant ID :</span> {selectedLoan.id}</p>
-                <p><span className="font-bold">Tenure :</span> {selectedLoan.tenure} months</p>
-                <p><span className="font-bold">Status :</span> {selectedLoan.status}</p>
-                <p><span className="font-bold">CIBIL Score :</span> {selectedLoan.actual_cibil || "N/A"}</p>
-                <p><span className="font-bold">Working At :</span> {selectedLoan.organization_name}</p>
+              <div className="space-y-3">
+                <p><span className="font-bold text-gray-700">Applicant ID :</span> {selectedLoan.id}</p>
+                <p><span className="font-bold text-gray-700">Tenure :</span> {selectedLoan.tenure} months</p>
+                <p><span className="font-bold text-gray-700">Status :</span> 
+                  <span className={`ml-2 px-3 py-1 rounded-full text-sm font-bold ${selectedLoan.status === 'Approved' ? 'bg-green-100 text-green-700' : selectedLoan.status === 'Rejected' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                    {selectedLoan.status}
+                  </span>
+                </p>
+                <p><span className="font-bold text-gray-700">CIBIL Score :</span> {selectedLoan.actual_cibil || "N/A"}</p>
+                <p><span className="font-bold text-gray-700">Working At :</span> {selectedLoan.organization_name}</p>
               </div>
-
             </div>
 
-            
-            <h3 className="mt-6 mb-4 text-gray-800 text-2xl border-l-4 border-blue-600 pl-2 font-bold">
+            <h3 className="mt-10 mb-6 text-gray-800 text-xl sm:text-2xl border-l-4 border-blue-600 pl-3 font-bold">
               Submitted Documents
             </h3>
 
-            <div className="grid grid-cols-2 gap-4">
-
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {selectedLoan.id_proof && (
-                <div className="bg-green-50 border border-green-200 p-4 rounded-xl shadow-sm">
+                <div className="bg-red-100 border border-gray-200 p-5 rounded-xl shadow-sm hover:shadow-md transition">
                   <p className="font-bold text-gray-700 mb-2">ID Proof</p>
-                  <a className="text-blue-600 hover:font-bold" href={selectedLoan.id_proof} target="_blank" rel="noopener noreferrer">
-                    View Document
-                  </a>
+                  <a className="text-blue-600 font-normal hover:font-bold hover:text-blue-800 underline" href={selectedLoan.id_proof} target="_blank" rel="noopener noreferrer">View Document</a>
                 </div>
               )}
-
               {selectedLoan.address_proof && (
-                <div className="bg-green-50 border border-green-200 p-4 rounded-xl shadow-sm">
+                <div className="bg-red-100 border border-gray-200 p-5 rounded-xl shadow-sm hover:shadow-md transition">
                   <p className="font-bold text-gray-700 mb-2">Address Proof</p>
-                  <a className="text-blue-600 hover:font-bold" href={selectedLoan.address_proof} target="_blank" rel="noopener noreferrer">
-                    View Document
-                  </a>
+                  <a className="text-blue-600 font-normal hover:font-bold hover:text-blue-800 underline" href={selectedLoan.address_proof} target="_blank" rel="noopener noreferrer">View Document</a>
                 </div>
               )}
-
               {selectedLoan.salary_slips && (
-                <div className="bg-green-50 border border-green-200 p-4 rounded-xl shadow-sm">
+                <div className="bg-red-100 border border-gray-200 p-5 rounded-xl shadow-sm hover:shadow-md transition">
                   <p className="font-bold text-gray-700 mb-2">Salary Slips</p>
-                  <a className="text-blue-600 hover:font-bold" href={selectedLoan.salary_slips} target="_blank" rel="noopener noreferrer">
-                    View Document
-                  </a>
+                  <a className="text-blue-600 font-normal hover:font-bold hover:text-blue-800 underline" href={selectedLoan.salary_slips} target="_blank" rel="noopener noreferrer">View Document</a>
                 </div>
               )}
-
               {selectedLoan.emp_id_card && (
-                <div className="bg-green-50 border border-green-200 p-4 rounded-xl shadow-sm">
+                <div className="bg-red-100 border border-gray-200 p-5 rounded-xl shadow-sm hover:shadow-md transition">
                   <p className="font-bold text-gray-700 mb-2">Employee ID</p>
-                  <a className="text-blue-600 hover:font-bold" href={selectedLoan.emp_id_card} target="_blank" rel="noopener noreferrer">
-                    View Document
-                  </a>
+                  <a className="text-blue-600 font-normal hover:font-bold hover:text-blue-800 underline" href={selectedLoan.emp_id_card} target="_blank" rel="noopener noreferrer">View Document</a>
                 </div>
               )}
-
             </div>
 
            {(selectedLoan.income_proof) && (
               <>
-                <h3 className="mt-8 mb-4 text-gray-800 text-2xl border-l-4 border-indigo-600 pl-2 font-bold">
+                <h3 className="mt-10 mb-6 text-gray-800 text-xl sm:text-2xl border-l-4 border-indigo-600 pl-3 font-bold">
                   Additional Financial Proofs
                 </h3>
                 
-                <div className="grid grid-cols-2 gap-4 mb-6">
-                  
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                   {selectedLoan.proof_of_oldbank && (
-                    <div className="bg-red-100 border border-indigo-200 p-4 rounded-xl shadow-sm">
-                      <p className="font-bold text-gray-700 mb-2">Vintage Proof<span className='text-xs font-normal'>(number of years in previous bank)</span></p>
-                      <a className="text-indigo-600 hover:font-bold" href={selectedLoan.proof_of_oldbank} target="_blank" rel="noopener noreferrer">
-                        View Document
-                      </a>
+                    <div className="bg-green-100 border border-indigo-100 p-5 rounded-xl shadow-sm hover:shadow-md transition">
+                      <p className="font-bold text-gray-700 mb-2 flex flex-col">Vintage Proof <span className='text-xs font-normal text-gray-500'>(Previous bank history)</span></p>
+                      <a className="text-indigo-600 font-normal hover:font-bold hover:text-indigo-800 underline" href={selectedLoan.proof_of_oldbank} target="_blank" rel="noopener noreferrer">View Document</a>
                     </div>
                   )}
-
                   {selectedLoan.income_proof && (
-                    <div className="bg-red-100 to-white border border-indigo-200 p-4 rounded-xl shadow-sm">
-                      <p className="font-bold text-gray-700 mb-2">Income Proof</p>
-                      <a className="text-indigo-600 hover:font-bold" href={selectedLoan.income_proof} target="_blank" rel="noopener noreferrer">
-                        View Document
-                      </a>
+                    <div className="bg-green-100 border border-indigo-100 p-5 rounded-xl shadow-sm hover:shadow-md transition">
+                      <p className="font-bold text-gray-700 mb-2">Income Proof (ITR)</p>
+                      <a className="text-indigo-600 font-normal hover:font-bold hover:text-indigo-800 underline" href={selectedLoan.income_proof} target="_blank" rel="noopener noreferrer">View Document</a>
                     </div>
                   )}
-
                   {selectedLoan.bank_statements && (
-                    <div className="bg-red-100 border border-indigo-200 p-4 rounded-xl shadow-sm">
+                    <div className="bg-green-100 border border-indigo-100 p-5 rounded-xl shadow-sm hover:shadow-md transition">
                       <p className="font-bold text-gray-700 mb-2">Bank Statements</p>
-                      <a className="text-indigo-600 hover:font-bold" href={selectedLoan.bank_statements} target="_blank" rel="noopener noreferrer">
-                        View Document
-                      </a>
+                      <a className="text-indigo-600 font-normal hover:font-bold hover:text-indigo-800 underline" href={selectedLoan.bank_statements} target="_blank" rel="noopener noreferrer">View Document</a>
                     </div>
                   )}
-
                   {selectedLoan.fd_receipts && (
-                    <div className="bg-red-100 to-white border border-indigo-200 p-4 rounded-xl shadow-sm">
+                    <div className="bg-green-100 border border-indigo-100 p-5 rounded-xl shadow-sm hover:shadow-md transition">
                       <p className="font-bold text-gray-700 mb-2">FD Receipts</p>
-                      <a className="text-indigo-600 hover:font-bold" href={selectedLoan.fd_receipts} target="_blank" rel="noopener noreferrer">
-                        View Document
-                      </a>
+                      <a className="text-indigo-600 font-normal hover:font-bold hover:text-indigo-800 underline" href={selectedLoan.fd_receipts} target="_blank" rel="noopener noreferrer">View Document</a>
+                    </div>
+                  )}
+                  {selectedLoan.pending_loan_docs && (
+                    <div className="bg-green-100 border border-indigo-100 p-5 rounded-xl shadow-sm hover:shadow-md transition">
+                      <p className="font-bold text-gray-700 mb-2">Pending Loan Reports</p>
+                      <a className="text-indigo-600 font-normal hover:font-bold hover:text-indigo-800 underline" href={selectedLoan.pending_loan_docs} target="_blank" rel="noopener noreferrer">View Document</a>
                     </div>
                   )}
                 </div>
-                {selectedLoan.pending_loan_docs && (
-                    <div className="bg-red-100 border border-indigo-200 p-4 rounded-xl shadow-sm w-full flex justify-center items-center flex-col">
-                      <p className="font-bold text-gray-700 mb-2">Pending Loan Reports</p>
-                      <a className="text-indigo-600 hover:font-bold" href={selectedLoan.pending_loan_docs} target="_blank" rel="noopener noreferrer">
-                        View Document
-                      </a>
-                    </div>
-                  )}
               </>
             )}
 
-            <h4 className="mt-6 mb-3 text-gray-700 text-2xl font-bold">
-              Nominee Details: <br></br> <span className="text-blue-600 text-xl">Nominee Name : {selectedLoan.nominee_name || 'N/A'}</span>
+            <h4 className="mt-10 mb-6 text-gray-800 text-xl sm:text-2xl border-l-4 border-blue-600 pl-3 font-bold">
+              Nominee Details
             </h4>
-            
-            <div className="grid grid-cols-3 gap-4">
-
+            <span className="block m-1 text-red-600 text-lg sm:text-xl font-medium">Nominee Name: {selectedLoan.nominee_name || 'N/A'}</span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {selectedLoan.nominee_id_card && (
-                <div className="bg-blue-50 border border-blue-200 p-4 rounded-xl shadow-sm">
+                <div className="bg-blue-50/50 border border-blue-100 p-5 rounded-xl shadow-sm hover:shadow-md transition">
                   <p className="font-bold text-gray-700 mb-2">Nominee ID Proof</p>
-                  <a className="text-blue-600 hover:font-bold" href={selectedLoan.nominee_id_card} target="_blank">
-                    View Document
-                  </a>
+                  <a className="text-blue-600 font-normal hover:font-bold hover:text-blue-800 underline" href={selectedLoan.nominee_id_card} target="_blank" rel="noopener noreferrer">View Document</a>
                 </div>
               )}
-
               {selectedLoan.nominee_address_proof && (
-                <div className="bg-blue-50 border border-blue-200 p-4 rounded-xl shadow-sm">
+                <div className="bg-blue-50/50 border border-blue-100 p-5 rounded-xl shadow-sm hover:shadow-md transition">
                   <p className="font-bold text-gray-700 mb-2">Nominee Address Proof</p>
-                  <a className="text-blue-600 hover:font-bold" href={selectedLoan.nominee_address_proof} target="_blank">
-                    View Document
-                  </a>
+                  <a className="text-blue-600 font-normal hover:font-bold hover:text-blue-800 underline" href={selectedLoan.nominee_address_proof} target="_blank" rel="noopener noreferrer">View Document</a>
                 </div>
               )}
-
               {selectedLoan.nominee_sign && (
-                <div className="bg-blue-50 border border-blue-200 p-4 rounded-xl shadow-sm">
+                <div className="bg-blue-50/50 border border-blue-100 p-5 rounded-xl shadow-sm hover:shadow-md transition">
                   <p className="font-bold text-gray-700 mb-2">Nominee Signature</p>
-                  <a className="text-blue-600 hover:font-bold" href={selectedLoan.nominee_sign} target="_blank">
-                    View Document
-                  </a>
+                  <a className="text-blue-600 font-normal hover:font-bold hover:text-blue-800 underline" href={selectedLoan.nominee_sign} target="_blank" rel="noopener noreferrer">View Document</a>
                 </div>
               )}
-
             </div>
           
-            <h3 className="mt-8 mb-4 text-gray-800 text-2xl border-l-4 border-blue-600 pl-2 font-bold">
+            <h3 className="mt-10 mb-6 text-gray-800 text-xl sm:text-2xl border-l-4 border-blue-600 pl-3 font-bold">
               Risk Assessment
             </h3>
 
             <button
               onClick={handleCalculateRisk}
-              className="bg-blue-600 text-white px-6 py-2 rounded-lg cursor-pointer font-bold hover:bg-blue-800 transition transform hover:-translate-y-1"
+              className="bg-blue-600 text-white px-6 py-3 rounded-xl cursor-pointer font-bold hover:bg-blue-800 transition transform hover:-translate-y-1 w-full sm:w-auto shadow-md"
             >
               Calculate Risk Score
             </button>
 
             {riskScore && (
-              <div  className={`mt-4 p-4 rounded-lg text-white ${
-                                        riskScore === 'high'
-                                        ? 'bg-red-600'
-                                        : riskScore === 'medium'
-                                        ? 'bg-orange-400'
-                                        : 'bg-green-500'
+              <div className={`mt-6 p-5 rounded-xl text-white shadow-md max-w-full ${
+                                        riskScore === 'high' ? 'bg-red-600' : 
+                                        riskScore === 'medium' ? 'bg-orange-500' : 'bg-green-500'
                                     }`}>
-                <p><span className="font-bold">Prediction :</span> <span className='font-bold capitalize'>{riskScore} risk</span></p>
+                <p className="text-lg"><span className="font-bold">Prediction:</span> <span className='font-bold capitalize ml-2'>{riskScore} Risk</span></p>
               </div>
             )}
 
-            
-            <h3 className="mt-6 mb-4 text-gray-800 text-2xl border-l-4 border-blue-600 pl-2 font-bold">
+            <h3 className="mt-10 mb-6 text-gray-800 text-xl sm:text-2xl border-l-4 border-blue-600 pl-3 font-bold">
               Officer Decision
             </h3>
 
@@ -339,92 +303,82 @@ const Page = () => {
               rows="4"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Write any remarks here..."
-              className="w-full border rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              placeholder="Write any remarks or internal notes here..."
+              className="w-full border border-gray-300 rounded-xl p-4 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition"
             />
 
-            <div className="mt-6 flex gap-6">
-
+            <div className="mt-8 flex flex-col sm:flex-row gap-4">
               <button
                 onClick={() => handleStatusUpdate('Approved')}
-                className="bg-blue-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-800 transition transform hover:-translate-y-1"
+                className="bg-green-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-green-700 transition transform hover:-translate-y-1 shadow-md w-full sm:w-auto text-center cursor-pointer"
               >
                 Approve Loan
               </button>
-
               <button
                 onClick={() => handleStatusUpdate('Rejected')}
-                className="bg-red-500 text-white px-6 py-2 rounded-lg font-bold hover:bg-red-700 transition transform hover:-translate-y-1"
+                className="bg-red-500 text-white px-8 py-3 rounded-xl font-bold hover:bg-red-600 transition transform hover:-translate-y-1 shadow-md w-full sm:w-auto text-center cursor-pointer"
               >
                 Reject Loan
               </button>
-
             </div>
 
           </div>
 
         ) : (
 
-          <div className="bg-white shadow-md rounded-4xl px-65 py-10">
-
-            <h2 className="mt-2 mb-6 text-gray-800 text-2xl border-l-4 border-blue-600 pl-2 font-bold">
-              Loan Applications
+          
+          <div className="bg-white shadow-lg rounded-2xl p-6 sm:p-10 w-full">
+            <h2 className="mb-8 text-gray-800 text-xl sm:text-2xl border-l-4 border-blue-600 pl-3 font-bold">
+              Active Loan Applications
             </h2>
 
-            <div className="overflow-x-auto">
-
-              <table className="w-full border-collapse">
-
+            <div className="overflow-x-auto rounded-xl border border-gray-200">
+              <table className="w-full min-w-[600px] border-collapse text-sm sm:text-base">
                 <thead>
-                  <tr className="bg-gray-200 text-left">
-                    <th className="p-3">Applicant Name</th>
-                    <th className="p-3">Loan Amount</th>
-                    <th className="p-3">Status</th>
-                    <th className="p-3">Action</th>
+                  <tr className="bg-gray-100 text-left text-gray-700 border-b border-gray-200">
+                    <th className="p-4 font-bold">Applicant Name</th>
+                    <th className="p-4 font-bold">Amount</th>
+                    <th className="p-4 font-bold">Status</th>
+                    <th className="p-4 font-bold text-center">Action</th>
                   </tr>
                 </thead>
-
                 <tbody>
-
                   {loans.length > 0 ? (
                     loans.map((loan) => (
-                      <tr key={loan.id} className="border-b hover:bg-gray-50">
-
-                        <td className="p-3">{loan.applicant_name || "Unknown"}</td>
-                        <td className="p-3">₹{loan.loan_amount}</td>
-                        <td className="p-3">{loan.status}</td>
-
-                        <td className="p-3">
+                      <tr key={loan.id} className="border-b border-gray-100 hover:bg-blue-50/50 transition">
+                        <td className="p-4 font-medium text-gray-800">{loan.applicant_name || "Unknown"}</td>
+                        <td className="p-4 text-gray-700">₹{loan.loan_amount}</td>
+                        <td className="p-4">
+                          <span className={`px-3 py-1 rounded-full text-xs sm:text-sm font-bold ${
+                            loan.status === 'Approved' ? 'bg-green-100 text-green-700' : 
+                            loan.status === 'Rejected' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'
+                          }`}>
+                            {loan.status}
+                          </span>
+                        </td>
+                        <td className="p-4 text-center">
                           <button
                             onClick={() => handleRowClick(loan)}
-                            className="bg-blue-600 cursor-pointer text-white px-4 py-1 rounded-lg hover:bg-blue-800 transition transform hover:-translate-y-1"
+                            className="bg-blue-600 cursor-pointer text-white px-5 py-2 rounded-lg font-semibold hover:bg-blue-800 transition shadow-sm hover:-translate-y-0.5"
                           >
                             Review
                           </button>
                         </td>
-
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="4" className="text-center p-4 text-gray-500">
-                        No applications found.
+                      <td colSpan="4" className="text-center p-8 text-gray-500 font-medium italic">
+                        No active applications found.
                       </td>
                     </tr>
                   )}
-
                 </tbody>
-
               </table>
-
             </div>
-
           </div>
-
         )}
-
       </div>
-
     </div>
   );
 };
