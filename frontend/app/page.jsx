@@ -38,12 +38,12 @@ export default function Page() {
               Login
             </Link>
 
-            <Link
+            {/* <Link
               href="/register"
               className="w-full py-3 rounded-xl text-center bg-indigo-500 text-white transition transform hover:bg-indigo-700 hover:-translate-y-1"
             >
               Register
-            </Link>
+            </Link> */}
 
           </div>
 

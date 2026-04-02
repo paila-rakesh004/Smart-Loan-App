@@ -12,7 +12,8 @@ const Page = () => {
   const [loans, setLoans] = useState([]);
   const[loading,setLoading] = useState(true);
   const handleLogout = () => {
-    localStorage.removeItem("token");
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
     localStorage.removeItem("username");
     router.push("/login");
   };
@@ -24,7 +25,7 @@ const Page = () => {
   };
 
   useEffect(() => {
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("access_token");
   if (!token) {
     router.push("/login");
     return;
@@ -35,13 +36,8 @@ const Page = () => {
 
   const fetchData = async () => {
     try {
-      const profileRes = await API.get("users/profile/", {
-        headers: { Authorization: `Token ${token}` },
-      });
-
-      const loanRes = await API.get("loans/my-loans/", {
-        headers: { Authorization: `Token ${token}` },
-      });
+      const profileRes = await API.get("users/profile/");
+      const loanRes = await API.get("loans/my-loans/");
 
       setProfile(profileRes.data);
       setLoans(loanRes.data);

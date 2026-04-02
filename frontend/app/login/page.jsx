@@ -29,27 +29,33 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const res = await API.post("users/login/", formData);
-      const data = res.data;
+      const res = await API.post("token/", { 
+        username: formData.username,
+        password: formData.password
+      });
+      
+      console.log("JWT RESPONSE DATA:", res.data);
+      localStorage.setItem("access_token", res.data.access);
+      localStorage.setItem("refresh_token", res.data.refresh);
+      localStorage.setItem("username", formData.username);
 
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("username", data.username);
-
+      
       if (role === "officer") {
-        if (data.is_officer) {
+        if (res.data.is_officer) {
           router.push("/dashboard/officer");
         } else {
           toast.error("You are not authorized as Officer");
         }
       } else {
-        if (data.is_customer) {
+        if (res.data.is_customer) {
           router.push("/dashboard/customer");
         } else {
-          toast.error("You are not authorized as customer");
+          toast.error("You are not authorized as Customer");
         }
       }
 
     } catch (error) {
+      console.log(error);
       toast.error("Invalid Credentials");
     } finally {
       setLoading(false);

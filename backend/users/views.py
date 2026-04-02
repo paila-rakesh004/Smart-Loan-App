@@ -13,7 +13,22 @@ from datetime import timedelta
 from django.core.mail import send_mail
 from django.conf import settings
 import random
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.views import TokenObtainPairView
 
+
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    def validate(self, attrs):
+
+        data = super().validate(attrs)
+      
+        data['is_officer'] = self.user.is_officer
+        data['is_customer'] = self.user.is_customer
+        return data
+    
+class CustomTokenObtainPairView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer
 
 
 class RegisterView(APIView):
@@ -125,7 +140,7 @@ User = get_user_model()
 
 
 class SendOTPView(APIView):
-   
+    permission_classes = []
     def post(self, request):
         username = request.data.get('username')
         
@@ -159,7 +174,7 @@ class SendOTPView(APIView):
 
 
 class VerifyOTPView(APIView):
-
+    permission_classes = []
     def post(self, request):
         username = request.data.get('username')
         otp = request.data.get('otp')
@@ -204,3 +219,37 @@ class ResetPasswordWithOTPView(APIView):
             
         except User.DoesNotExist:
             return Response({"error": "Security validation failed. Please try again."}, status=status.HTTP_400_BAD_REQUEST)
+
+class CheckKYCStatusView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        
+        
+        has_pan = bool(user.pan_card_file and user.pan_card_file.name)
+        has_aadhar = bool(user.aadhar_card_file and user.aadhar_card_file.name)
+        has_photo = bool(user.passport_photo and user.passport_photo.name)
+
+       
+        pan_url = request.build_absolute_uri(user.pan_card_file.url) if has_pan else None
+        aadhar_url = request.build_absolute_uri(user.aadhar_card_file.url) if has_aadhar else None
+        photo_url = request.build_absolute_uri(user.passport_photo.url) if has_photo else None
+
+        return Response({
+            
+            "is_kyc_complete": has_pan and has_aadhar and has_photo,
+            
+            "documents_present": {
+                "pan_card": has_pan,
+                "aadhar_card": has_aadhar,
+                "passport_photo": has_photo
+            },
+            
+            
+            "urls": {
+                "pan_card": pan_url,
+                "aadhar_card": aadhar_url,
+                "passport_photo": photo_url
+            }
+        })

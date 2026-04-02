@@ -34,6 +34,8 @@ def analyze_document_with_llm(masked_ocr_text,expected_doc_type="Unknown"):
         "extracted_fields": {{
             "name": "Person's name",
             "id_number": "PAN, Aadhaar, or Employee ID Number",
+            "year_of_birth" : "YYYY (Extract from DOB)",
+            "calculated_age" : 0,
             "address": "Full address or null",
             "organization_name": "Employer name",
             "monthly_income": "Net monthly income (numeric)",

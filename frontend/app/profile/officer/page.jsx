@@ -20,9 +20,9 @@ const OfficerProfile = () => {
   const handleUpdateUsername = async (e) => {
     e.preventDefault();
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('access_token');
       const res = await API.put('users/update-profile/', { username: newUsername },{
-        headers: { Authorization: `Token ${token}` },
+        headers: { Authorization: `Bearer ${token}` },
       });
       
       setProfile({ ...profile, username: res.data.username});
@@ -36,9 +36,9 @@ const OfficerProfile = () => {
   const handleChangePassword = async (e) => {
     e.preventDefault();
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('access_token');
       await API.put('users/change-password/', passwords, {
-        headers: { Authorization: `Token ${token}` },
+        headers: { Authorization: `Bearer ${token}` },
       });
       
       setPasswords({ old_password: '', new_password: '' });
@@ -48,7 +48,7 @@ const OfficerProfile = () => {
     }
   };
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('access_token');
     if (!token) {
       router.push('/login');
       return;
@@ -57,13 +57,13 @@ const OfficerProfile = () => {
     const fetchProfileData = async () => {
       try {
         const profileRes = await API.get('users/profile/', {
-          headers: { Authorization: `Token ${token}` },
+          headers: { Authorization: `Bearer ${token}` },
         });
         setProfile(profileRes.data);
         setNewUsername(profileRes.data.username);
 
         const statsRes = await API.get('loans/officer/stats/', {
-          headers: { Authorization: `Token ${token}` },
+          headers: { Authorization: `Bearer ${token}` },
         });
         setStats(statsRes.data);
 

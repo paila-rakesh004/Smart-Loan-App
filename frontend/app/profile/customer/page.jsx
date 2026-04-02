@@ -31,9 +31,9 @@ const CustomerProfile = () => {
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('access_token');
       const res = await API.put('users/update-profile/', editForm, {
-        headers: { Authorization: `Token ${token}` },
+        headers: { Authorization: `Bearer ${token}` },
       });
       
       
@@ -49,9 +49,9 @@ const CustomerProfile = () => {
     e.preventDefault();
     try {
       setClick(true);
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('access_token');
       await API.put('users/change-password/', passwords, {
-        headers: { Authorization: `Token ${token}` },
+        headers: { Authorization: `Bearer ${token}` },
       });
       
       setPasswords({ old_password: '', new_password: '' });
@@ -63,7 +63,7 @@ const CustomerProfile = () => {
     }
   };
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('access_token');
     if (!token) {
       router.push('/login');
       return;
@@ -72,7 +72,7 @@ const CustomerProfile = () => {
     const fetchProfileData = async () => {
       try {
         const profileRes = await API.get('users/profile/', {
-          headers: { Authorization: `Token ${token}` },
+          headers: { Authorization: `Bearer ${token}` },
         });
         
         setProfile(profileRes.data);
@@ -85,7 +85,7 @@ const CustomerProfile = () => {
         });
 
         const statsRes = await API.get('loans/customer/stats/', {
-          headers: { Authorization: `Token ${token}` },
+          headers: { Authorization: `Bearer ${token}` },
         });
         setStats(statsRes.data);
 
