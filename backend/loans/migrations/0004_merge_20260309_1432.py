@@ -6,7 +6,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('loans', '0002_initial'),
+        ('loans', '0002_loanapplication_cibil_score_and_more'),
         ('loans', '0003_alter_loanapplication_address_proof_and_more'),
     ]
 

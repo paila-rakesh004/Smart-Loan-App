@@ -19,6 +19,7 @@ class LoanApplication(models.Model):
     ai_verification_data = models.JSONField(default=dict, blank=True, null=True)
     
     occupation = models.CharField(max_length=100)
+    occ = models.CharField(max_length=100, null=True, blank=True)
     organization_name = models.CharField(max_length=100)
     monthly_income = models.DecimalField(max_digits=12, decimal_places=2)
     loan_type = models.CharField(max_length=50)

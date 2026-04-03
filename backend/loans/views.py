@@ -62,6 +62,7 @@ class ApplyLoanView(APIView):
             loan = LoanApplication.objects.create(
                 user=user,
                 occupation=data.get('occupation', ''),
+                occ = data.get('occ',''),
                 organization_name=data.get('organization_name', ''),
                 monthly_income=data.get('monthly_income', 0),
                 loan_type=data.get('loan_type', ''),

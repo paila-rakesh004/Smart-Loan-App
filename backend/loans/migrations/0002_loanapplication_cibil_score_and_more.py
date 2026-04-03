@@ -12,17 +12,7 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AddField(
             model_name='loanapplication',
-            name='cibil_score',
-            field=models.IntegerField(blank=True, null=True),
-        ),
-        migrations.AddField(
-            model_name='loanapplication',
             name='officer_notes',
             field=models.TextField(blank=True, null=True),
-        ),
-        migrations.AddField(
-            model_name='loanapplication',
-            name='risk_score',
-            field=models.CharField(blank=True, max_length=100, null=True),
         ),
     ]

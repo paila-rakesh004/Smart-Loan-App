@@ -1,10 +1,14 @@
 from pathlib import Path
 import os
 from datetime import timedelta
+import dj_database_url
+from dotenv import load_dotenv
+
+load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-SECRET_KEY = 'django-insecure-your-secret-key-here'
-DEBUG = True
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
+DEBUG = False
 ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
@@ -55,17 +59,20 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'loan_project.wsgi.application'
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'smart_loan_db',
-        'USER': 'postgres',
-        'PASSWORD': 'Rakesh@1124',
-        'HOST': 'localhost',
-        'PORT': '5432',
-    }
-}
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'smart_loan_db',
+#         'USER': 'postgres',
+#         'PASSWORD': 'Rakesh@1124',
+#         'HOST': 'localhost',
+#         'PORT': '5432',
+#     }
+# }
 
+DATABASES = {
+    'default': dj_database_url.parse(os.getenv('DATABASE_URL'))
+}
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',},
@@ -126,9 +133,9 @@ EMAIL_HOST_PASSWORD = 'lkmwhcuermrlhwrz'
 
 
 CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': 'ddfts71ak',
-    'API_KEY': '118183934698839',
-    'API_SECRET': 'GiL838psEl_YXi-QI59-QhKP_QM',
+    'CLOUD_NAME': os.getenv('CLOUDINARY_CLOUD_NAME'),
+    'API_KEY': os.getenv('CLOUDINARY_API_KEY'),
+    'API_SECRET': os.getenv('CLOUDINARY_API_SECRET'),
     'SECURE': True,
 }
 
