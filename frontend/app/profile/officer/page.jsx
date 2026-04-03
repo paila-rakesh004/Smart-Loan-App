@@ -82,7 +82,7 @@ const OfficerProfile = () => {
   if(loading){
     return(
       <div className='flex justify-center items-center h-screen bg-gradient-to-r from-[#eef2f7] to-[#d9e4f5]'>
-        <div className='animate-spin rounded-full border-6 border-blue-500 border-t-transparent border-b-transparent border-l-transparent h-15 w-15'></div>
+        <div className='animate-spin rounded-full border-6 border-gray-300 border-t-blue-700 h-15 w-15'></div>
       </div>
     )
   }

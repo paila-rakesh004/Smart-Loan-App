@@ -131,7 +131,7 @@ const Page = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen bg-gradient-to-r from-[#eef2f7] to-[#d9e4f5]">
-        <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-15 h-15 border-6 border-t-blue-700 border-gray-300 rounded-full animate-spin"></div>
       </div>
     )
   }
@@ -181,8 +181,9 @@ const Page = () => {
                 <p><span className="font-bold text-gray-700">Loan Type :</span> {selectedLoan.loan_type}</p>
                 <p><span className="font-bold text-gray-700">Loan Amount :</span> ₹{selectedLoan.loan_amount}</p>
                 <p><span className="font-bold text-gray-700">Monthly Income : </span>₹{selectedLoan.monthly_income}</p>
-                <p><span className="font-bold text-gray-700">Occupation :</span> {selectedLoan.occupation}</p>
-                <p><span className="font-bold text-gray-700">Working At :</span> {selectedLoan.organization_name}</p>
+                <p><span className="font-bold text-gray-700">Occupation Type :</span> {selectedLoan.occupation}</p>
+                <p><span className="font-bold text-gray-700">Occupation :</span> {selectedLoan.occ}</p>
+               
               </div>
 
               <div className="space-y-3">
@@ -198,6 +199,7 @@ const Page = () => {
                    <p><span className="font-bold text-gray-700">Live CIBIL Score :</span> <span className={selectedLoan.actual_cibil < 600 ? 'text-red-600 font-bold' : 'text-green-600 font-bold'}>{selectedLoan.actual_cibil || "N/A"}</span></p>
                    <p><span className="font-bold text-gray-700">Total Transactions :</span> ₹{selectedLoan.total_transaction_amount || 0}</p>
                    <p><span className="font-bold text-gray-700">Fixed Deposits :</span> ₹{selectedLoan.fixed_deposits || 0}</p>
+                   <p><span className="font-bold text-gray-700">Working At :</span> {selectedLoan.organization_name}</p>
                 </div>
               </div>
             </div>

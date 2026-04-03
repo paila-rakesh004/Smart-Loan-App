@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import API from "@/lib/api";
 import { toast } from "react-toastify";
 import { UserCircleIcon, ArrowRightOnRectangleIcon, ArrowLeftIcon, CheckCircleIcon } from '@heroicons/react/24/solid';
+import { data } from "autoprefixer";
 
 export default function ApplyLoan() {
   const router = useRouter();
@@ -21,6 +22,7 @@ export default function ApplyLoan() {
     firstName: "",
     lastName: "",
     age : null,
+    occupationType: "",
     occupation: "",
     organizationName: "",
     monthlyIncome: "",
@@ -64,8 +66,8 @@ export default function ApplyLoan() {
     }
   };
   
-  const isEmployed = form.occupation === "Employed";
-  const requiresITR = ["Self-Employed", "Business", "Other"].includes(form.occupation);
+  const isEmployed = form.occupationType === "Employed";
+  const requiresITR = ["Self-Employed", "Business", "Other"].includes(form.occupationType);
 
   const handleLogout = () => {
     localStorage.removeItem("access_token");
@@ -172,7 +174,8 @@ export default function ApplyLoan() {
     }
 
     const dataToSend = new FormData();
-    dataToSend.append("occupation", form.occupation);
+    dataToSend.append("occupation", form.occupationType);
+    dataToSend.append("occ", form.occupation);
     dataToSend.append("organization_name", form.organizationName);
     dataToSend.append("monthly_income", form.monthlyIncome);
     dataToSend.append("loan_amount", form.loanAmount);
@@ -283,7 +286,7 @@ export default function ApplyLoan() {
               <span className="text-sm font-semibold text-green-700">Retrieved from Bank Vault</span>
             </div>
             
-            {/* ✨ NEW TAB ANCHOR TAG ✨ */}
+     
             {fileUrl && (
               <a 
                 href={fileUrl} 
@@ -353,26 +356,30 @@ export default function ApplyLoan() {
               <div className="text-lg sm:text-xl text-blue-800 font-bold border-l-4 border-blue-600 pl-3 mb-6">Employment Details</div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 <div className="flex flex-col gap-2">
-                  <label className="font-bold text-gray-700">Occupation</label>
+                  <label className="font-bold text-gray-700">Occupation Type</label>
                   <select 
-                    name="occupation" 
-                    value={form.occupation} 
+                    name="occupationType" 
+                    value={form.occupationType} 
                     onChange={handlevalueChange} 
                     className="p-3 rounded-lg border border-gray-300 w-full bg-white cursor-pointer" 
                     required
                   >
-                    <option value="" disabled>Select Occupation</option>
+                    <option value="" disabled>Select Occupation Type</option>
                     <option value="Employed">Employed (Salaried)</option>
                     <option value="Self-Employed">Self-Employed</option>
                     <option value="Business">Business Owner</option>
-                    <option value="Other">Other (Farmer, Driver, Carpenter, etc.)</option>
+                    <option value="Other">Other</option>
                   </select>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <label className="font-bold text-gray-700">Occupation</label>
+                  <input name="occupation" placeholder="Occupation" onChange={handlevalueChange} className="p-3 rounded-lg border border-gray-300 w-full"/>
                 </div>
                 <div className="flex flex-col gap-2">
                   <label className="font-bold text-gray-700">Organization Name</label>
                   <input name="organizationName" placeholder="Company / Business Name" onChange={handlevalueChange} className="p-3 rounded-lg border border-gray-300 w-full"/>
                 </div>
-                <div className="flex flex-col gap-2 md:col-span-2">
+                <div className="flex flex-col gap-2">
                   <label className="font-bold text-gray-700">Monthly Income (₹)</label>
                   <input name="monthlyIncome" type="number" onChange={handlevalueChange} className="p-3 rounded-lg border border-gray-300 w-full" required />
                 </div>
