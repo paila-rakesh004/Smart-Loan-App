@@ -74,5 +74,7 @@ def analyze_document_with_llm(masked_ocr_text,expected_doc_type="Unknown"):
         print("Raw Output:", response.text)
         return {"error": "LLM returned invalid JSON"}
     except Exception as e:
-        print(f"LLM API Error: {e}")
+        print("!!! GEMINI CRASHED !!!")
+        print(f"Error Type: {type(e)}")
+        print(f"Error Message: {str(e)}")
         return {"error": str(e)}
