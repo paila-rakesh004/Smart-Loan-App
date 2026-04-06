@@ -108,8 +108,8 @@ SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('Bearer',), 
 }
 
-MEDIA_URL = '/documents/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'documents')
+# MEDIA_URL = '/documents/'
+# MEDIA_ROOT = os.path.join(BASE_DIR, 'documents')
 
 
 STORAGES = {

@@ -131,7 +131,7 @@ User = get_user_model()
 
 
 class SendOTPView(APIView):
-    permission_classes = []
+    permission_classes = [AllowAny]
     def post(self, request):
         username = request.data.get('username')
         
@@ -165,7 +165,7 @@ class SendOTPView(APIView):
 
 
 class VerifyOTPView(APIView):
-    permission_classes = []
+    permission_classes = [AllowAny]
     def post(self, request):
         username = request.data.get('username')
         otp = request.data.get('otp')
@@ -184,7 +184,7 @@ class VerifyOTPView(APIView):
 
 
 class ResetPasswordWithOTPView(APIView):
-    permission_classes = []
+    permission_classes = [AllowAny]
 
     def post(self, request):
         username = request.data.get('username')
