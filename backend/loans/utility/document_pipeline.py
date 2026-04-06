@@ -6,11 +6,12 @@ from thefuzz import fuzz
 def process_loan_document(image_file, user,declared_org="",declared_income="",declared_years="",expected_doc_type="Unknown"):
     
     
-
+    print(f"--- 1. STARTING PIPELINE FOR: {expected_doc_type} ---")
     raw_text = extract_text_from_image(image_file)
     if not raw_text:
+        print("--- X. OCR FAILED completely! ---")
         return {"status": "failed", "decision": "MANUAL_REVIEW", "reason": "OCR failed."}
-
+    print("--- 2. OCR SUCCESS, EXTRACTED TEXT ---")
     safe_text = mask_sensitive_data(raw_text)
     
     llm_result = analyze_document_with_llm(safe_text,expected_doc_type=expected_doc_type)
