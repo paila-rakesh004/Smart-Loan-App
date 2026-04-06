@@ -29,13 +29,13 @@ def extract_text_from_image(image_file):
                 pages = convert_from_bytes(image_bytes)
             
             for page_img in pages:
-                page_text = pytesseract.image_to_string(page_img, lang='eng+tel')
+                page_text = pytesseract.image_to_string(page_img, lang='eng')
                 raw_text += page_text + "\n"
                 
         else:
             print("Detected Image. Extracting directly...")
             img = Image.open(io.BytesIO(image_bytes))
-            raw_text = pytesseract.image_to_string(img, lang='eng+tel')
+            raw_text = pytesseract.image_to_string(img, lang='eng')
 
         image_file.seek(0)
         return raw_text.strip()
