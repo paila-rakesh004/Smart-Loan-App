@@ -13,7 +13,6 @@ export default function Login() {
 
   const [formData, setFormData] = useState({
     username: "",
-    email: "",
     password: ""
   });
 
@@ -32,7 +31,6 @@ export default function Login() {
     try {
       const res = await API.post("token/", { 
         username: formData.username,
-        email : formData.email,
         password: formData.password
       });
       
@@ -122,7 +120,7 @@ export default function Login() {
 
               <input
                 className="p-2 border border-white/40 bg-white/30 rounded-xl outline-none text-white placeholder-white/70 focus:border-indigo-400 w-full"
-                name={"username" || "email"}
+                name="username"
                 placeholder={role === "customer" ? "Enter Username" : "Enter Officer ID"}
                 onChange={handleChange}
                 required
