@@ -42,7 +42,7 @@ const ForgotPassword = () => {
       setOtpSent(true);
       setTimer(120);
     } catch (error) {
-      toast.error(error.response?.data?.error);
+      toast.error(error.response?.data?.error || "Server error! OTP could not be sent.");
     }
     finally{
       setClick(false);
