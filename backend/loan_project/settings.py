@@ -122,7 +122,7 @@ STORAGES = {
 }
 
 
-GEMINI_API_KEY = "AIzaSyB1JRgC-gJb6MegKzhL2pAayAPt0YrTawg"
+
 
 # EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 # EMAIL_HOST = 'smtp.gmail.com'
@@ -139,7 +139,7 @@ EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 
 
-
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
 
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': os.getenv('CLOUDINARY_CLOUD_NAME'),
