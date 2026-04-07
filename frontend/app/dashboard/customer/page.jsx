@@ -40,7 +40,9 @@ const Page = () => {
       const loanRes = await API.get("loans/my-loans/");
 
       setProfile(profileRes.data);
+      console.log("Loan Data:", profileRes.data);
       setLoans(loanRes.data);
+      console.log(loanRes.data);
     } catch (error) {
       console.error(error);
     } finally {

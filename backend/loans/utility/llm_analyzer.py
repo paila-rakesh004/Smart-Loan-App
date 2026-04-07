@@ -70,8 +70,8 @@ def analyze_document_with_llm(masked_ocr_text,expected_doc_type="Unknown"):
         return ai_data
         
     except json.JSONDecodeError:
-        print("Failed to parse LLM response into JSON.")
-        print("Raw Output:", response.text)
+        # print("Failed to parse LLM response into JSON.")
+        # print("Raw Output:", response.text)
         return {"error": "LLM returned invalid JSON"}
     except Exception as e:
         print("!!! GEMINI CRASHED !!!")

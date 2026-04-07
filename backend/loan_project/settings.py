@@ -8,7 +8,7 @@ load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
-DEBUG = False
+DEBUG = True
 ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
@@ -20,7 +20,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'rest_framework.authtoken',
     'cloudinary',  
     'corsheaders',
     'users',
@@ -59,20 +58,20 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'loan_project.wsgi.application'
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': 'smart_loan_db',
-#         'USER': 'postgres',
-#         'PASSWORD': 'Rakesh@1124',
-#         'HOST': 'localhost',
-#         'PORT': '5432',
-#     }
-# }
-
 DATABASES = {
-    'default': dj_database_url.parse(os.getenv('DATABASE_URL'))
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'smart_loan_db',
+        'USER': 'postgres',
+        'PASSWORD': 'Rakesh@1124',
+        'HOST': 'localhost',
+        'PORT': '5432',
+    }
 }
+
+# DATABASES = {
+#     'default': dj_database_url.parse(os.getenv('DATABASE_URL'))
+# }
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',},
@@ -125,23 +124,23 @@ STORAGES = {
 
 
 
-# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-# EMAIL_HOST = 'smtp.gmail.com'
-# EMAIL_PORT = 587
-# EMAIL_USE_TLS = True
-# EMAIL_HOST_USER = 'dumimailra@gmail.com'
-# EMAIL_HOST_PASSWORD = 'lkmwhcuermrlhwrz'
-
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 465
-EMAIL_USE_SSL = True
-EMAIL_USE_TLS = False
-EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'dumimailra@gmail.com'
+EMAIL_HOST_PASSWORD = 'lkmwhcuermrlhwrz'
+
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = 'smtp.gmail.com'
+# EMAIL_PORT = 465
+# EMAIL_USE_SSL = True
+# EMAIL_USE_TLS = False
+# EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+# EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 
 
-GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
+GEMINI_API_KEY = "AIzaSyCcSTPg06wAWNO4IwFC2TI53rzFcVjEZSc"
 
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': os.getenv('CLOUDINARY_CLOUD_NAME'),

@@ -25,7 +25,6 @@ const Page = () => {
     router.push('/profile/officer');
   }
 
- 
   const handleRowClick = async (loan) => {
     setSelectedLoan(loan);
     setRiskScore(null);
@@ -102,8 +101,6 @@ const Page = () => {
     fetchAllLoans();
   }, [router]);
 
-
-  
   const renderOfficerAIBadge = (documentKey) => {
     if (!selectedLoan.ai_verification_data || !selectedLoan.ai_verification_data[documentKey]) {
       return null; 
@@ -128,6 +125,20 @@ const Page = () => {
     return null;
   };
 
+  // --- REUSABLE DOCUMENT CARD ---
+  const DocumentCard = ({ title, url, badgeKey, colorClass = "bg-gray-50 border-gray-200" }) => {
+    if (!url) return null;
+    return (
+      <div className={`${colorClass} border p-5 rounded-xl shadow-sm hover:shadow-md transition`}>
+        <p className="font-bold text-gray-700 mb-2">{title}</p>
+        <a className="text-blue-600 font-normal hover:font-bold hover:text-blue-800 underline block mb-2" href={url} target="_blank" rel="noopener noreferrer">
+          View Document
+        </a>
+        {badgeKey && renderOfficerAIBadge(badgeKey)}
+      </div>
+    );
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen bg-gradient-to-r from-[#eef2f7] to-[#d9e4f5]">
@@ -139,7 +150,6 @@ const Page = () => {
   return (
     <div className="relative font-serif bg-gradient-to-r from-[#eef2f7] to-[#d9e4f5] min-h-screen pb-10">
    
-    
       <div className="fixed top-0 left-0 w-full bg-gradient-to-r from-[#eef2f7] to-[#d9e4f5] z-[60] py-4 px-4 sm:px-8 shadow-sm">
         <div className="max-w-7xl mx-auto bg-white shadow-xl rounded-xl p-4 sm:p-6 flex flex-col sm:flex-row justify-between items-center gap-4">
           <div className="w-full sm:w-auto text-center sm:text-left">
@@ -173,7 +183,6 @@ const Page = () => {
               Application Details
             </h2>
 
-            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-blue-50/50 p-6 rounded-xl shadow-sm border border-blue-100 text-gray-800">
               <div className="space-y-3">
                 <p><span className="font-bold text-gray-700">Applicant Name :</span> {selectedLoan.applicant_name || `User ID: ${selectedLoan.user}`}</p>
@@ -183,7 +192,6 @@ const Page = () => {
                 <p><span className="font-bold text-gray-700">Monthly Income : </span>₹{selectedLoan.monthly_income}</p>
                 <p><span className="font-bold text-gray-700">Occupation Type :</span> {selectedLoan.occupation}</p>
                 <p><span className="font-bold text-gray-700">Occupation :</span> {selectedLoan.occ}</p>
-               
               </div>
 
               <div className="space-y-3">
@@ -195,7 +203,7 @@ const Page = () => {
                   </span>
                 </p>
                 
-                <div className="space-y-3">
+                <div className="space-y-3 mt-4">
                    <p><span className="font-bold text-gray-700">Live CIBIL Score :</span> <span className={selectedLoan.actual_cibil < 600 ? 'text-red-600 font-bold' : 'text-green-600 font-bold'}>{selectedLoan.actual_cibil || "N/A"}</span></p>
                    <p><span className="font-bold text-gray-700">Total Transactions :</span> ₹{selectedLoan.total_transaction_amount || 0}</p>
                    <p><span className="font-bold text-gray-700">Fixed Deposits :</span> ₹{selectedLoan.fixed_deposits || 0}</p>
@@ -204,110 +212,81 @@ const Page = () => {
               </div>
             </div>
 
-            
             <h3 className="mt-10 mb-6 text-gray-800 text-xl sm:text-2xl border-l-4 border-blue-600 pl-3 font-bold">
-              KYC & Basic Documents
+              General KYC Documents
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {selectedLoan.pan_card_file && (
-                <div className="bg-red-100 border border-gray-200 p-5 rounded-xl shadow-sm hover:shadow-md transition">
-                  <p className="font-bold text-gray-700 mb-2">PAN Card</p>
-                  <a className="text-blue-600 font-normal hover:font-bold hover:text-blue-800 underline block mb-2" href={selectedLoan.pan_card_file} target="_blank" rel="noopener noreferrer">View Document</a>
-                  {renderOfficerAIBadge("panCard")}
-                </div>
-              )}
-              {selectedLoan.aadhar_card_file && (
-                <div className="bg-red-100 border border-gray-200 p-5 rounded-xl shadow-sm hover:shadow-md transition">
-                  <p className="font-bold text-gray-700 mb-2">Aadhaar Card</p>
-                  <a className="text-blue-600 font-normal hover:font-bold hover:text-blue-800 underline block mb-2" href={selectedLoan.aadhar_card_file} target="_blank" rel="noopener noreferrer">View Document</a>
-                  {renderOfficerAIBadge("aadharCard")}
-                </div>
-              )}
-              {selectedLoan.passport_photo && (
-                <div className="bg-red-100 border border-gray-200 p-5 rounded-xl shadow-sm hover:shadow-md transition">
-                  <p className="font-bold text-gray-700 mb-2">Passport Photo</p>
-                  <a className="text-blue-600 font-normal hover:font-bold hover:text-blue-800 underline block mb-2" href={selectedLoan.passport_photo} target="_blank" rel="noopener noreferrer">View Document</a>
-                </div>
-              )}
+              <DocumentCard title="PAN Card" url={selectedLoan.pan_card_file} badgeKey="panCard" colorClass="bg-red-50 border-red-200" />
+              <DocumentCard title="Aadhaar Card" url={selectedLoan.aadhar_card_file} badgeKey="aadharCard" colorClass="bg-red-50 border-red-200" />
+              <DocumentCard title="Passport Photo" url={selectedLoan.passport_photo} colorClass="bg-red-50 border-red-200" />
             </div>
 
-            
             {(selectedLoan.itr_document || selectedLoan.bank_statements || selectedLoan.salary_slips || selectedLoan.emp_id_card) && (
               <>
                 <h3 className="mt-10 mb-6 text-gray-800 text-xl sm:text-2xl border-l-4 border-indigo-600 pl-3 font-bold">
                   Employment & Financial Proofs
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                  {selectedLoan.bank_statements && (
-                    <div className="bg-green-100 border border-indigo-100 p-5 rounded-xl shadow-sm hover:shadow-md transition">
-                      <p className="font-bold text-gray-700 mb-2">Bank Statements</p>
-                      <a className="text-indigo-600 font-normal hover:font-bold hover:text-indigo-800 underline block mb-2" href={selectedLoan.bank_statements} target="_blank" rel="noopener noreferrer">View Document</a>
-                      {renderOfficerAIBadge("bankStatements")}
-                    </div>
-                  )}
-                  {selectedLoan.itr_document && (
-                    <div className="bg-green-100 border border-indigo-100 p-5 rounded-xl shadow-sm hover:shadow-md transition">
-                      <p className="font-bold text-gray-700 mb-2">Income Proof (ITR)</p>
-                      <a className="text-indigo-600 font-normal hover:font-bold hover:text-indigo-800 underline block mb-2" href={selectedLoan.itr_document} target="_blank" rel="noopener noreferrer">View Document</a>
-                      {renderOfficerAIBadge("itrDocument")}
-                    </div>
-                  )}
-                  {selectedLoan.salary_slips && (
-                    <div className="bg-green-100 border border-indigo-100 p-5 rounded-xl shadow-sm hover:shadow-md transition">
-                      <p className="font-bold text-gray-700 mb-2">Salary Slips</p>
-                      <a className="text-indigo-600 font-normal hover:font-bold hover:text-indigo-800 underline block mb-2" href={selectedLoan.salary_slips} target="_blank" rel="noopener noreferrer">View Document</a>
-                      {renderOfficerAIBadge("salarySlips")}
-                    </div>
-                  )}
-                  {selectedLoan.emp_id_card && (
-                    <div className="bg-green-100 border border-indigo-100 p-5 rounded-xl shadow-sm hover:shadow-md transition">
-                      <p className="font-bold text-gray-700 mb-2">Employee ID</p>
-                      <a className="text-indigo-600 font-normal hover:font-bold hover:text-indigo-800 underline block mb-2" href={selectedLoan.emp_id_card} target="_blank" rel="noopener noreferrer">View Document</a>
-                      {renderOfficerAIBadge("empIdCard")}
-                    </div>
-                  )}
+                  <DocumentCard title="Bank Statements" url={selectedLoan.bank_statements} badgeKey="bankStatements" colorClass="bg-green-50 border-indigo-200" />
+                  <DocumentCard title="Income Proof (ITR)" url={selectedLoan.itr_document} badgeKey="itrDocument" colorClass="bg-green-50 border-indigo-200" />
+                  <DocumentCard title="Salary Slips" url={selectedLoan.salary_slips} badgeKey="salarySlips" colorClass="bg-green-50 border-indigo-200" />
+                  <DocumentCard title="Employee ID" url={selectedLoan.emp_id_card} badgeKey="empIdCard" colorClass="bg-green-50 border-indigo-200" />
                 </div>
               </>
             )}
 
-           
+            {selectedLoan.loan_type === 'Education' && (
+              <>
+                <h3 className="mt-10 mb-6 text-gray-800 text-xl sm:text-2xl border-l-4 border-indigo-600 pl-3 font-bold">
+                  Academic Documents
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                  <DocumentCard title="10th Certificate" url={selectedLoan.doc_10th_cert} badgeKey="doc10thCert" colorClass="bg-indigo-50 border-indigo-200" />
+                  <DocumentCard title="12th Certificate" url={selectedLoan.doc_12th_cert} badgeKey="doc12thCert" colorClass="bg-indigo-50 border-indigo-200" />
+                  <DocumentCard title="Degree Certificate" url={selectedLoan.doc_degree_cert} badgeKey="docDegreeCert" colorClass="bg-indigo-50 border-indigo-200" />
+                  <DocumentCard title="Admission Letter" url={selectedLoan.doc_admission_letter} badgeKey="docAdmissionLetter" colorClass="bg-indigo-50 border-indigo-200" />
+                  <DocumentCard title="Fee Structure" url={selectedLoan.doc_fee_structure} badgeKey="docFeeStructure" colorClass="bg-indigo-50 border-indigo-200" />
+                </div>
+              </>
+            )}
+
+        
+            {selectedLoan.loan_type === 'Home' && (
+              <>
+                <h3 className="mt-10 mb-6 text-gray-800 text-xl sm:text-2xl border-l-4 border-emerald-600 pl-3 font-bold">
+                  Property Documents
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                  <DocumentCard title="Agreement to Sale" url={selectedLoan.doc_agreement_sale} badgeKey="docAgreementSale" colorClass="bg-emerald-50 border-emerald-200" />
+                  <DocumentCard title="No Objection Certificate" url={selectedLoan.doc_noc} badgeKey="docNoc" colorClass="bg-emerald-50 border-emerald-200" />
+                  <DocumentCard title="Encumbrance Certificate" url={selectedLoan.doc_encumbrance_cert} colorClass="bg-emerald-50 border-emerald-200" />
+                  <DocumentCard title="Building Plan" url={selectedLoan.doc_building_plan} colorClass="bg-emerald-50 border-emerald-200" />
+                </div>
+              </>
+            )}
+
             <div className="mt-8 mb-8 bg-gray-50 border border-gray-200 p-4 rounded-xl text-center shadow-sm">
               <p className="text-xs sm:text-sm text-gray-500">
-                <span className="font-bold text-gray-700">Note:</span> The "AI Pre-Screened" tags are generated by automated LLM analysis. AI can occasionally make mistakes or hallucinate data. Please reverify flagged documents for quality assurance purposes.
+                <span className="font-bold text-gray-700">Note:</span> The "AI Pre-Screened" tags are generated by automated LLM analysis. Please reverify flagged documents for quality assurance purposes.
               </p>
             </div>
 
-          
+           
             <h4 className="mt-10 mb-6 text-gray-800 text-xl sm:text-2xl border-l-4 border-blue-600 pl-3 font-bold">
-              Nominee Details
+              Co-Applicant / Guarantor Details
             </h4>
-            <span className="m-1 text-indigo-700 text-lg sm:text-xl font-medium mb-4">Nominee Name: {selectedLoan.nominee_name || 'N/A'}</span>
-            <span className="block m-1 text-indigo-700 text-lg sm:text-xl font-medium mb-4">Nominee Age: {selectedLoan.nominee_age || 'N/A'}</span>
+            <div className="bg-blue-50/50 p-6 rounded-xl border border-blue-100 mb-6">
+              <p><span className="font-bold text-gray-700">Name:</span> {selectedLoan.nominee_name || 'N/A'}</p>
+              <p><span className="font-bold text-gray-700">Age:</span> {selectedLoan.nominee_age || 'N/A'}</p>
+              {selectedLoan.guarantor_income && <p><span className="font-bold text-gray-700">Guarantor Income:</span> ₹{selectedLoan.guarantor_income}</p>}
+              {selectedLoan.guarantor_organization && <p><span className="font-bold text-gray-700">Guarantor Employer:</span> {selectedLoan.guarantor_organization}</p>}
+            </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"> 
-              {selectedLoan.nominee_id_card && (
-                <div className="bg-blue-50/50 border border-blue-100 p-5 rounded-xl shadow-sm hover:shadow-md transition">
-                  <p className="font-bold text-gray-700 mb-2">Nominee ID Proof</p>
-                  <a className="text-blue-600 font-normal hover:font-bold hover:text-blue-800 underline" href={selectedLoan.nominee_id_card} target="_blank" rel="noopener noreferrer">View Document</a>
-                </div>
-              )}
-              {selectedLoan.nominee_address_proof && (
-                <div className="bg-blue-50/50 border border-blue-100 p-5 rounded-xl shadow-sm hover:shadow-md transition">
-                  <p className="font-bold text-gray-700 mb-2">Nominee Address Proof</p>
-                  <a className="text-blue-600 font-normal hover:font-bold hover:text-blue-800 underline" href={selectedLoan.nominee_address_proof} target="_blank" rel="noopener noreferrer">View Document</a>
-                </div>
-              )}
-              {selectedLoan.nominee_sign && (
-                <div className="bg-blue-50/50 border border-blue-100 p-5 rounded-xl shadow-sm hover:shadow-md transition">
-                  <p className="font-bold text-gray-700 mb-2">Nominee Signature</p>
-                  <a className="text-blue-600 font-normal hover:font-bold hover:text-blue-800 underline" href={selectedLoan.nominee_sign} target="_blank" rel="noopener noreferrer">View Document</a>
-                </div>
-              )}
-              {selectedLoan.nominee_ration_card && (
-                <div className="bg-blue-50/50 border border-blue-100 p-5 rounded-xl shadow-sm hover:shadow-md transition">
-                  <p className="font-bold text-gray-700 mb-2">Nominee Ration Card</p>
-                  <a className="text-blue-600 font-normal hover:font-bold hover:text-blue-800 underline" href={selectedLoan.nominee_ration_card} target="_blank" rel="noopener noreferrer">View Document</a>
-                </div>
-              )}
+              <DocumentCard title="Guarantor KYC" url={selectedLoan.doc_guarantor_kyc}  colorClass="bg-blue-50 border-blue-200" />
+              <DocumentCard title="Guarantor Financials" url={selectedLoan.doc_guarantor_financials} colorClass="bg-blue-50 border-blue-200" />
+              <DocumentCard title="Guarantor Photo" url={selectedLoan.doc_guarantor_photo} colorClass="bg-blue-50 border-blue-200" />
+              <DocumentCard title="Guarantor Signature" url={selectedLoan.doc_guarantor_signature} colorClass="bg-blue-50 border-blue-200" />
             </div>
           
             
@@ -329,7 +308,6 @@ const Page = () => {
               </div>
             )}
 
-           
             <h3 className="mt-10 mb-6 text-gray-800 text-xl sm:text-2xl border-l-4 border-blue-600 pl-3 font-bold">
               Officer Decision
             </h3>
@@ -359,7 +337,6 @@ const Page = () => {
 
         ) : (
           
-       
           <div className="bg-white shadow-lg rounded-2xl p-6 sm:p-10 w-full">
             <h2 className="mb-8 text-gray-800 text-xl sm:text-2xl border-l-4 border-blue-600 pl-3 font-bold">
               Active Loan Applications

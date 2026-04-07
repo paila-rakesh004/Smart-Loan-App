@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const API = axios.create({
-  baseURL: 'https://smart-loan-app-1.onrender.com/api/', 
+  baseURL: 'http://127.0.0.1:8000/api/', 
 });
 
 
@@ -37,7 +37,7 @@ API.interceptors.response.use(
         if (!refreshToken) {
           throw new Error("No refresh token found");
         }
-        const res = await axios.post('https://smart-loan-app-1.onrender.com/api/token/refresh/', {
+        const res = await axios.post('http://127.0.0.1:8000/api/token/refresh/', {
           refresh: refreshToken,
         });
         localStorage.setItem('access_token', res.data.access);

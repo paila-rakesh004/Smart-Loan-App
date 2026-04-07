@@ -24,7 +24,6 @@ class ApplyLoanView(APIView):
         data = request.data
         files = request.FILES
 
-        
         vault_updated = False
         
         if 'pan_card_file' in files:
@@ -43,49 +42,55 @@ class ApplyLoanView(APIView):
             user.age = int(data['age'])
             vault_updated = True
 
-        
         if vault_updated:
             user.save()
 
-        
         try:
-            
             ai_data = {}
             if 'ai_statuses' in data:
                 try:
                     ai_data = json.loads(data['ai_statuses'])
                 except json.JSONDecodeError:
                     pass
-                
 
-           
             loan = LoanApplication.objects.create(
                 user=user,
                 occupation=data.get('occupation', ''),
-                occ = data.get('occ',''),
+                occ=data.get('occ', ''),
                 organization_name=data.get('organization_name', ''),
                 monthly_income=data.get('monthly_income', 0),
                 loan_type=data.get('loan_type', ''),
                 loan_amount=data.get('loan_amount', 0),
                 tenure=data.get('tenure', 0),
+            
                 nominee_name=data.get('nominee_name', ''),
                 nominee_age=data.get('nominee_age',0),
-                
-                
+                guarantor_organization=data.get('guarantor_organization', ''),
+                guarantor_income=data.get('guarantor_income') if data.get('guarantor_income') else None,
+                doc_guarantor_photo=files.get('doc_guarantor_photo'),
+                doc_guarantor_signature=files.get('doc_guarantor_signature'),
+
+
                 bank_statements=files.get('bank_statements'),
                 itr_document=files.get('itr_document'),
                 salary_slips=files.get('salary_slips'),
                 emp_id_card=files.get('emp_id_card'),
                 
+                doc_10th_cert=files.get('doc_10th_cert'),
+                doc_12th_cert=files.get('doc_12th_cert'),
+                doc_degree_cert=files.get('doc_degree_cert'),
+                doc_admission_letter=files.get('doc_admission_letter'),
+                doc_fee_structure=files.get('doc_fee_structure'),
+                doc_guarantor_kyc=files.get('doc_guarantor_kyc'),
+                doc_guarantor_financials=files.get('doc_guarantor_financials'),
                 
-                nominee_id_card=files.get('nominee_id_card'),
-                nominee_address_proof=files.get('nominee_address_proof'),
-                nominee_ration_card = files.get('nominee_ration_card'),
-                nominee_sign=files.get('nominee_sign'),
+                doc_agreement_sale=files.get('doc_agreement_sale'),
+                doc_encumbrance_cert=files.get('doc_encumbrance_cert'),
+                doc_building_plan=files.get('doc_building_plan'),
+                doc_noc=files.get('doc_noc'),
                 
                 ai_verification_data=ai_data
             )
-
             
             all_approved = True
             for key, status_dict in ai_data.items():
@@ -104,7 +109,9 @@ class ApplyLoanView(APIView):
             }, status=status.HTTP_201_CREATED)
 
         except Exception as e:
+            print(f"Loan Application Error: {e}")
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        
 
 class MyLoansView(APIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -112,6 +119,7 @@ class MyLoansView(APIView):
     def get(self, request):
         loans = LoanApplication.objects.filter(user=request.user).order_by('-created_at')
         serializer = LoanApplicationSerializer(loans, many=True)
+        print(serializer.data)
         return Response(serializer.data)
 
 User = get_user_model()
@@ -300,7 +308,7 @@ class VerifyDocumentView(APIView):
                 print(f"Permanently saved Legal Name for {request.user.username}: {first_name} {last_name}")
         try:
             ai_result = process_loan_document(image_file=document,user=request.user,declared_org=declared_org,declared_income=declared_income,declared_years=declared_years,expected_doc_type=expected_doc_type)
-            
+            print(ai_result)
             
             if ai_result.get("status") == "failed":
                 return Response(ai_result, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
