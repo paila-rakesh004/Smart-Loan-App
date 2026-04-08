@@ -1,12 +1,12 @@
 "use client";
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useImperativeHandle } from 'react';
 import { useRouter } from 'next/navigation';
 import API from '@/lib/api';
 import { toast } from "react-toastify";
 
+
 const ForgotPassword = () => {
   const router = useRouter();
-  
   
   const [step, setStep] = useState(1); 
   const [showPassword, setShowPassword] = useState(false);

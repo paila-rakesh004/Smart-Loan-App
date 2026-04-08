@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import API from "@/lib/api";
 import { toast } from "react-toastify";
 import { UserCircleIcon, ArrowRightOnRectangleIcon, ArrowLeftIcon, CheckCircleIcon } from '@heroicons/react/24/solid';
-import { data } from "autoprefixer";
+
 
 export default function ApplyLoan() {
   const router = useRouter();

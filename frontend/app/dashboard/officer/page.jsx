@@ -330,16 +330,16 @@ const Page = () => {
             />
             <div className="mt-8 flex flex-col sm:flex-row gap-4">
               <button
-                onClick={() => handleStatusUpdate('Approved')}
+                onClick={() => handleStatusUpdate('Eligible')}
                 className="bg-green-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-green-700 transition transform hover:-translate-y-1 shadow-md w-full sm:w-auto text-center cursor-pointer"
               >
-                Approve Loan
+                 Eligible for Loan
               </button>
               <button
-                onClick={() => handleStatusUpdate('Rejected')}
+                onClick={() => handleStatusUpdate('Not Eligible')}
                 className="bg-red-500 text-white px-8 py-3 rounded-xl font-bold hover:bg-red-600 transition transform hover:-translate-y-1 shadow-md w-full sm:w-auto text-center cursor-pointer"
               >
-                Reject Loan
+                 Not Eligible for Loan
               </button>
             </div>
 

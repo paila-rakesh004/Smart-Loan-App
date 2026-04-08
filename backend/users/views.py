@@ -4,7 +4,7 @@ from rest_framework import status,permissions
 from django.contrib.auth import authenticate
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from .serializers import CustomerRegisterSerializer, LoginSerializer, UserProfileSerializer
+from .serializers import UserProfileSerializer
 from django.db import connection
 from django.contrib.auth import get_user_model
 from django.db import connection 
@@ -13,45 +13,11 @@ from datetime import timedelta
 from django.core.mail import send_mail
 from django.conf import settings
 import random
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
+from .serializers import CustomTokenObtainPairSerializer
 
-
-
-class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
-    def validate(self, attrs):
-
-        data = super().validate(attrs)
-      
-        data['is_officer'] = self.user.is_officer
-        data['is_customer'] = self.user.is_customer
-        return data
-    
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
-
-
-
-class LoginView(APIView):
-    permission_classes = [AllowAny]
-
-    def post(self, request):
-        serializer = LoginSerializer(data=request.data)
-        if serializer.is_valid():
-            
-            username = serializer.validated_data['username']
-            password = serializer.validated_data['password']
-            user = authenticate(username=username, password=password)
-            if user:
-                token,create = Token.objects.get_or_create(user=user)
-                return Response({
-                    "token": token.key,
-                    "is_customer": user.is_customer,
-                    "is_officer": user.is_officer,
-                    "username": user.username
-                })
-            return Response({"error": "Invalid Credentials"}, status=status.HTTP_401_UNAUTHORIZED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class UserProfileView(APIView):
     permission_classes = [IsAuthenticated]
@@ -60,7 +26,7 @@ class UserProfileView(APIView):
         serializer = UserProfileSerializer(request.user)
         return Response(serializer.data)
 
-        
+
 class CheckUserStatus(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -91,8 +57,6 @@ class UpdateProfileView(APIView):
         if not new_username:
             return Response({"error": "Username is required."}, status=status.HTTP_400_BAD_REQUEST)
 
-
-       
         if new_username != old_username:
             with connection.cursor() as cursor:
                 cursor.execute("""
@@ -200,8 +164,7 @@ class ResetPasswordWithOTPView(APIView):
 
             
             user.set_password(new_password)
-            
-            
+    
             user.reset_otp = None
             user.otp_expiry = None
             user.save()

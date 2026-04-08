@@ -1,9 +1,8 @@
 from django.urls import path
-from .views import  CheckKYCStatusView, LoginView, UserProfileView, CheckUserStatus, UpdateProfileView, ChangePasswordView, SendOTPView, VerifyOTPView, ResetPasswordWithOTPView
+from .views import  CheckKYCStatusView, UserProfileView, CheckUserStatus, UpdateProfileView, ChangePasswordView, SendOTPView, VerifyOTPView, ResetPasswordWithOTPView
 
 urlpatterns = [
     path('my-kyc/', CheckKYCStatusView.as_view(), name='my-kyc'),
-    path('login/', LoginView.as_view(), name='login'),
     path('profile/', UserProfileView.as_view(), name='profile'),
     path('check-status/',CheckUserStatus.as_view(),name='check-status'),
     path('update-profile/', UpdateProfileView.as_view(), name='update-profile'),

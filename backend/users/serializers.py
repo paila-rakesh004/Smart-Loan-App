@@ -1,31 +1,20 @@
 from rest_framework import serializers
 from .models import User
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
-class CustomerRegisterSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True)
 
-    class Meta:
-        model = User
-        fields = ['username', 'password', 'email', 'phone_number', 'pan_number', 'aadhar_number', 'address']
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    def validate(self, attrs):
 
-    def create(self, validated_data):
-        user = User.objects.create_user(
-            username=validated_data['username'],
-            password=validated_data['password'],
-            email=validated_data.get('email', ''),
-            phone_number=validated_data.get('phone_number', ''),
-            pan_number=validated_data.get('pan_number', ''),
-            aadhar_number=validated_data.get('aadhar_number', ''),
-            address=validated_data.get('address', ''),
-            is_customer=True,
-        )
-        return user
+        data = super().validate(attrs)
+      
+        data['is_officer'] = self.user.is_officer
+        data['is_customer'] = self.user.is_customer
+        return data
 
-class LoginSerializer(serializers.Serializer):
-    username = serializers.CharField()
-    password = serializers.CharField(write_only=True)
 
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['username', 'email', 'phone_number', 'pan_number', 'aadhar_number', 'address','first_name','last_name']
+
