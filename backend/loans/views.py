@@ -15,6 +15,8 @@ from .utils import calculate_mock_cibil
 from django.db.models import Q
 from .utility.document_pipeline import process_loan_document
 from rest_framework.permissions import IsAuthenticated
+from users.permissions import IsOfficerUser
+
 
 class ApplyLoanView(APIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -119,12 +121,11 @@ class MyLoansView(APIView):
     def get(self, request):
         loans = LoanApplication.objects.filter(user=request.user).order_by('-created_at')
         serializer = LoanApplicationSerializer(loans, many=True)
-        print(serializer.data)
         return Response(serializer.data)
 
 User = get_user_model()
 class OfficerAllLoansView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsOfficerUser]
 
     def get(self, request):
         loans = LoanApplication.objects.all().order_by('-created_at')
@@ -155,7 +156,7 @@ class OfficerAllLoansView(APIView):
         
         return Response(data)
 class OfficerUpdateLoanView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsOfficerUser]
 
     def patch(self, request, pk):
         try:
@@ -184,7 +185,7 @@ with open(LE_PATH, 'rb') as f:
 
 
 class CalculateRiskView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsOfficerUser]
 
     def get(self, request, pk):
         try:
@@ -255,7 +256,7 @@ class CustomerLoanStatsView(APIView):
 
 
 class OfficerLoanStatsView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsOfficerUser]
 
     def get(self, request):
         user = request.user
@@ -324,7 +325,7 @@ class VerifyDocumentView(APIView):
             )
 
 class RecalculateCibilView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated,IsOfficerUser]
 
     def get(self, request, pk):
         try:

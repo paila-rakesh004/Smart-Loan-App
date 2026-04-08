@@ -18,6 +18,7 @@ const Page = () => {
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
     localStorage.removeItem('username');
+    localStorage.removeItem('is_officer');
     router.push('/login');
   };
   
@@ -87,6 +88,12 @@ const Page = () => {
       router.push('/login');
       return;
     }
+    const isOfficer = localStorage.getItem('is_officer');
+    if (isOfficer !== 'true') {
+      toast.error("Security Alert: Unauthorized Access");
+      router.push('/dashboard/customer');
+      return;
+    }
 
     const fetchAllLoans = async () => {
       try {
@@ -94,6 +101,9 @@ const Page = () => {
         setLoans(res.data);
       } catch (error) {
         console.error(error);
+        if (error.response?.status === 403) {
+            router.push('/dashboard/customer');
+        }
       } finally {
         setLoading(false);
       }

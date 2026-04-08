@@ -53,7 +53,12 @@ const OfficerProfile = () => {
       router.push('/login');
       return;
     }
-
+    const isOfficer = localStorage.getItem('is_officer');
+    if(!isOfficer){
+      toast.error("Security Alert: Unauthorized Access");
+      router.push('/profile/customer');
+      return;
+    }
     const fetchProfileData = async () => {
       try {
         const profileRes = await API.get('users/profile/', {
@@ -69,7 +74,9 @@ const OfficerProfile = () => {
 
       } catch (error) {
         console.error("Failed to load profile data", error);
-        toast.error("Could not load profile details.");
+        if (error.response?.status === 403) {
+            router.push('/profile/customer');
+        }
       }
       finally{
         setLoading(false)

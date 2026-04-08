@@ -38,7 +38,8 @@ export default function Login() {
       localStorage.setItem("access_token", res.data.access);
       localStorage.setItem("refresh_token", res.data.refresh);
       localStorage.setItem("username", formData.username);
-
+      localStorage.setItem('is_officer', res.data.is_officer);
+      
       
       if (role === "officer") {
         if (res.data.is_officer) {
@@ -137,6 +138,7 @@ export default function Login() {
                 onChange={handleChange}
                 required
                 disabled={loading}
+                maxLength="10"
               />
 
               

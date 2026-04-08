@@ -13,7 +13,9 @@ export default function ApplyLoan() {
   const [click, setClick] = useState(false);
   const [aiStatuses, setAiStatuses] = useState({});
   const [isNameLocked, setIsNameLocked] = useState(false);
-  
+  const [showInfo, setShowInfo] = useState(false);
+
+
   const [kycStatus, setKycStatus] = useState({
     documents_present: { pan_card: false, aadhar_card: false, passport_photo: false }
   });
@@ -92,6 +94,7 @@ export default function ApplyLoan() {
     localStorage.removeItem("access_token");
     localStorage.removeItem("refresh_token");
     localStorage.removeItem("username");
+    localStorage.removeItem('is_officer');
     router.push("/login");
   };
 
@@ -365,9 +368,9 @@ export default function ApplyLoan() {
       
       <div className="fixed top-0 left-0 w-full bg-gradient-to-r from-[#eef2f7] to-[#d9e4f5] z-[60] py-4 px-4 sm:px-8 shadow-sm">
         <div className="max-w-7xl mx-auto bg-white shadow-xl rounded-xl p-4 sm:p-6 flex justify-between items-center">
+          <button onClick={() => router.push("/dashboard/customer")}><ArrowLeftIcon className="w-7 h-7 sm:w-9 sm:h-9 text-gray-700 cursor-pointer hover:-translate-y-0.5 transition" /></button>
           <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold text-blue-900">Loan Application</h1>
           <div className="flex gap-2 sm:gap-4 items-center">
-            <button onClick={() => router.push("/dashboard/customer")}><ArrowLeftIcon className="w-7 h-7 sm:w-9 sm:h-9 text-gray-700 cursor-pointer hover:-translate-y-0.5 transition" /></button>
             <button onClick={() => router.push("/profile/customer")}><UserCircleIcon className="w-8 h-8 sm:w-10 sm:h-10 text-blue-700 cursor-pointer hover:-translate-y-0.5 transition" /></button>
             <button onClick={handleLogout}><ArrowRightOnRectangleIcon className="w-7 h-7 sm:w-9 sm:h-9 text-red-600 cursor-pointer hover:-translate-y-0.5 transition" /></button>
           </div>
@@ -415,13 +418,37 @@ export default function ApplyLoan() {
                     <option value="Other">Other</option>
                   </select>
                 </div>
-                <div className="flex flex-col gap-2">
-                  <label className="font-bold text-gray-700">Occupation {isStudent && "(Institution)"}</label>
+              <div className="flex flex-col gap-2">
+                  <label className="font-bold text-gray-700">Occupation {isStudent && "(Education)"}</label>
                   <input name="occupation" placeholder={isStudent ? "E.g., B.Tech Student" : "Occupation"} onChange={handlevalueChange} className="p-3 rounded-lg border border-gray-300 w-full"/>
                 </div>
                 <div className="flex flex-col gap-2">
-                  <label className="font-bold text-gray-700">Organization Name {isStudent && "(College/School)"}</label>
-                  <input name="organizationName" placeholder={isStudent ? "College/University Name" : "Company / Business Name"} onChange={handlevalueChange} className="p-3 rounded-lg border border-gray-300 w-full"/>
+                  <label className="flex items-center gap-2 font-bold text-gray-700">Organization Name {isStudent && "(College/School)"}
+                    <div className="relative group">
+                      <span onClick={() => setShowInfo(!showInfo)}
+                      className="w-5 h-5 flex items-center justify-center rounded-full bg-gray-400 text-white text-xs cursor-pointer">
+                        i   </span>
+                      <div className={`absolute bottom-full left-1/2 -translate-x-1/2 mb-2
+                        bg-black text-white text-xs px-3 py-2 rounded 
+                        transition duration-300 z-10 w-50 text-center group-hover:opacity-100 pointer-events-none
+                        ${showInfo ? "opacity-100" : "opacity-0 pointer-events-none"}
+                       `}>
+                        Farmer : Agriculture <br />
+                        Driver : Transport Service <br />
+                        Carpenter : Wood Work <br />
+                        Electrician : Electric Service <br />
+                        Plumber : Plumbing Service <br />
+                      </div>  
+                    </div> 
+                  </label>
+
+                  <input
+                  name="organizationName"
+                  placeholder={isStudent ? "College/University Name" : "Company / Business Name"}
+                  onChange={handlevalueChange}
+                  className="p-3 rounded-lg border border-gray-300 w-full"
+                  />
+
                 </div>
                 <div className="flex flex-col gap-2">
                   <label className="font-bold text-gray-700">Monthly Income (₹) {isStudent && "(Enter 0 if none)"}</label>
@@ -486,7 +513,7 @@ export default function ApplyLoan() {
                       {renderAIBadge("salarySlips")}
                     </div>
                     <div className="flex flex-col gap-2">
-                      <label className="font-bold text-gray-700">Employee ID Card (Stable Employment)</label>
+                      <label className="font-bold text-gray-700">Employee ID Card </label>
                       <input type="file" name="empIdCard" onChange={handleFileChange} accept=".pdf,.png,.jpg" className="block w-full text-sm text-gray-500 border border-gray-200 rounded-lg file:mr-2 sm:file:mr-4 file:py-2 file:px-4 file:bg-blue-50 file:text-blue-700 cursor-pointer" required />
                       {renderAIBadge("empIdCard")}
                     </div>
