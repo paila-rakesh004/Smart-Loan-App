@@ -60,7 +60,7 @@ const Page = () => {
       <div className="w-15 h-15 border-6 border-blue-500 border-b-transparent rounded-full animate-ping"></div>
     </div>
   );
-}
+  }
 
   return (
     <div className="relative font-serif bg-gradient-to-r from-[#eef2f7] to-[#d9e4f5] min-h-screen pb-10">

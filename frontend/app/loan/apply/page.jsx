@@ -433,11 +433,7 @@ export default function ApplyLoan() {
                         transition duration-300 z-10 w-50 text-center group-hover:opacity-100 pointer-events-none
                         ${showInfo ? "opacity-100" : "opacity-0 pointer-events-none"}
                        `}>
-                        Farmer : Agriculture <br />
-                        Driver : Transport Service <br />
-                        Carpenter : Wood Work <br />
-                        Electrician : Electric Service <br />
-                        Plumber : Plumbing Service <br />
+                        Enter the workplace if you don't have specific organization name.
                       </div>  
                     </div> 
                   </label>

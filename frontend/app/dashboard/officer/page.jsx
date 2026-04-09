@@ -13,7 +13,10 @@ const Page = () => {
   const [loading, setLoading] = useState(true);
   const [riskScore, setRiskScore] = useState(null);
   const [notes, setNotes] = useState('');
-  
+  const [sure,setSure] = useState(false);
+  const [status,setStatus] = useState('Eligible');
+  const [disable,setDisable] = useState(false);
+
   const handleLogout = () => {
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
@@ -32,10 +35,8 @@ const Page = () => {
     setNotes('');
 
     try {
-      const token = localStorage.getItem('access_token');
-      const res = await API.get(`loans/officer/${loan.id}/recalculate-cibil/`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      
+      const res = await API.get(`loans/officer/${loan.id}/recalculate-cibil/`);
       
       const freshScore = res.data.new_cibil_score;
       setSelectedLoan(prev => ({ ...prev, actual_cibil: freshScore }));
@@ -48,10 +49,7 @@ const Page = () => {
 
   const handleCalculateRisk = async () => {
     try {
-      const token = localStorage.getItem('access_token');
-      const res = await API.get(`loans/officer/${selectedLoan.id}/calculate-risk/`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await API.get(`loans/officer/${selectedLoan.id}/calculate-risk/`);
       const score = res.data.risk_score;
       setRiskScore(score);
       toast.success("Risk Score calculated successfully!");
@@ -61,25 +59,38 @@ const Page = () => {
     }
   };
 
-  const handleStatusUpdate = async (newStatus) => {
+  const confirmUpdate = async (newStatus) => {
     try {
-      const token = localStorage.getItem('access_token');
+      
       await API.patch(`loans/officer/${selectedLoan.id}/update-status/`, {
         status: newStatus,
         cibil_score: selectedLoan.actual_cibil !== "N/A" ? selectedLoan.actual_cibil : null,
         officer_notes: notes,
         risk_score: riskScore
-      }, {
-        headers: { Authorization: `Bearer ${token}` },
       });
 
       toast.success(`Application has been ${newStatus}!`);
       setLoans(loans.map(loan => loan.id === selectedLoan.id ? { ...loan, status: newStatus } : loan));
       setSelectedLoan(null);
+      setDisable(true);
     } catch (error) {
       console.error(error);
-      alert("Error updating application status.");
+      toast.error("Error updating application status.");
     }
+    finally{
+      setSure(false);
+    }
+  }
+
+  const handleEligible = () => {
+    setSure(true);
+    setStatus('Eligible');
+    console.log(sure); 
+  };
+  const handleNotEligible = () => {
+    setSure(true);
+    setStatus('Not Eligible');
+    console.log(sure); 
   };
 
   useEffect(() => {
@@ -111,6 +122,8 @@ const Page = () => {
     fetchAllLoans();
   }, [router]);
 
+  
+
   const renderOfficerAIBadge = (documentKey) => {
     if (!selectedLoan.ai_verification_data || !selectedLoan.ai_verification_data[documentKey]) {
       return null; 
@@ -135,7 +148,7 @@ const Page = () => {
     return null;
   };
 
-  // --- REUSABLE DOCUMENT CARD ---
+ 
   const DocumentCard = ({ title, url, badgeKey, colorClass = "bg-gray-50 border-gray-200" }) => {
     if (!url) return null;
     return (
@@ -149,6 +162,7 @@ const Page = () => {
     );
   };
 
+ 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen bg-gradient-to-r from-[#eef2f7] to-[#d9e4f5]">
@@ -158,8 +172,8 @@ const Page = () => {
   }
   
   return (
-    <div className="relative font-serif bg-gradient-to-r from-[#eef2f7] to-[#d9e4f5] min-h-screen pb-10">
-   
+    <div className="relative z-0 font-serif bg-gradient-to-r from-[#eef2f7] to-[#d9e4f5] min-h-screen pb-10">
+        
       <div className="fixed top-0 left-0 w-full bg-gradient-to-r from-[#eef2f7] to-[#d9e4f5] z-[60] py-4 px-4 sm:px-8 shadow-sm">
         <div className="max-w-7xl mx-auto bg-white shadow-xl rounded-xl p-4 sm:p-6 flex flex-col sm:flex-row justify-between items-center gap-4">
           <div className="w-full sm:w-auto text-center sm:text-left">
@@ -183,7 +197,7 @@ const Page = () => {
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 font-sans">
         {selectedLoan ? (
           
-          <div className="bg-white shadow-lg rounded-2xl p-6 sm:p-10 w-full">
+          <div className={`${sure ? 'blur-sm pointer-events-none z-0 fixed' : 'bg-white shadow-lg rounded-2xl p-6 sm:p-10 w-full relative '}`}>
             
             <button onClick={() => setSelectedLoan(null)} className="mb-4 px-2 py-1 sm:px-4 sm:py-2 rounded-lg text-4xl sm:text-5xl cursor-pointer text-gray-600 hover:text-blue-600 transition hover:-translate-y-1">
               ←
@@ -208,7 +222,7 @@ const Page = () => {
                 <p><span className="font-bold text-gray-700">Applicant ID :</span> {selectedLoan.id}</p>
                 <p><span className="font-bold text-gray-700">Tenure :</span> {selectedLoan.tenure} months</p>
                 <p><span className="font-bold text-gray-700">Status :</span> 
-                  <span className={`ml-2 px-3 py-1 rounded-full text-sm font-bold ${selectedLoan.status === 'Approved' ? 'bg-green-100 text-green-700' : selectedLoan.status === 'Rejected' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                  <span className={`ml-2 px-3 py-1 rounded-full text-sm font-bold ${selectedLoan.status === 'Eligible' ? 'bg-green-100 text-green-700' : selectedLoan.status === 'Not Eligible' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'}`}>
                     {selectedLoan.status}
                   </span>
                 </p>
@@ -328,23 +342,25 @@ const Page = () => {
               placeholder="Write any remarks or internal notes here..."
               className="w-full border border-gray-300 rounded-xl p-4 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition"
             />
+            
             <div className="mt-8 flex flex-col sm:flex-row gap-4">
               <button
-                onClick={() => handleStatusUpdate('Eligible')}
-                className="bg-green-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-green-700 transition transform hover:-translate-y-1 shadow-md w-full sm:w-auto text-center cursor-pointer"
+                onClick={() => handleEligible()}
+                disabled={disable}
+                className={`bg-red-500 text-white px-8 py-3 rounded-xl font-bold  shadow-md w-full sm:w-auto text-center${disable ? 'bg-gray-300 cursor-not-allowed' : 'cursor-pointer hover:bg-red-600 transition transform hover:-translate-y-1'}`}
               >
                  Eligible for Loan
               </button>
               <button
-                onClick={() => handleStatusUpdate('Not Eligible')}
-                className="bg-red-500 text-white px-8 py-3 rounded-xl font-bold hover:bg-red-600 transition transform hover:-translate-y-1 shadow-md w-full sm:w-auto text-center cursor-pointer"
+                onClick={() => handleNotEligible()}
+                disabled={disable}
+                className={`bg-red-500 text-white px-8 py-3 rounded-xl font-bold  shadow-md w-full sm:w-auto text-center${disable ? 'bg-gray-300 cursor-not-allowed' : 'cursor-pointer hover:bg-red-600 transition transform hover:-translate-y-1'}`}
               >
                  Not Eligible for Loan
               </button>
             </div>
-
           </div>
-
+          
         ) : (
           
           <div className="bg-white shadow-lg rounded-2xl p-6 sm:p-10 w-full">
@@ -370,8 +386,8 @@ const Page = () => {
                         <td className="p-4 text-gray-700">₹{loan.loan_amount}</td>
                         <td className="p-4">
                           <span className={`px-3 py-1 rounded-full text-xs sm:text-sm font-bold ${
-                            loan.status === 'Approved' ? 'bg-green-100 text-green-700' : 
-                            loan.status === 'Rejected' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'
+                            loan.status === 'Eligible' ? 'bg-green-100 text-green-700' : 
+                            loan.status === 'Not Eligible' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'
                           }`}>
                             {loan.status}
                           </span>
@@ -399,6 +415,17 @@ const Page = () => {
           </div>
         )}
       </div>
+      {sure && (
+                <div className='flex flex-col items-center justify-center gap-5 w-70 h-40 z-10 bg-white shadow-md rounded-4xl p-4 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 '>
+                    <div className='text-3xl'>Are you Sure ? </div>
+                        <div className='flex gap-8'>
+                            <button className='rounded text-xl w-10 h-8 text-white bg-blue-500 cursor-pointer hover:bg-indigo-800'
+                             onClick={() => confirmUpdate(status)}>Yes</button>
+                            <button className='rounded text-xl w-10 h-8 text-white bg-red-500 cursor-pointer hover:bg-red-800'
+                             onClick={() => setSure(false)}>No</button>
+                        </div>
+                  </div>
+              )}
     </div>
   );
 };
