@@ -68,7 +68,7 @@ const Page = () => {
         risk_score: riskScore
       });
 
-      toast.success(`Application has been ${newStatus}!`);
+      toast.success(`Applicant is ${newStatus} for loan approval!`);
       setLoans(loans.map(loan => loan.id === selectedLoan.id ? { ...loan, status: newStatus } : loan));
       setSelectedLoan(null);
       
@@ -132,7 +132,7 @@ const Page = () => {
     if (aiData.decision === "AUTO_APPROVE") {
       return (
         <div className="mt-2 bg-green-50 border border-green-200 p-2 rounded-lg">
-          <p className="text-xs font-bold text-green-700">✨ AI Pre-Screened: Approved ({aiData.confidence}%)</p>
+          <p className="text-xs font-bold text-green-700">✨ AI Pre-Screened: Verified ({aiData.confidence}%)</p>
         </div>
       );
     }
@@ -173,7 +173,7 @@ const Page = () => {
   return (
     <div className="relative z-0 font-serif bg-gradient-to-r from-[#eef2f7] to-[#d9e4f5] min-h-screen pb-10">
         
-      <div className="fixed top-0 left-0 w-full bg-gradient-to-r from-[#eef2f7] to-[#d9e4f5] z-[60] py-4 px-4 sm:px-8 shadow-sm">
+      <div className="fixed top-0 left-0 w-full bg-gradient-to-r from-[#eef2f7] to-[#d9e4f5] z-50 py-4 px-4 sm:px-8 shadow-sm">
         <div className="max-w-7xl mx-auto bg-white shadow-xl rounded-xl p-4 sm:p-6 flex flex-col sm:flex-row justify-between items-center gap-4">
           <div className="w-full sm:w-auto text-center sm:text-left">
              <h1 className="text-lg sm:text-xl md:text-2xl font-semibold text-blue-900">

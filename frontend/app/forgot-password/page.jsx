@@ -68,6 +68,7 @@ const ForgotPassword = () => {
     }
   };
 
+
   const handleResetPassword = async (e) => {
     e.preventDefault();
     
@@ -204,7 +205,7 @@ const ForgotPassword = () => {
                   onChange={() => setShowPassword(!showPassword)}
                   className="w-4 h-4 accent-indigo-600 cursor-pointer"
                 />
-                <label htmlFor="showPassword" className="ml-2 text-sm text-gray-600 cursor-pointer">
+                <label className="ml-2 text-sm text-gray-600 cursor-pointer">
                   Show Passwords
                 </label>
               </div>

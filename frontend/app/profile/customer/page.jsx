@@ -20,8 +20,12 @@ const CustomerProfile = () => {
     username: '', email: '', phone_number: '' 
   });
   
-  const [stats, setStats] = useState({ total_applied: 0, total_approved: 0, total_rejected: 0 });
-  const [passwords, setPasswords] = useState({ old_password: '', new_password: '' });
+  const [stats, setStats] = useState({
+     total_applied: 0, total_approved: 0, total_rejected: 0
+     });
+  const [passwords, setPasswords] = useState({ 
+    old_password: '', new_password: '' 
+  });
 
   
   const handleEditChange = (e) => {
@@ -31,10 +35,7 @@ const CustomerProfile = () => {
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
     try {
-      const token = localStorage.getItem('access_token');
-      const res = await API.put('users/update-profile/', editForm, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await API.put('users/update-profile/', editForm);
       
       
       setProfile({ ...profile, ...res.data });
@@ -49,10 +50,7 @@ const CustomerProfile = () => {
     e.preventDefault();
     try {
       setClick(true);
-      const token = localStorage.getItem('access_token');
-      await API.put('users/change-password/', passwords, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await API.put('users/change-password/', passwords);
       
       setPasswords({ old_password: '', new_password: '' });
       toast.success("Password changed securely!");
@@ -71,9 +69,7 @@ const CustomerProfile = () => {
 
     const fetchProfileData = async () => {
       try {
-        const profileRes = await API.get('users/profile/', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const profileRes = await API.get('users/profile/');
         
         setProfile(profileRes.data);
         
@@ -84,9 +80,7 @@ const CustomerProfile = () => {
           phone_number: profileRes.data.phone_number || ''
         });
 
-        const statsRes = await API.get('loans/customer/stats/', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const statsRes = await API.get('loans/customer/stats/');
         setStats(statsRes.data);
 
       } catch (error) {

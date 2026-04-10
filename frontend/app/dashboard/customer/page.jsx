@@ -41,11 +41,10 @@ const Page = () => {
       const loanRes = await API.get("loans/my-loans/");
 
       setProfile(profileRes.data);
-      console.log("Loan Data:", profileRes.data);
       setLoans(loanRes.data);
-      console.log(loanRes.data);
+    
     } catch (error) {
-      console.error(error);
+      console.log(error);
     } finally {
       setLoading(false);
     }
@@ -66,7 +65,7 @@ const Page = () => {
     <div className="relative font-serif bg-gradient-to-r from-[#eef2f7] to-[#d9e4f5] min-h-screen pb-10">
       
       
-      <div className="fixed top-0 left-0 w-full bg-gradient-to-r from-[#eef2f7] to-[#d9e4f5] z-[60] py-4 px-4 sm:px-8 shadow-sm">
+      <div className="fixed top-0 left-0 w-full bg-gradient-to-r from-[#eef2f7] to-[#d9e4f5] z-50 py-4 px-4 sm:px-8 shadow-sm">
         <div className="max-w-7xl mx-auto bg-white shadow-xl rounded-xl p-4 sm:p-6 flex flex-col md:flex-row justify-between items-center gap-4">
           
           <div className="flex-1 flex justify-center md:justify-start">
@@ -141,7 +140,7 @@ const Page = () => {
 
         
           <div className="overflow-x-auto rounded-xl border border-gray-200 shadow-sm">
-            <table className="w-full min-w-[700px] border-collapse text-sm sm:text-base">
+            <table className="w-full min-w-[700px] text-sm sm:text-base">
               <thead>
                 <tr className="bg-gray-100 text-left text-gray-700 border-b border-gray-200">
                   <th className="p-4 font-bold">Loan Type</th>
@@ -159,8 +158,8 @@ const Page = () => {
                       <td className="p-4 text-gray-700">₹{loan.loan_amount}</td>
                       <td className="p-4">
                         <span className={`px-3 py-1 rounded-full text-xs sm:text-sm font-bold ${
-                          loan.status === 'Approved' ? 'bg-green-100 text-green-700' : 
-                          loan.status === 'Rejected' ? 'bg-red-100 text-red-700' : 
+                          loan.status === 'Eligible' ? 'bg-green-100 text-green-700' : 
+                          loan.status === 'Not Eligible' ? 'bg-red-100 text-red-700' : 
                           'bg-yellow-100 text-yellow-700'
                         }`}>
                           {loan.status}
