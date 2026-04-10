@@ -131,30 +131,17 @@ class OfficerAllLoansView(APIView):
         loans = LoanApplication.objects.all().order_by('-created_at')
         serializer = LoanApplicationSerializer(loans, many=True, context={'request': request})
         data = serializer.data
-
-        with connection.cursor() as cursor:
-            for item in data:
-                user_id = item['user']
-                
-                try:
-                    user = User.objects.get(id=user_id)
-                    item['applicant_name'] = user.username
-                except User.DoesNotExist:
-                    item['applicant_name'] = "Unknown"
-                    user = None
-
-                item['cibil_score'] = "N/A"
-                if user:
-                    try:
-                        cursor.execute("SELECT credit_score FROM user_financial_data WHERE username = %s", [user.username])
-                        row = cursor.fetchone()
-                        
-                        if row:
-                            item['cibil_score'] = row[0]
-                    except Exception:
-                        pass 
-        
+        for item in data:
+            user_id = item['user']
+            try:
+                user = User.objects.get(id=user_id)
+                item['applicant_name'] = user.username
+            except User.DoesNotExist:
+                item['applicant_name'] = "Unknown"
+                user = None
         return Response(data)
+    
+
 class OfficerUpdateLoanView(APIView):
     permission_classes = [permissions.IsAuthenticated, IsOfficerUser]
 
@@ -167,9 +154,6 @@ class OfficerUpdateLoanView(APIView):
         loan.status = request.data.get('status', loan.status)
         loan.officer_notes = request.data.get('officer_notes', loan.officer_notes)
         loan.risk_score = request.data.get('risk_score', loan.risk_score)
-        
-        if 'cibil_score' in request.data and request.data['cibil_score'] != "N/A":
-            loan.cibil_score = request.data['cibil_score']
 
         loan.save()
         return Response({"message": "Loan updated successfully"})
@@ -243,8 +227,8 @@ class CustomerLoanStatsView(APIView):
         user_loans = LoanApplication.objects.filter(user=user)
         
         total_applied = user_loans.count()
-        total_approved = user_loans.filter(status='Approved').count()
-        total_rejected = user_loans.filter(status='Rejected').count()
+        total_approved = user_loans.filter(status='Eligible').count()
+        total_rejected = user_loans.filter(status='Not Eligible').count()
         
         return Response({
             "total_applied": total_applied,
@@ -269,8 +253,8 @@ class OfficerLoanStatsView(APIView):
         pending = LoanApplication.objects.filter(status__icontains='Pending').count()
         
         
-        my_approved = LoanApplication.objects.filter(status='Approved').count() 
-        my_rejected = LoanApplication.objects.filter(status='Rejected').count()
+        my_approved = LoanApplication.objects.filter(status='Eligible').count() 
+        my_rejected = LoanApplication.objects.filter(status='Not Eligible').count()
 
         return Response({
             "gold": gold,

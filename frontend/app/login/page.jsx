@@ -34,7 +34,6 @@ export default function Login() {
         password: formData.password
       });
       
-      console.log("JWT RESPONSE DATA:", res.data);
       localStorage.setItem("access_token", res.data.access);
       localStorage.setItem("refresh_token", res.data.refresh);
       localStorage.setItem("username", formData.username);

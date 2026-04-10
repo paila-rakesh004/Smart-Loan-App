@@ -15,7 +15,6 @@ const Page = () => {
   const [notes, setNotes] = useState('');
   const [sure,setSure] = useState(false);
   const [status,setStatus] = useState('Eligible');
-  const [disable,setDisable] = useState(false);
 
   const handleLogout = () => {
     localStorage.removeItem('access_token');
@@ -72,7 +71,7 @@ const Page = () => {
       toast.success(`Application has been ${newStatus}!`);
       setLoans(loans.map(loan => loan.id === selectedLoan.id ? { ...loan, status: newStatus } : loan));
       setSelectedLoan(null);
-      setDisable(true);
+      
     } catch (error) {
       console.error(error);
       toast.error("Error updating application status.");
@@ -346,15 +345,15 @@ const Page = () => {
             <div className="mt-8 flex flex-col sm:flex-row gap-4">
               <button
                 onClick={() => handleEligible()}
-                disabled={disable}
-                className={`bg-red-500 text-white px-8 py-3 rounded-xl font-bold  shadow-md w-full sm:w-auto text-center${disable ? 'bg-gray-300 cursor-not-allowed' : 'cursor-pointer hover:bg-red-600 transition transform hover:-translate-y-1'}`}
+                disabled={selectedLoan.status === 'Eligible' || selectedLoan.status === 'Not Eligible'}
+                className={` text-white px-8 py-3 rounded-xl font-bold  shadow-md w-full sm:w-auto text-center ${selectedLoan.status === 'Eligible' || selectedLoan.status === 'Not Eligible' ? 'bg-gray-500 cursor-not-allowed' : 'bg-red-500 cursor-pointer hover:bg-red-600 transition transform hover:-translate-y-1'}`}
               >
                  Eligible for Loan
               </button>
               <button
                 onClick={() => handleNotEligible()}
-                disabled={disable}
-                className={`bg-red-500 text-white px-8 py-3 rounded-xl font-bold  shadow-md w-full sm:w-auto text-center${disable ? 'bg-gray-300 cursor-not-allowed' : 'cursor-pointer hover:bg-red-600 transition transform hover:-translate-y-1'}`}
+                disabled={selectedLoan.status === 'Not Eligible' || selectedLoan.status === 'Eligible'}
+                className={` text-white px-8 py-3 rounded-xl font-bold  shadow-md w-full sm:w-auto text-center ${selectedLoan.status === 'Eligible' || selectedLoan.status === 'Not Eligible'  ? 'bg-gray-500 cursor-not-allowed' : 'bg-red-500 cursor-pointer hover:bg-red-600 transition transform hover:-translate-y-1'}`}
               >
                  Not Eligible for Loan
               </button>
