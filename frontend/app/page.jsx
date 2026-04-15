@@ -28,7 +28,7 @@ export default function Page() {
           <div className="w-full max-w-sm backdrop-blur-lg bg-white/20 border border-white/30 rounded-3xl p-6 sm:p-8 flex flex-col gap-4 shadow-2xl">
             
             <h2 className="text-center text-xl sm:text-2xl font-semibold text-white">
-              Let's Dive!
+              Let&apos;s Dive!
             </h2>
 
             <Link

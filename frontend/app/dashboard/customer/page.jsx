@@ -176,7 +176,7 @@ const Page = () => {
                 ) : (
                   <tr>
                     <td colSpan="5" className="text-center p-8 text-gray-500 font-medium italic">
-                      You haven't applied for any loans yet.
+                      You haven&apos;t applied for any loans yet.
                     </td>
                   </tr>
                 )}

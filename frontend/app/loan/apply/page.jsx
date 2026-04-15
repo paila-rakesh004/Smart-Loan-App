@@ -433,7 +433,7 @@ export default function ApplyLoan() {
                         transition duration-300 z-10 w-50 text-center group-hover:opacity-100 pointer-events-none
                         ${showInfo ? "opacity-100" : "opacity-0 pointer-events-none"}
                        `}>
-                        Enter the workplace if you don't have specific organization name.
+                        Enter the workplace if you don&apos;t have specific organization name.
                       </div>  
                     </div> 
                   </label>
