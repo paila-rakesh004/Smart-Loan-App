@@ -12,7 +12,7 @@ from django.utils import timezone
 from datetime import timedelta
 from django.core.mail import send_mail
 from django.conf import settings
-import random
+import secrets
 from rest_framework_simplejwt.views import TokenObtainPairView
 from .serializers import CustomTokenObtainPairSerializer
 
@@ -103,7 +103,7 @@ class SendOTPView(APIView):
             user = User.objects.get(username=username)
             
             
-            otp = str(random.randint(100000, 999999))
+            otp = str(secrets.randbelow(900000) + 100000)
             
             
             user.reset_otp = otp
