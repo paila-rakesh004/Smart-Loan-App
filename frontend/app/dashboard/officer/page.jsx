@@ -25,7 +25,7 @@ DocumentCard.propTypes = {
   url: PropTypes.string,
   badgeKey: PropTypes.string,
   colorClass: PropTypes.string,
-  renderBadge: PropTypes.func, // Added prop validation for the function
+  renderBadge: PropTypes.func, 
 };
 
 

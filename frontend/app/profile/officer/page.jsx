@@ -28,7 +28,8 @@ const OfficerProfile = () => {
       setProfile({ ...profile, username: res.data.username});
       localStorage.setItem('username', res.data.username); 
       toast.success("Profile updated successfully!");
-    } catch {
+    } catch(error){
+      console.log(error);
       toast.error("Failed to update profile.");
     }
   };
@@ -87,14 +88,14 @@ const OfficerProfile = () => {
   const avatarInitial = profile.username ? profile.username.charAt(0).toUpperCase() : "O";
   if(loading){
     return(
-      <div className='flex justify-center items-center h-screen bg-linear-to-r from-[#eef2f7] to-[#d9e4f5]'>
+      <div className='flex justify-center items-center h-screen bg-gradient-to-r from-[#eef2f7] to-[#d9e4f5]'>
         <div className='animate-spin rounded-full border-6 border-gray-300 border-t-blue-700 h-15 w-15'></div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen font-sans bg-linear-to-r from-[#eef2f7] to-[#d9e4f5] p-4 sm:p-6 lg:p-10">
+    <div className="min-h-screen font-sans bg-gradient-to-r from-[#eef2f7] to-[#d9e4f5] p-4 sm:p-6 lg:p-10">
       
     
       <div className="max-w-6xl mx-auto mb-8 flex flex-col md:flex-row justify-between items-center gap-4">
@@ -120,7 +121,7 @@ const OfficerProfile = () => {
         <div className="col-span-1 space-y-6">
           
           <div className="bg-white rounded-3xl shadow-xl p-6 flex flex-col items-center text-center">
-            <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-linear-to-br from-blue-700 to-indigo-800 flex items-center justify-center text-white text-4xl sm:text-5xl font-bold shadow-lg mb-4">
+            <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-gradient-to-br from-blue-700 to-indigo-800 flex items-center justify-center text-white text-4xl sm:text-5xl font-bold shadow-lg mb-4">
               {avatarInitial}
             </div>
             <h2 className="text-xl sm:text-2xl font-bold text-gray-800">{profile.username}</h2>
@@ -185,7 +186,6 @@ const OfficerProfile = () => {
                 <label htmlFor='newUsername' className="block text-gray-700 font-semibold mb-2">Username</label>
                 <input
                   type="text"
-                  id='newUsername'
                   value={newUsername}
                   onChange={(e) => setNewUsername(e.target.value)}
                   className="w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition"
@@ -209,7 +209,6 @@ const OfficerProfile = () => {
                 <label htmlFor='old_password' className="block text-gray-700 font-semibold mb-2">Current Password</label>
                 <input
                   type={showpassword ? "text" : "password"}
-                  id='old_password'
                   value={passwords.old_password}
                   onChange={(e) => setPasswords({ ...passwords, old_password: e.target.value })}
                   className="w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-red-400 transition"
@@ -220,7 +219,6 @@ const OfficerProfile = () => {
                 <label htmlFor='new_password' className="block text-gray-700 font-semibold mb-2">New Password</label>
                 <input
                   type={showpassword ? "text" : "password"}
-                  id='new_password'
                   value={passwords.new_password}
                   onChange={(e) => setPasswords({ ...passwords, new_password: e.target.value })}
                   className="w-full border border-gray-300 rounded-xl p-3 pr-14 focus:outline-none focus:ring-2 focus:ring-red-400 transition"

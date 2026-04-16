@@ -1,9 +1,9 @@
 "use client";
 import "./globals.css";
 import { ToastContainer } from "react-toastify";
+import PropTypes from "prop-types";
 
-
-export default function RootLayout({ children }) {
+export default function RootLayout({children}) {
   return (
     <html lang="en">
       <body>
@@ -23,3 +23,7 @@ export default function RootLayout({ children }) {
     </html>
   );
 }
+
+RootLayout.propTypes = {
+  children: PropTypes.node.isRequired,
+};
