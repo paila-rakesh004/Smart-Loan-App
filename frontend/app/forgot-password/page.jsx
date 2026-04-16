@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useImperativeHandle } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import API from '@/lib/api';
 import { toast } from "react-toastify";
@@ -107,7 +107,7 @@ const ForgotPassword = () => {
   }, [timer, otpSent]);
 
   return (
-    <div className="min-h-screen font-sans bg-gradient-to-r from-[#eef2f7] to-[#d9e4f5] flex items-center justify-center p-6">
+    <div className="min-h-screen font-sans bg-linear-to-r from-[#eef2f7] to-[#d9e4f5] flex items-center justify-center p-6">
       
       <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl p-10 transition-all duration-500">
         
@@ -122,8 +122,9 @@ const ForgotPassword = () => {
           
           <div className="space-y-6">
             <div>
-              <label className="block text-gray-700 font-bold mb-2">Username</label>
+              <label htmlFor="username" className="block text-gray-700 font-bold mb-2">Username</label>
               <input
+                id="username"
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
@@ -151,12 +152,13 @@ const ForgotPassword = () => {
             {otpSent && (
               <form onSubmit={handleVerifyOTP} className="pt-4 border-t border-gray-100 mt-6 space-y-6">
                 <div>
-                  <label className="block text-gray-700 font-bold mb-2 text-center text-lg">Enter 6-Digit OTP</label>
+                  <label htmlFor="otp" className="block text-gray-700 font-bold mb-2 text-center text-lg">Enter 6-Digit OTP</label>
                   <input
+                    id="otp"
                     type="text"
                     maxLength="6"
                     value={otp}
-                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
+                    onChange={(e) => setOtp(e.target.value.replaceAll(/\D/g, ''))}
                     className="w-full text-center tracking-[0.5em] text-2xl border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-indigo-400"
                     required
                     placeholder="------"
@@ -178,8 +180,9 @@ const ForgotPassword = () => {
           
           <form onSubmit={handleResetPassword} className="space-y-6">
             <div>
-              <label className="block text-gray-700 font-bold mb-2">New Password</label>
+              <label htmlFor="newPassword" className="block text-gray-700 font-bold mb-2">New Password</label>
               <input
+                id="newPassword"
                 type={showPassword ? "text" : "password"}
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
@@ -189,8 +192,9 @@ const ForgotPassword = () => {
             </div>
 
             <div>
-              <label className="block text-gray-700 font-bold mb-2">Confirm Password</label>
+              <label htmlFor="confirmPassword" className="block text-gray-700 font-bold mb-2">Confirm Password</label>
               <input
+                id="confirmPassword"
                 type={showPassword ? "text" : "password"}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
@@ -205,7 +209,7 @@ const ForgotPassword = () => {
                   onChange={() => setShowPassword(!showPassword)}
                   className="w-4 h-4 accent-indigo-600 cursor-pointer"
                 />
-                <label className="ml-2 text-sm text-gray-600 cursor-pointer">
+                <label htmlFor="showPassword" className="ml-2 text-sm text-gray-600 cursor-pointer">
                   Show Passwords
                 </label>
               </div>

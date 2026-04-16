@@ -3,7 +3,31 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import API from '@/lib/api'; 
 import { toast } from "react-toastify";
-import { UserCircleIcon, ArrowRightOnRectangleIcon } from '@heroicons/react/24/solid';
+import { UserCircleIcon, ArrowLeftStartOnRectangleIcon } from '@heroicons/react/24/solid';
+import PropTypes from 'prop-types';
+
+
+const DocumentCard = ({ title, url, badgeKey, colorClass = "bg-gray-50 border-gray-200", renderBadge }) => {
+  if (!url) return null;
+  return (
+    <div className={`${colorClass} border p-5 rounded-xl shadow-sm hover:shadow-md transition`}>
+      <p className="font-bold text-gray-700 mb-2">{title}</p>
+      <a className="text-blue-600 font-normal hover:font-bold hover:text-blue-800 underline block mb-2" href={url} target="_blank" rel="noopener noreferrer">
+        View Document
+      </a>
+      {badgeKey && renderBadge(badgeKey)}
+    </div>
+  );
+};
+
+DocumentCard.propTypes = {
+  title: PropTypes.string.isRequired,
+  url: PropTypes.string,
+  badgeKey: PropTypes.string,
+  colorClass: PropTypes.string,
+  renderBadge: PropTypes.func, // Added prop validation for the function
+};
+
 
 const Page = () => {
   const router = useRouter();
@@ -34,15 +58,14 @@ const Page = () => {
     setNotes('');
 
     try {
-      
       const res = await API.get(`loans/officer/${loan.id}/recalculate-cibil/`);
-      
       const freshScore = res.data.new_cibil_score;
       setSelectedLoan(prev => ({ ...prev, actual_cibil: freshScore }));
       setLoans(loans.map(l => l.id === loan.id ? { ...l, actual_cibil: freshScore } : l));
       toast.success("Cibil Score Calculated");
     } catch (error) {
-      console.error("Failed to fetch live CIBIL score.");
+      console.error("Error calculating CIBIL score:", error);
+      toast.error("Failed to calculate CIBIL score.");
     }
   };
 
@@ -54,16 +77,16 @@ const Page = () => {
       toast.success("Risk Score calculated successfully!");
       setLoans(loans.map(loan => loan.id === selectedLoan.id ? { ...loan, risk_score: res.data.risk_score } : loan));
     } catch (error) {
-      toast.error(error.response?.data?.error)
+      console.error("Error calculating risk score:", error);
+      toast.error(error?.response?.data?.error || "Failed to calculate risk score.");
     }
   };
 
   const confirmUpdate = async (newStatus) => {
     try {
-      
       await API.patch(`loans/officer/${selectedLoan.id}/update-status/`, {
         status: newStatus,
-        cibil_score: selectedLoan.actual_cibil !== "N/A" ? selectedLoan.actual_cibil : null,
+        cibil_score: selectedLoan.actual_cibil === "N/A" ? null : selectedLoan.actual_cibil,
         officer_notes: notes,
         risk_score: riskScore
       });
@@ -73,8 +96,7 @@ const Page = () => {
       setSelectedLoan(null);
       
     } catch (error) {
-      console.error(error);
-      toast.error("Error updating application status.");
+      console.log("Error updating application status.", error);
     }
     finally{
       setSure(false);
@@ -84,12 +106,10 @@ const Page = () => {
   const handleEligible = () => {
     setSure(true);
     setStatus('Eligible');
-    console.log(sure); 
-  };
+    };
   const handleNotEligible = () => {
     setSure(true);
-    setStatus('Not Eligible');
-    console.log(sure); 
+    setStatus('Not Eligible'); 
   };
 
   useEffect(() => {
@@ -110,7 +130,6 @@ const Page = () => {
         const res = await API.get('loans/officer/all-loans/');
         setLoans(res.data);
       } catch (error) {
-        console.error(error);
         if (error.response?.status === 403) {
             router.push('/dashboard/customer');
         }
@@ -121,10 +140,8 @@ const Page = () => {
     fetchAllLoans();
   }, [router]);
 
-  
-
   const renderOfficerAIBadge = (documentKey) => {
-    if (!selectedLoan.ai_verification_data || !selectedLoan.ai_verification_data[documentKey]) {
+    if (!selectedLoan?.ai_verification_data?.[documentKey]) {
       return null; 
     }
     const aiData = selectedLoan.ai_verification_data[documentKey];
@@ -147,33 +164,18 @@ const Page = () => {
     return null;
   };
 
- 
-  const DocumentCard = ({ title, url, badgeKey, colorClass = "bg-gray-50 border-gray-200" }) => {
-    if (!url) return null;
-    return (
-      <div className={`${colorClass} border p-5 rounded-xl shadow-sm hover:shadow-md transition`}>
-        <p className="font-bold text-gray-700 mb-2">{title}</p>
-        <a className="text-blue-600 font-normal hover:font-bold hover:text-blue-800 underline block mb-2" href={url} target="_blank" rel="noopener noreferrer">
-          View Document
-        </a>
-        {badgeKey && renderOfficerAIBadge(badgeKey)}
-      </div>
-    );
-  };
-
- 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-gradient-to-r from-[#eef2f7] to-[#d9e4f5]">
+      <div className="flex items-center justify-center h-screen bg-linear-to-r from-[#eef2f7] to-[#d9e4f5]">
         <div className="w-15 h-15 border-6 border-t-blue-700 border-gray-300 rounded-full animate-spin"></div>
       </div>
     )
   }
   
   return (
-    <div className="relative z-0 font-serif bg-gradient-to-r from-[#eef2f7] to-[#d9e4f5] min-h-screen pb-10">
+    <div className="relative z-0 font-serif bg-linear-to-r from-[#eef2f7] to-[#d9e4f5] min-h-screen pb-10">
         
-      <div className="fixed top-0 left-0 w-full bg-gradient-to-r from-[#eef2f7] to-[#d9e4f5] z-50 py-4 px-4 sm:px-8 shadow-sm">
+      <div className="fixed top-0 left-0 w-full bg-linear-to-r from-[#eef2f7] to-[#d9e4f5] z-50 py-4 px-4 sm:px-8 shadow-sm">
         <div className="max-w-7xl mx-auto bg-white shadow-xl rounded-xl p-4 sm:p-6 flex flex-col sm:flex-row justify-between items-center gap-4">
           <div className="w-full sm:w-auto text-center sm:text-left">
              <h1 className="text-lg sm:text-xl md:text-2xl font-semibold text-blue-900">
@@ -185,7 +187,7 @@ const Page = () => {
               <UserCircleIcon className="w-10 h-10 text-blue-700" />
             </button>
             <button onClick={handleLogout} className="cursor-pointer rounded-full font-bold transition transform hover:-translate-y-1">
-              <ArrowRightOnRectangleIcon className="w-9 h-9 text-red-600" />
+              <ArrowLeftStartOnRectangleIcon className="w-9 h-9 text-red-600" />
             </button>
           </div>
         </div>
@@ -221,9 +223,14 @@ const Page = () => {
                 <p><span className="font-bold text-gray-700">Applicant ID :</span> {selectedLoan.id}</p>
                 <p><span className="font-bold text-gray-700">Tenure :</span> {selectedLoan.tenure} months</p>
                 <p><span className="font-bold text-gray-700">Status :</span> 
-                  <span className={`ml-2 px-3 py-1 rounded-full text-sm font-bold ${selectedLoan.status === 'Eligible' ? 'bg-green-100 text-green-700' : selectedLoan.status === 'Not Eligible' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'}`}>
-                    {selectedLoan.status}
-                  </span>
+                  {(() => {
+                    const statusColorMap = {
+                      'Eligible': 'bg-green-100 text-green-700',
+                      'Not Eligible': 'bg-red-100 text-red-700'
+                    };
+                    const colorClass = statusColorMap[selectedLoan.status] || 'bg-yellow-100 text-yellow-700';
+                    return <span className={`ml-2 px-3 py-1 rounded-full text-sm font-bold ${colorClass}`}>{selectedLoan.status}</span>;
+                  })()}
                 </p>
                 
                 <div className="space-y-3 mt-4">
@@ -239,9 +246,9 @@ const Page = () => {
               General KYC Documents
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              <DocumentCard title="PAN Card" url={selectedLoan.pan_card_file} badgeKey="panCard" colorClass="bg-red-50 border-red-200" />
-              <DocumentCard title="Aadhaar Card" url={selectedLoan.aadhar_card_file} badgeKey="aadharCard" colorClass="bg-red-50 border-red-200" />
-              <DocumentCard title="Passport Photo" url={selectedLoan.passport_photo} colorClass="bg-red-50 border-red-200" />
+              <DocumentCard title="PAN Card" url={selectedLoan.pan_card_file} badgeKey="panCard" colorClass="bg-red-50 border-red-200" renderBadge={renderOfficerAIBadge} />
+              <DocumentCard title="Aadhaar Card" url={selectedLoan.aadhar_card_file} badgeKey="aadharCard" colorClass="bg-red-50 border-red-200" renderBadge={renderOfficerAIBadge} />
+              <DocumentCard title="Passport Photo" url={selectedLoan.passport_photo} colorClass="bg-red-50 border-red-200" renderBadge={renderOfficerAIBadge} />
             </div>
 
             {(selectedLoan.itr_document || selectedLoan.bank_statements || selectedLoan.salary_slips || selectedLoan.emp_id_card) && (
@@ -250,10 +257,10 @@ const Page = () => {
                   Employment & Financial Proofs
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                  <DocumentCard title="Bank Statements" url={selectedLoan.bank_statements} badgeKey="bankStatements" colorClass="bg-green-50 border-indigo-200" />
-                  <DocumentCard title="Income Proof (ITR)" url={selectedLoan.itr_document} badgeKey="itrDocument" colorClass="bg-green-50 border-indigo-200" />
-                  <DocumentCard title="Salary Slips" url={selectedLoan.salary_slips} badgeKey="salarySlips" colorClass="bg-green-50 border-indigo-200" />
-                  <DocumentCard title="Employee ID" url={selectedLoan.emp_id_card} badgeKey="empIdCard" colorClass="bg-green-50 border-indigo-200" />
+                  <DocumentCard title="Bank Statements" url={selectedLoan.bank_statements} badgeKey="bankStatements" colorClass="bg-green-50 border-indigo-200" renderBadge={renderOfficerAIBadge} />
+                  <DocumentCard title="Income Proof (ITR)" url={selectedLoan.itr_document} badgeKey="itrDocument" colorClass="bg-green-50 border-indigo-200" renderBadge={renderOfficerAIBadge} />
+                  <DocumentCard title="Salary Slips" url={selectedLoan.salary_slips} badgeKey="salarySlips" colorClass="bg-green-50 border-indigo-200" renderBadge={renderOfficerAIBadge} />
+                  <DocumentCard title="Employee ID" url={selectedLoan.emp_id_card} badgeKey="empIdCard" colorClass="bg-green-50 border-indigo-200" renderBadge={renderOfficerAIBadge} />
                 </div>
               </>
             )}
@@ -264,11 +271,11 @@ const Page = () => {
                   Academic Documents
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                  <DocumentCard title="10th Certificate" url={selectedLoan.doc_10th_cert} badgeKey="doc10thCert" colorClass="bg-indigo-50 border-indigo-200" />
-                  <DocumentCard title="12th Certificate" url={selectedLoan.doc_12th_cert} badgeKey="doc12thCert" colorClass="bg-indigo-50 border-indigo-200" />
-                  <DocumentCard title="Degree Certificate" url={selectedLoan.doc_degree_cert} badgeKey="docDegreeCert" colorClass="bg-indigo-50 border-indigo-200" />
-                  <DocumentCard title="Admission Letter" url={selectedLoan.doc_admission_letter} badgeKey="docAdmissionLetter" colorClass="bg-indigo-50 border-indigo-200" />
-                  <DocumentCard title="Fee Structure" url={selectedLoan.doc_fee_structure} badgeKey="docFeeStructure" colorClass="bg-indigo-50 border-indigo-200" />
+                  <DocumentCard title="10th Certificate" url={selectedLoan.doc_10th_cert} badgeKey="doc10thCert" colorClass="bg-indigo-50 border-indigo-200" renderBadge={renderOfficerAIBadge} />
+                  <DocumentCard title="12th Certificate" url={selectedLoan.doc_12th_cert} badgeKey="doc12thCert" colorClass="bg-indigo-50 border-indigo-200" renderBadge={renderOfficerAIBadge} />
+                  <DocumentCard title="Degree Certificate" url={selectedLoan.doc_degree_cert} badgeKey="docDegreeCert" colorClass="bg-indigo-50 border-indigo-200" renderBadge={renderOfficerAIBadge} />
+                  <DocumentCard title="Admission Letter" url={selectedLoan.doc_admission_letter} badgeKey="docAdmissionLetter" colorClass="bg-indigo-50 border-indigo-200" renderBadge={renderOfficerAIBadge} />
+                  <DocumentCard title="Fee Structure" url={selectedLoan.doc_fee_structure} badgeKey="docFeeStructure" colorClass="bg-indigo-50 border-indigo-200" renderBadge={renderOfficerAIBadge} />
                 </div>
               </>
             )}
@@ -280,10 +287,10 @@ const Page = () => {
                   Property Documents
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                  <DocumentCard title="Agreement to Sale" url={selectedLoan.doc_agreement_sale} badgeKey="docAgreementSale" colorClass="bg-emerald-50 border-emerald-200" />
-                  <DocumentCard title="No Objection Certificate" url={selectedLoan.doc_noc} badgeKey="docNoc" colorClass="bg-emerald-50 border-emerald-200" />
-                  <DocumentCard title="Encumbrance Certificate" url={selectedLoan.doc_encumbrance_cert} colorClass="bg-emerald-50 border-emerald-200" />
-                  <DocumentCard title="Building Plan" url={selectedLoan.doc_building_plan} colorClass="bg-emerald-50 border-emerald-200" />
+                  <DocumentCard title="Agreement to Sale" url={selectedLoan.doc_agreement_sale} badgeKey="docAgreementSale" colorClass="bg-emerald-50 border-emerald-200" renderBadge={renderOfficerAIBadge} />
+                  <DocumentCard title="No Objection Certificate" url={selectedLoan.doc_noc} badgeKey="docNoc" colorClass="bg-emerald-50 border-emerald-200" renderBadge={renderOfficerAIBadge} />
+                  <DocumentCard title="Encumbrance Certificate" url={selectedLoan.doc_encumbrance_cert} colorClass="bg-emerald-50 border-emerald-200" renderBadge={renderOfficerAIBadge} />
+                  <DocumentCard title="Building Plan" url={selectedLoan.doc_building_plan} colorClass="bg-emerald-50 border-emerald-200" renderBadge={renderOfficerAIBadge} />
                 </div>
               </>
             )}
@@ -306,10 +313,10 @@ const Page = () => {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"> 
-              <DocumentCard title="Guarantor KYC" url={selectedLoan.doc_guarantor_kyc}  colorClass="bg-blue-50 border-blue-200" />
-              <DocumentCard title="Guarantor Financials" url={selectedLoan.doc_guarantor_financials} colorClass="bg-blue-50 border-blue-200" />
-              <DocumentCard title="Guarantor Photo" url={selectedLoan.doc_guarantor_photo} colorClass="bg-blue-50 border-blue-200" />
-              <DocumentCard title="Guarantor Signature" url={selectedLoan.doc_guarantor_signature} colorClass="bg-blue-50 border-blue-200" />
+              <DocumentCard title="Guarantor KYC" url={selectedLoan.doc_guarantor_kyc}  colorClass="bg-blue-50 border-blue-200" renderBadge={renderOfficerAIBadge} />
+              <DocumentCard title="Guarantor Financials" url={selectedLoan.doc_guarantor_financials} colorClass="bg-blue-50 border-blue-200" renderBadge={renderOfficerAIBadge} />
+              <DocumentCard title="Guarantor Photo" url={selectedLoan.doc_guarantor_photo} colorClass="bg-blue-50 border-blue-200" renderBadge={renderOfficerAIBadge} />
+              <DocumentCard title="Guarantor Signature" url={selectedLoan.doc_guarantor_signature} colorClass="bg-blue-50 border-blue-200" renderBadge={renderOfficerAIBadge} />
             </div>
           
             
@@ -322,14 +329,17 @@ const Page = () => {
             >
               Calculate Risk Score
             </button>
-            {riskScore && (
-              <div className={`mt-6 p-5 rounded-xl text-white shadow-md max-w-full ${
-                  riskScore === 'high' ? 'bg-red-600' : 
-                  riskScore === 'medium' ? 'bg-yellow-500' : 'bg-green-500'
-              }`}>
+            {riskScore && (() => {
+              const riskColorMap = {
+                'high': 'bg-red-600',
+                'medium': 'bg-yellow-500',
+                'low': 'bg-green-500'
+              };
+              const bgClass = riskColorMap[riskScore] || 'bg-green-500';
+              return <div className={`mt-6 p-5 rounded-xl text-white shadow-md max-w-full ${bgClass}`}>
                 <p className="text-lg"><span className="font-bold">Prediction:</span> <span className='font-bold capitalize ml-2'>{riskScore} Risk</span></p>
-              </div>
-            )}
+              </div>;
+            })()}
 
             <h3 className="mt-10 mb-6 text-gray-800 text-xl sm:text-2xl border-l-4 border-blue-600 pl-3 font-bold">
               Officer Decision
@@ -368,7 +378,7 @@ const Page = () => {
             </h2>
 
             <div className="overflow-x-auto rounded-xl border border-gray-200">
-              <table className="w-full min-w-[600px] border-collapse text-sm sm:text-base">
+              <table className="w-full min-w-150 border-collapse text-sm sm:text-base">
                 <thead>
                   <tr className="bg-gray-100 text-left text-gray-700 border-b border-gray-200">
                     <th className="p-4 font-bold">Applicant Name</th>
@@ -384,10 +394,14 @@ const Page = () => {
                         <td className="p-4 font-medium text-gray-800">{loan.applicant_name || `User ID: ${loan.user}`}</td>
                         <td className="p-4 text-gray-700">₹{loan.loan_amount}</td>
                         <td className="p-4">
-                          <span className={`px-3 py-1 rounded-full text-xs sm:text-sm font-bold ${
-                            loan.status === 'Eligible' ? 'bg-green-100 text-green-700' : 
-                            loan.status === 'Not Eligible' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'
-                          }`}>
+                          <span className={(() => {
+                            const statusColorMap = {
+                              'Eligible': 'bg-green-100 text-green-700',
+                              'Not Eligible': 'bg-red-100 text-red-700'
+                            };
+                            const colorClass = statusColorMap[loan.status] || 'bg-yellow-100 text-yellow-700';
+                            return `px-3 py-1 rounded-full text-xs sm:text-sm font-bold ${colorClass}`;
+                          })()}>
                             {loan.status}
                           </span>
                         </td>

@@ -9,8 +9,8 @@ const API = axios.create({
 API.interceptors.request.use(
   (config) => {
     
-    if (typeof window !== "undefined") {
-      const token = localStorage.getItem('access_token');
+    if (globalThis.window != "undefined") {
+      const token = globalThis.window.localStorage.getItem('access_token');
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
@@ -18,7 +18,7 @@ API.interceptors.request.use(
     return config;
   },
   (error) => {
-    return Promise.reject(error);
+    throw error;
   }
 );
 
@@ -29,17 +29,17 @@ API.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    if (error.response && error.response.status === 401 && originalRequest.url?.includes('token/') && !originalRequest.url?.includes('refresh')) {
-        return Promise.reject(error); 
+    if (error?.response?.status === 401 && originalRequest.url?.includes('token/') && !originalRequest.url?.includes('refresh')) {
+        throw error; 
     }
 
-    if (error.response && error.response.status === 401 && !originalRequest._retry) {
+    if (error?.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       try {
         
-        if (typeof window === "undefined") throw new Error("Server-side execution, skipping refresh.");
+        if (globalThis.window == "undefined") throw new Error("Server-side execution, skipping refresh.");
 
-        const refreshToken = localStorage.getItem('refresh_token');
+        const refreshToken = globalThis.window.localStorage.getItem('refresh_token');
         
         if (!refreshToken) {
           throw new Error("No refresh token found");
@@ -50,24 +50,24 @@ API.interceptors.response.use(
           refresh: refreshToken,
         });
         
-        localStorage.setItem('access_token', res.data.access);
+        globalThis.window.localStorage.setItem('access_token', res.data.access);
         originalRequest.headers.Authorization = `Bearer ${res.data.access}`;
         return API(originalRequest);
         
       } catch (refreshError) {
         console.error("Session completely expired. Logging out.");
         
-        if (typeof window !== "undefined") {
-          localStorage.removeItem('access_token');
-          localStorage.removeItem('refresh_token');
-          localStorage.removeItem('username');
-          window.location.href = '/login'; 
+        if (globalThis.window != "undefined") {
+          globalThis.window.localStorage.removeItem('access_token');
+          globalThis.window.localStorage.removeItem('refresh_token');
+          globalThis.window.localStorage.removeItem('username');
+          globalThis.window.location.href = '/login'; 
         }
         
-        return Promise.reject(refreshError);
+        throw refreshError;
       }
     }
-    return Promise.reject(error);
+    throw error;
   }
 );
 

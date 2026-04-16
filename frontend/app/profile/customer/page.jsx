@@ -84,7 +84,6 @@ const CustomerProfile = () => {
         setStats(statsRes.data);
 
       } catch (error) {
-        console.error("Failed to load profile data", error);
         toast.error(error.response?.data?.error || "Data Fetching failed");
       }
       finally{
@@ -100,14 +99,14 @@ const CustomerProfile = () => {
 
   if(loading){
     return(
-      <div className='flex items-center justify-center h-screen bg-gradient-to-r from-[#eef2f7] to-[#d9e4f5]'>
+      <div className='flex items-center justify-center h-screen bg-linear-to-r from-[#eef2f7] to-[#d9e4f5]'>
         <div className='animate-ping w-15 h-15 border-6 rounded-full border-b-transparent border-blue-500'></div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen font-sans bg-gradient-to-r from-[#eef2f7] to-[#d9e4f5] p-4 sm:p-6 lg:p-10">
+    <div className="min-h-screen font-sans bg-linear-to-r from-[#eef2f7] to-[#d9e4f5] p-4 sm:p-6 lg:p-10">
       
     
       <div className="max-w-6xl mx-auto mb-8 flex flex-col md:flex-row justify-between items-center gap-4">
@@ -127,7 +126,7 @@ const CustomerProfile = () => {
        
         <div className="col-span-1 space-y-6">
           <div className="bg-white rounded-3xl shadow-xl p-6 flex flex-col items-center text-center">
-            <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-4xl sm:text-5xl font-bold shadow-lg mb-4">
+            <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-linear-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-4xl sm:text-5xl font-bold shadow-lg mb-4">
               {avatarInitial}
             </div>
             <h2 className="text-xl sm:text-2xl font-bold text-gray-800">{profile.username}</h2>
@@ -172,18 +171,20 @@ const CustomerProfile = () => {
                 </h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-gray-500 text-sm font-semibold mb-1">First Name</label>
+                    <label htmlFor="first_name" className="block text-gray-500 text-sm font-semibold mb-1">First Name</label>
                     <input
                       type="text"
+                      id="first_name"
                       value={profile.first_name || "N/A"}
                       disabled
                       className="w-full bg-gray-200 text-gray-500 border border-gray-300 rounded-xl p-3 cursor-not-allowed font-medium"
                     />
                   </div>
                   <div>
-                    <label className="block text-gray-500 text-sm font-semibold mb-1">Last Name</label>
+                    <label htmlFor='last_name' className="block text-gray-500 text-sm font-semibold mb-1">Last Name</label>
                     <input
                       type="text"
+                      id='last_name'
                       value={profile.last_name || "N/A"}
                       disabled
                       className="w-full bg-gray-200 text-gray-500 border border-gray-300 rounded-xl p-3 cursor-not-allowed font-medium"
@@ -199,10 +200,11 @@ const CustomerProfile = () => {
               <div className="pt-2">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="sm:col-span-2">
-                    <label className="block text-gray-700 font-semibold mb-2">Username</label>
+                    <label htmlFor='username' className="block text-gray-700 font-semibold mb-2">Username</label>
                     <input
                       type="text"
                       name="username"
+                      id='username'
                       value={editForm.username}
                       onChange={handleEditChange}
                       className="w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition"
@@ -210,10 +212,11 @@ const CustomerProfile = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-gray-700 font-semibold mb-2">Email Address</label>
+                    <label htmlFor='email' className="block text-gray-700 font-semibold mb-2">Email Address</label>
                     <input
                       type="email"
                       name="email"
+                      id='email'
                       value={editForm.email}
                       onChange={handleEditChange}
                       className="w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition"
@@ -221,9 +224,10 @@ const CustomerProfile = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-gray-700 font-semibold mb-2">Mobile Number</label>
+                    <label htmlFor='phone_number' className="block text-gray-700 font-semibold mb-2">Mobile Number</label>
                     <input
                       type="text"
+                      id='phone_number'
                       name="phone_number"
                       value={editForm.phone_number}
                       onChange={handleEditChange}
@@ -249,9 +253,10 @@ const CustomerProfile = () => {
             </h3>
             <form onSubmit={handleChangePassword} className="space-y-6">
               <div>
-                <label className="block text-gray-700 font-semibold mb-2">Current Password</label>
+                <label htmlFor='old_password' className="block text-gray-700 font-semibold mb-2">Current Password</label>
                 <input
                   type={showpassword ? "text" : "password"}
+                  id='old_password'
                   value={passwords.old_password}
                   onChange={(e) => setPasswords({ ...passwords, old_password: e.target.value })}
                   className="w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-red-400 transition"
@@ -259,9 +264,10 @@ const CustomerProfile = () => {
                 />
               </div>
               <div>
-                <label className="block text-gray-700 font-semibold mb-2">New Password</label>
+                <label htmlFor='new_password' className="block text-gray-700 font-semibold mb-2">New Password</label>
                 <input
                   type={showpassword ? "text" : "password"}
+                  id='new_password'
                   value={passwords.new_password}
                   onChange={(e) => setPasswords({ ...passwords, new_password: e.target.value })}
                   className="w-full border border-gray-300 rounded-xl p-3 pr-14 focus:outline-none focus:ring-2 focus:ring-red-400 transition"

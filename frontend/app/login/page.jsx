@@ -10,7 +10,7 @@ export default function Login() {
   const [role, setRole] = useState("customer");
   const [loading, setLoading] = useState(false);
   const [showpass, setShowpass] = useState(false);
-
+  
   const [formData, setFormData] = useState({
     username: "",
     password: ""
@@ -40,28 +40,24 @@ export default function Login() {
       localStorage.setItem('is_officer', res.data.is_officer);
       
       
-      if (role === "officer") {
-        if (res.data.is_officer) {
-          router.push("/dashboard/officer");
-        } else {
-          toast.error("You are not authorized as Officer");
-        }
-      } else {
-        if (res.data.is_customer) {
-          router.push("/dashboard/customer");
-        } else {
-          toast.error("You are not authorized as Customer");
-        }
+      if (role === "officer" && res.data.is_officer) {
+        router.push("/dashboard/officer");
+      } else if (role === "officer") {
+        toast.error("You are not authorized as Officer");
+      } else if (role === "customer" && res.data.is_customer) {
+        router.push("/dashboard/customer");
+      } else if (role === "customer") {
+        toast.error("You are not authorized as Customer");
       }
 
     } catch (error) {
-      console.log(error);
+      console.error("Error while login : ", error);
       toast.error("Invalid Credentials");
     } finally {
       setLoading(false);
     }
   };
-
+  const rolelabel = role === "customer" ? "Customer" : "Officer";
   return (
     <div className="min-h-screen w-full bg-[url('/bgimg.png')] bg-cover bg-center font-serif">
 
@@ -114,11 +110,12 @@ export default function Login() {
             
             <form onSubmit={handleSubmit} className="flex flex-col gap-3">
 
-              <label className="text-sm font-medium text-white">
+              <label htmlFor="username" className="text-sm font-medium text-white">
                 {role === "customer" ? "Username" : "Bank Officer ID"}
               </label>
 
               <input
+                id="username"
                 className="p-2 border border-white/40 bg-white/30 rounded-xl outline-none text-white placeholder-white/70 focus:border-indigo-400 w-full"
                 name="username"
                 placeholder={role === "customer" ? "Enter Username" : "Enter Officer ID"}
@@ -127,9 +124,10 @@ export default function Login() {
                 disabled={loading}
               />
 
-              <label className="text-sm font-medium text-white">Password</label>
+              <label htmlFor="password" className="text-sm font-medium text-white">Password</label>
 
               <input
+                id="password"
                 className="p-2 border border-white/40 bg-white/30 rounded-xl outline-none text-white placeholder-white/70 focus:border-indigo-400 w-full"
                 name="password"
                 type={showpass ? "text" : "password"}
@@ -145,11 +143,12 @@ export default function Login() {
 
                 <div className="flex items-center gap-2">
                   <input
+                    id="showPassCheckbox"
                     type="checkbox"
                     onClick={() => setShowpass(!showpass)}
                     className="w-4 h-4 accent-indigo-500 cursor-pointer"
                   />
-                  <label>
+                  <label htmlFor="showPassCheckbox">
                     {showpass ? "Hide password" : "Show password"}
                   </label>
                 </div>
@@ -172,7 +171,7 @@ export default function Login() {
               >
                 {loading
                   ? "Signing in..."
-                  : `Login as ${role === "customer" ? "Customer" : "Officer"}`}
+                  : `Login as ${rolelabel}`}
               </button>
 
               

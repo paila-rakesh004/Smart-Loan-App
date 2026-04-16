@@ -2,8 +2,8 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import API from "@/lib/api";
-import { UserCircleIcon } from '@heroicons/react/24/solid';
-import { ArrowRightOnRectangleIcon } from '@heroicons/react/24/solid';
+
+import { UserCircleIcon, ArrowLeftStartOnRectangleIcon } from '@heroicons/react/24/solid';
 
 const Page = () => {
   const router = useRouter();
@@ -11,6 +11,13 @@ const Page = () => {
   const [profile, setProfile] = useState(null);
   const [loans, setLoans] = useState([]);
   const[loading,setLoading] = useState(true);
+
+  const getStatusClasses = (status) => {
+    if (status === 'Eligible') return 'bg-green-100 text-green-700';
+    if (status === 'Not Eligible') return 'bg-red-100 text-red-700';
+    return 'bg-yellow-100 text-yellow-700';
+  };
+
   const handleLogout = () => {
     localStorage.removeItem("access_token");
     localStorage.removeItem("refresh_token");
@@ -44,7 +51,7 @@ const Page = () => {
       setLoans(loanRes.data);
     
     } catch (error) {
-      console.log(error);
+      console.log("Failed to load data.",error);
     } finally {
       setLoading(false);
     }
@@ -55,17 +62,17 @@ const Page = () => {
 
   if (loading) {
   return (
-    <div className="flex items-center justify-center h-screen bg-gradient-to-r from-[#eef2f7] to-[#d9e4f5]">
+    <div className="flex items-center justify-center h-screen bg-linear-to-r from-[#eef2f7] to-[#d9e4f5]">
       <div className="w-15 h-15 border-6 border-blue-500 border-b-transparent rounded-full animate-ping"></div>
     </div>
   );
   }
 
   return (
-    <div className="relative font-serif bg-gradient-to-r from-[#eef2f7] to-[#d9e4f5] min-h-screen pb-10">
+    <div className="relative font-serif bg-linear-to-r from-[#eef2f7] to-[#d9e4f5] min-h-screen pb-10">
       
       
-      <div className="fixed top-0 left-0 w-full bg-gradient-to-r from-[#eef2f7] to-[#d9e4f5] z-50 py-4 px-4 sm:px-8 shadow-sm">
+      <div className="fixed top-0 left-0 w-full bg-linear-to-r from-[#eef2f7] to-[#d9e4f5] z-50 py-4 px-4 sm:px-8 shadow-sm">
         <div className="max-w-7xl mx-auto bg-white shadow-xl rounded-xl p-4 sm:p-6 flex flex-col md:flex-row justify-between items-center gap-4">
           
           <div className="flex-1 flex justify-center md:justify-start">
@@ -93,7 +100,7 @@ const Page = () => {
               onClick={handleLogout}
               className="cursor-pointer rounded-full font-bold transition transform hover:-translate-y-1"
             >
-              <ArrowRightOnRectangleIcon className="w-9 h-9 text-red-600" />
+              <ArrowLeftStartOnRectangleIcon className="w-9 h-9 text-red-600" />
             </button>
           </div>
         </div>
@@ -140,7 +147,7 @@ const Page = () => {
 
         
           <div className="overflow-x-auto rounded-xl border border-gray-200 shadow-sm">
-            <table className="w-full min-w-[700px] text-sm sm:text-base">
+            <table className="w-full min-w-175 text-sm sm:text-base">
               <thead>
                 <tr className="bg-gray-100 text-left text-gray-700 border-b border-gray-200">
                   <th className="p-4 font-bold">Loan Type</th>
@@ -152,16 +159,12 @@ const Page = () => {
               </thead>
               <tbody>
                 {loans.length > 0 ? (
-                  loans.map((loan, index) => (
-                    <tr key={index} className="border-b border-gray-100 hover:bg-blue-50/50 transition">
+                  loans.map((loan) => (
+                    <tr key={loan.id} className="border-b border-gray-100 hover:bg-blue-50/50 transition">
                       <td className="p-4 font-medium text-gray-800">{loan.loan_type}</td>
                       <td className="p-4 text-gray-700">₹{loan.loan_amount}</td>
                       <td className="p-4">
-                        <span className={`px-3 py-1 rounded-full text-xs sm:text-sm font-bold ${
-                          loan.status === 'Eligible' ? 'bg-green-100 text-green-700' : 
-                          loan.status === 'Not Eligible' ? 'bg-red-100 text-red-700' : 
-                          'bg-yellow-100 text-yellow-700'
-                        }`}>
+                        <span className={`px-3 py-1 rounded-full text-xs sm:text-sm font-bold ${getStatusClasses(loan.status)}`}>
                           {loan.status}
                         </span>
                       </td>

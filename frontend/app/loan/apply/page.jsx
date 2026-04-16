@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import API from "@/lib/api";
 import { toast } from "react-toastify";
-import { UserCircleIcon, ArrowRightOnRectangleIcon, ArrowLeftIcon, CheckCircleIcon } from '@heroicons/react/24/solid';
+import { UserCircleIcon, ArrowLeftStartOnRectangleIcon, ArrowLeftIcon, CheckCircleIcon } from '@heroicons/react/24/solid';
 
 
 export default function ApplyLoan() {
@@ -90,6 +90,12 @@ export default function ApplyLoan() {
   const isPersonal = form.LoanType === "Personal";
   const isHome = form.LoanType === "Home";
 
+  const getSubmitButtonText = () => {
+    if (click) return "Submitting...";
+    if (Object.values(aiStatuses).some(s => s.loading)) return "Waiting for AI...";
+    return "Submit Application";
+  };
+
   const handleLogout = () => {
     localStorage.removeItem("access_token");
     localStorage.removeItem("refresh_token");
@@ -143,7 +149,6 @@ export default function ApplyLoan() {
     formData.append("monthly_income", form.monthlyIncome);
 
     try {
-      const token = localStorage.getItem("access_token");
       const res = await API.post("loans/verify-document/", formData);
 
       const { decision, confidence_score, ai_reasoning, extracted_data } = res.data;
@@ -164,7 +169,7 @@ export default function ApplyLoan() {
         setForm((prev) => ({ ...prev, [fieldName]: null }));
         if (inputElement) inputElement.value = "";
       }
-    } catch (error) {
+    } catch {
       setAiStatuses((prev) => ({
         ...prev,
         [fieldName]: { loading: false, decision: "MANUAL_REVIEW", reasoning: "AI scan failed. Will be manually reviewed." },
@@ -177,13 +182,13 @@ export default function ApplyLoan() {
     const fieldName = e.target.name;
     if (!file) return;
 
-    const aiWorthyDocs = [
+    const aiWorthyDocs = new Set([
       "panCard", "aadharCard", "salarySlips", "empIdCard", "itrDocument",
       "doc10thCert", "doc12thCert", "docDegreeCert", "docAdmissionLetter", "docFeeStructure",
       "docAgreementSale", "docNoc"
-    ];
+    ]);
 
-    if (aiWorthyDocs.includes(fieldName) && (!form.firstName || !form.lastName)) {
+    if (aiWorthyDocs.has(fieldName) && (!form.firstName || !form.lastName)) {
       toast.error("Please enter and lock your Legal First and Last Name before uploading documents!");
       e.target.value = ""; 
       return;
@@ -191,14 +196,13 @@ export default function ApplyLoan() {
 
     setForm({ ...form, [fieldName]: file });
 
-    if (aiWorthyDocs.includes(fieldName)) {
+    if (aiWorthyDocs.has(fieldName)) {
       verifyDocumentWithAI(fieldName, file, e.target);
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const token = localStorage.getItem("access_token");
 
     const isAiLoading = Object.values(aiStatuses).some((status) => status.loading);
     if (isAiLoading) {
@@ -207,6 +211,7 @@ export default function ApplyLoan() {
     }
 
     const dataToSend = new FormData();
+  
     dataToSend.append("occupation", form.occupationType);
     dataToSend.append("occ", form.occupation);
     dataToSend.append("organization_name", form.organizationName);
@@ -218,42 +223,55 @@ export default function ApplyLoan() {
     dataToSend.append("nominee_age", form.nomineeAge);
     dataToSend.append("doc_guarantor_photo", form.docGuarantorPhoto);
     dataToSend.append("doc_guarantor_signature", form.docGuarantorSignature);
+
     
-   
-    if (form.panCard) dataToSend.append("pan_card_file", form.panCard);
-    if (form.aadharCard) dataToSend.append("aadhar_card_file", form.aadharCard);
-    if (form.passportPhoto) dataToSend.append("passport_photo", form.passportPhoto);
-    if (form.age) dataToSend.append("age", form.age);
-    if (form.bankStatements) dataToSend.append("bank_statements", form.bankStatements);
-    if (form.docGuarantorKyc) dataToSend.append("doc_guarantor_kyc", form.docGuarantorKyc);
-    if (form.docGuarantorFinancials) dataToSend.append("doc_guarantor_financials", form.docGuarantorFinancials);
+    const appendIfExists = (fieldsObj) => {
+      Object.entries(fieldsObj).forEach(([key, value]) => {
+        if (value) dataToSend.append(key, value);
+      });
+    };
+
+    
+    appendIfExists({
+      pan_card_file: form.panCard,
+      aadhar_card_file: form.aadharCard,
+      passport_photo: form.passportPhoto,
+      age: form.age,
+      bank_statements: form.bankStatements,
+      doc_guarantor_kyc: form.docGuarantorKyc,
+      doc_guarantor_financials: form.docGuarantorFinancials,
+    });
 
     
     if (requiresITR) {
-      if (form.itrDocument) dataToSend.append("itr_document", form.itrDocument);
+      appendIfExists({ itr_document: form.itrDocument });
     } else if (isEmployed) {
-      if (form.salarySlips) dataToSend.append("salary_slips", form.salarySlips);
-      if (form.empIdCard) dataToSend.append("emp_id_card", form.empIdCard);
+      appendIfExists({ salary_slips: form.salarySlips, emp_id_card: form.empIdCard });
     }
 
+ 
     if (isEducation) {
-        dataToSend.append("guarantor_organization", form.guarantorOrganization);
-        dataToSend.append("guarantor_income", form.guarantorIncome);
-        if (form.doc10thCert) dataToSend.append("doc_10th_cert", form.doc10thCert);
-        if (form.doc12thCert) dataToSend.append("doc_12th_cert", form.doc12thCert);
-        if (form.docDegreeCert) dataToSend.append("doc_degree_cert", form.docDegreeCert);
-        if (form.docAdmissionLetter) dataToSend.append("doc_admission_letter", form.docAdmissionLetter);
-        if (form.docFeeStructure) dataToSend.append("doc_fee_structure", form.docFeeStructure);
-        
+      dataToSend.append("guarantor_organization", form.guarantorOrganization);
+      dataToSend.append("guarantor_income", form.guarantorIncome);
+      appendIfExists({
+        doc_10th_cert: form.doc10thCert,
+        doc_12th_cert: form.doc12thCert,
+        doc_degree_cert: form.docDegreeCert,
+        doc_admission_letter: form.docAdmissionLetter,
+        doc_fee_structure: form.docFeeStructure,
+      });
     }
 
     if (isHome) {
-        if (form.docAgreementSale) dataToSend.append("doc_agreement_sale", form.docAgreementSale);
-        if (form.docEncumbranceCert) dataToSend.append("doc_encumbrance_cert", form.docEncumbranceCert);
-        if (form.docBuildingPlan) dataToSend.append("doc_building_plan", form.docBuildingPlan);
-        if (form.docNoc) dataToSend.append("doc_noc", form.docNoc);
+      appendIfExists({
+        doc_agreement_sale: form.docAgreementSale,
+        doc_encumbrance_cert: form.docEncumbranceCert,
+        doc_building_plan: form.docBuildingPlan,
+        doc_noc: form.docNoc,
+      });
     }
 
+   
     dataToSend.append("ai_statuses", JSON.stringify(aiStatuses));
     setClick(true);
 
@@ -262,13 +280,11 @@ export default function ApplyLoan() {
       toast.success("Loan submitted successfully!");
       router.push("/dashboard/customer");
     } catch (error) {
-      console.log(error);
       toast.error(error.response?.data?.error || "Something went wrong");
     } finally {
       setClick(false);
     }
   };
-
   useEffect(() => {
     const token = localStorage.getItem("access_token");
     if (!token) return router.push("/login");
@@ -285,7 +301,7 @@ export default function ApplyLoan() {
         const kycRes = await API.get("users/my-kyc/");
         setKycStatus(kycRes.data);
 
-      } catch (error) {
+      } catch {
         toast.error("Failed to load profile data.");
       } finally {
         setLoadingStatus(false);
@@ -364,15 +380,15 @@ export default function ApplyLoan() {
   const isUnderageAndNoIncome = form.age && form.age < 20 && (form.monthlyIncome === "" || Number(form.monthlyIncome) === 0);
   
   return (
-    <div className="font-serif bg-gradient-to-r from-[#eef2f7] to-[#d9e4f5] min-h-screen pb-10">
+    <div className="font-serif bg-linear-to-r from-[#eef2f7] to-[#d9e4f5] min-h-screen pb-10">
       
-      <div className="fixed top-0 left-0 w-full bg-gradient-to-r from-[#eef2f7] to-[#d9e4f5] z-[60] py-4 px-4 sm:px-8 shadow-sm">
+      <div className="fixed top-0 left-0 w-full bg-linear-to-r from-[#eef2f7] to-[#d9e4f5] z-60 py-4 px-4 sm:px-8 shadow-sm">
         <div className="max-w-7xl mx-auto bg-white shadow-xl rounded-xl p-4 sm:p-6 flex justify-between items-center">
           <button onClick={() => router.push("/dashboard/customer")}><ArrowLeftIcon className="w-7 h-7 sm:w-9 sm:h-9 text-gray-700 cursor-pointer hover:-translate-y-0.5 transition" /></button>
           <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold text-blue-900">Loan Application</h1>
           <div className="flex gap-2 sm:gap-4 items-center">
             <button onClick={() => router.push("/profile/customer")}><UserCircleIcon className="w-8 h-8 sm:w-10 sm:h-10 text-blue-700 cursor-pointer hover:-translate-y-0.5 transition" /></button>
-            <button onClick={handleLogout}><ArrowRightOnRectangleIcon className="w-7 h-7 sm:w-9 sm:h-9 text-red-600 cursor-pointer hover:-translate-y-0.5 transition" /></button>
+            <button onClick={handleLogout}><ArrowLeftStartOnRectangleIcon className="w-7 h-7 sm:w-9 sm:h-9 text-red-600 cursor-pointer hover:-translate-y-0.5 transition" /></button>
           </div>
         </div>
       </div>
@@ -390,10 +406,10 @@ export default function ApplyLoan() {
                 <input name="lastName" value={form.lastName} placeholder="Last Name" onChange={handlevalueChange} disabled={isNameLocked} className={`p-3 rounded-lg border border-gray-300 w-full ${isNameLocked ? "bg-gray-200 cursor-not-allowed" : "cursor-text"}`} required />
               </div>
               <div className="mt-6 flex justify-end">
-                {!isNameLocked ? (
-                  <button type="button" onClick={handleLockIdentity} className="bg-blue-600 cursor-pointer text-white px-6 py-3 rounded-xl font-bold hover:bg-indigo-700 hover:-translate-y-1 transform transition w-full sm:w-auto">Confirm & Lock Identity</button>
-                ) : (
+                {isNameLocked ? (
                   <span className="text-green-600 font-bold bg-green-100 cursor-default px-4 py-3 rounded-lg border border-green-200 w-full sm:w-auto text-center block sm:inline-block">✅ Identity Locked</span>
+                ) : (
+                  <button type="button" onClick={handleLockIdentity} className="bg-blue-600 cursor-pointer text-white px-6 py-3 rounded-xl font-bold hover:bg-indigo-700 hover:-translate-y-1 transform transition w-full sm:w-auto">Confirm & Lock Identity</button>
                 )}
               </div>
             </div>
@@ -402,8 +418,9 @@ export default function ApplyLoan() {
               <div className="text-lg sm:text-xl text-blue-800 font-bold border-l-4 border-blue-600 pl-3 mb-6">Employment Details</div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 <div className="flex flex-col gap-2">
-                  <label className="font-bold text-gray-700">Occupation Type</label>
+                  <label htmlFor="occupationType" className="font-bold text-gray-700">Occupation Type</label>
                   <select 
+                    id="occupationType"
                     name="occupationType" 
                     value={form.occupationType} 
                     onChange={handlevalueChange} 
@@ -419,36 +436,37 @@ export default function ApplyLoan() {
                   </select>
                 </div>
               <div className="flex flex-col gap-2">
-                  <label className="font-bold text-gray-700">Occupation {isStudent && "(Education)"}</label>
-                  <input name="occupation" placeholder={isStudent ? "E.g., B.Tech Student" : "Occupation"} onChange={handlevalueChange} className="p-3 rounded-lg border border-gray-300 w-full"/>
+                  <label htmlFor="occupation" className="font-bold text-gray-700">Occupation {isStudent && "(Education)"}</label>
+                  <input id="occupation" name="occupation" placeholder={isStudent ? "E.g., B.Tech Student" : "Occupation"} onChange={handlevalueChange} className="p-3 rounded-lg border border-gray-300 w-full"/>
                 </div>
                 <div className="flex flex-col gap-2">
-                  <label className="flex items-center gap-2 font-bold text-gray-700">Organization Name {isStudent && "(College/School)"}
-                    <div className="relative group">
-                      <span onClick={() => setShowInfo(!showInfo)}
-                      className="w-5 h-5 flex items-center justify-center rounded-full bg-gray-400 text-white text-xs cursor-pointer">
-                        i   </span>
-                      <div className={`absolute bottom-full left-1/2 -translate-x-1/2 mb-2
-                        bg-black text-white text-xs px-3 py-2 rounded 
-                        transition duration-300 z-10 w-50 text-center group-hover:opacity-100 pointer-events-none
-                        ${showInfo ? "opacity-100" : "opacity-0 pointer-events-none"}
+                  <label htmlFor="organizationName" className="relative flex items-center gap-2 font-bold text-gray-700 group">
+                    Organization Name {isStudent && "(College/School)"}
+                    <button
+                      type="button"
+                      onClick={() => setShowInfo(!showInfo)}
+                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setShowInfo(!showInfo); } }}
+                      className="w-5 h-5 flex items-center justify-center rounded-full bg-gray-400 text-white text-xs cursor-pointer hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 shrink-0"
+                      aria-label="Information about organization name"
+                    >
+                      i
+                    </button>
+                    <div className={`absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-black text-white text-xs px-3 py-2 rounded transition duration-300 z-10 text-center whitespace-nowrap
+                        ${showInfo ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}
                        `}>
                         Enter the workplace if you don&apos;t have specific organization name.
-                      </div>  
-                    </div> 
+                      </div>
                   </label>
-
                   <input
-                  name="organizationName"
-                  placeholder={isStudent ? "College/University Name" : "Company / Business Name"}
-                  onChange={handlevalueChange}
-                  className="p-3 rounded-lg border border-gray-300 w-full"
+                    name="organizationName"
+                    placeholder={isStudent ? "College/University Name" : "Company / Business Name"}
+                    onChange={handlevalueChange}
+                    className="p-3 rounded-lg border border-gray-300 w-full"
                   />
-
                 </div>
                 <div className="flex flex-col gap-2">
-                  <label className="font-bold text-gray-700">Monthly Income (₹) {isStudent && "(Enter 0 if none)"}</label>
-                  <input name="monthlyIncome" type="number" onChange={handlevalueChange} className="p-3 rounded-lg border border-gray-300 w-full" required />
+                  <label htmlFor="monthlyIncome" className="font-bold text-gray-700">Monthly Income (₹) {isStudent && "(Enter 0 if none)"}</label>
+                  <input id="monthlyIncome" name="monthlyIncome" type="number" onChange={handlevalueChange} className="p-3 rounded-lg border border-gray-300 w-full" required />
                 </div>
               </div>
             </div>
@@ -457,8 +475,8 @@ export default function ApplyLoan() {
               <div className="text-lg sm:text-xl text-blue-800 font-bold border-l-4 border-blue-600 pl-3 mb-6">Loan Request</div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 <div className="flex flex-col gap-2">
-                  <label className="font-bold text-gray-700">Select Loan Type</label>
-                  <select name="LoanType" onChange={handlevalueChange} required defaultValue="" className="p-3 rounded-lg border border-gray-300 w-full">
+                  <label htmlFor="LoanType" className="font-bold text-gray-700">Select Loan Type</label>
+                  <select id="LoanType" name="LoanType" onChange={handlevalueChange} required defaultValue="" className="p-3 rounded-lg border border-gray-300 w-full">
                     <option value="" disabled>Select Type</option>
                     <option value="Personal">Personal Loan</option>
                     {!isStudent && <option value="Home">Home Loan</option>}
@@ -468,13 +486,13 @@ export default function ApplyLoan() {
                 </div>
                 
                 <div className="flex flex-col gap-2">
-                  <label className="font-bold text-gray-700">Tenure </label>
-                  <input name="tenure" type="number" placeholder="Tenure (Months)" onChange={handlevalueChange} className="p-3 rounded-lg border border-gray-300 w-full h-[50px]" required />
+                  <label htmlFor="tenure" className="font-bold text-gray-700">Tenure </label>
+                  <input id="tenure" name="tenure" type="number" placeholder="Tenure (Months)" onChange={handlevalueChange} className="p-3 rounded-lg border border-gray-300 w-full h-12.5" required />
                 </div>
 
                 <div className="flex flex-col gap-2 md:col-span-2">
-                  <label className="font-bold text-gray-700">Amount </label>
-                  <input name="loanAmount" type="number" placeholder="Amount (₹)" onChange={handlevalueChange} className="p-3 rounded-lg border border-gray-300 w-full" required />
+                  <label htmlFor="loanAmount" className="font-bold text-gray-700">Amount </label>
+                  <input id="loanAmount" name="loanAmount" type="number" placeholder="Amount (₹)" onChange={handlevalueChange} className="p-3 rounded-lg border border-gray-300 w-full" required />
                 </div>
               </div>
             </div>
@@ -489,14 +507,14 @@ export default function ApplyLoan() {
                 {renderVaultUpload("Passport Photo", "passportPhoto", kycStatus.documents_present.passport_photo, kycStatus.urls?.passport_photo)}
                 
                 <div className="flex flex-col gap-2">
-                  <label className="font-bold text-gray-700">Bank Statements (Last 6 Months)</label>
-                  <input type="file" name="bankStatements" onChange={handleFileChange} accept=".pdf,.png,.jpg" className="block w-full text-sm text-gray-500 border border-gray-200 rounded-lg file:mr-2 sm:file:mr-4 file:py-2 file:px-4 file:bg-blue-50 file:text-blue-700 cursor-pointer" required />
+                  <label htmlFor="bankStatements" className="font-bold text-gray-700">Bank Statements (Last 6 Months)</label>
+                  <input id="bankStatements" type="file" name="bankStatements" onChange={handleFileChange} accept=".pdf,.png,.jpg" className="block w-full text-sm text-gray-500 border border-gray-200 rounded-lg file:mr-2 sm:file:mr-4 file:py-2 file:px-4 file:bg-blue-50 file:text-blue-700 cursor-pointer" required />
                 </div>
 
                 {requiresITR && (
                    <div className="flex flex-col gap-2">
-                     <label className="font-bold text-gray-700">Income Tax Return (ITR)</label>
-                     <input type="file" name="itrDocument" onChange={handleFileChange} accept=".pdf,.png,.jpg" className="block w-full text-sm text-gray-500 border border-gray-200 rounded-lg file:mr-2 sm:file:mr-4 file:py-2 file:px-4 file:bg-blue-50 file:text-blue-700 cursor-pointer" required />
+                     <label htmlFor="itrDocument" className="font-bold text-gray-700">Income Tax Return (ITR)</label>
+                     <input id="itrDocument" type="file" name="itrDocument" onChange={handleFileChange} accept=".pdf,.png,.jpg" className="block w-full text-sm text-gray-500 border border-gray-200 rounded-lg file:mr-2 sm:file:mr-4 file:py-2 file:px-4 file:bg-blue-50 file:text-blue-700 cursor-pointer" required />
                      {renderAIBadge("itrDocument")}
                    </div>
                 )}
@@ -504,13 +522,13 @@ export default function ApplyLoan() {
                 {isEmployed && (
                   <>
                     <div className="flex flex-col gap-2">
-                      <label className="font-bold text-gray-700">Salary Slips (Last 3 Months)</label>
-                      <input type="file" name="salarySlips" onChange={handleFileChange} accept=".pdf,.png,.jpg" className="block w-full text-sm text-gray-500 border border-gray-200 rounded-lg file:mr-2 sm:file:mr-4 file:py-2 file:px-4 file:bg-blue-50 file:text-blue-700 cursor-pointer" required />
+                      <label htmlFor="salarySlips" className="font-bold text-gray-700">Salary Slips (Last 3 Months)</label>
+                      <input id="salarySlips" type="file" name="salarySlips" onChange={handleFileChange} accept=".pdf,.png,.jpg" className="block w-full text-sm text-gray-500 border border-gray-200 rounded-lg file:mr-2 sm:file:mr-4 file:py-2 file:px-4 file:bg-blue-50 file:text-blue-700 cursor-pointer" required />
                       {renderAIBadge("salarySlips")}
                     </div>
                     <div className="flex flex-col gap-2">
-                      <label className="font-bold text-gray-700">Employee ID Card </label>
-                      <input type="file" name="empIdCard" onChange={handleFileChange} accept=".pdf,.png,.jpg" className="block w-full text-sm text-gray-500 border border-gray-200 rounded-lg file:mr-2 sm:file:mr-4 file:py-2 file:px-4 file:bg-blue-50 file:text-blue-700 cursor-pointer" required />
+                      <label htmlFor="empIdCard" className="font-bold text-gray-700">Employee ID Card </label>
+                      <input id="empIdCard" type="file" name="empIdCard" onChange={handleFileChange} accept=".pdf,.png,.jpg" className="block w-full text-sm text-gray-500 border border-gray-200 rounded-lg file:mr-2 sm:file:mr-4 file:py-2 file:px-4 file:bg-blue-50 file:text-blue-700 cursor-pointer" required />
                       {renderAIBadge("empIdCard")}
                     </div>
                   </>
@@ -524,28 +542,28 @@ export default function ApplyLoan() {
                 <div className="text-lg sm:text-xl text-indigo-800 font-bold border-l-4 border-indigo-600 pl-3 mb-6 mt-4 sm:mt-0">Academic Documents</div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                   <div className="flex flex-col gap-2">
-                    <label className="text-sm font-bold text-gray-700">10th Certificate</label>
-                    <input type="file" name="doc10thCert" onChange={handleFileChange} accept=".pdf,.jpg,.jpeg,.png" className="block w-full text-sm text-gray-500 border border-gray-200 rounded-lg bg-white file:py-2 file:px-4 file:bg-indigo-50 file:text-indigo-700" required />
+                    <label htmlFor="doc10thCert" className="text-sm font-bold text-gray-700">10th Certificate</label>
+                    <input id="doc10thCert" type="file" name="doc10thCert" onChange={handleFileChange} accept=".pdf,.jpg,.jpeg,.png" className="block w-full text-sm text-gray-500 border border-gray-200 rounded-lg bg-white file:py-2 file:px-4 file:bg-indigo-50 file:text-indigo-700" required />
                     {renderAIBadge("doc10thCert")}
                   </div>
                   <div className="flex flex-col gap-2">
-                    <label className="text-sm font-bold text-gray-700">12th Certificate</label>
-                    <input type="file" name="doc12thCert" onChange={handleFileChange} accept=".pdf,.jpg,.jpeg,.png" className="block w-full text-sm text-gray-500 border border-gray-200 rounded-lg bg-white file:py-2 file:px-4 file:bg-indigo-50 file:text-indigo-700" required />
+                    <label htmlFor="doc12thCert" className="text-sm font-bold text-gray-700">12th Certificate</label>
+                    <input id="doc12thCert" type="file" name="doc12thCert" onChange={handleFileChange} accept=".pdf,.jpg,.jpeg,.png" className="block w-full text-sm text-gray-500 border border-gray-200 rounded-lg bg-white file:py-2 file:px-4 file:bg-indigo-50 file:text-indigo-700" required />
                     {renderAIBadge("doc12thCert")}
                   </div>
                   <div className="flex flex-col gap-2">
-                    <label className="text-sm font-bold text-gray-700">Degree Certificate (Optional)</label>
-                    <input type="file" name="docDegreeCert" onChange={handleFileChange} accept=".pdf,.jpg,.jpeg,.png" className="block w-full text-sm text-gray-500 border border-gray-200 rounded-lg bg-white file:py-2 file:px-4 file:bg-indigo-50 file:text-indigo-700" />
+                    <label htmlFor="docDegreeCert" className="text-sm font-bold text-gray-700">Degree Certificate (Optional)</label>
+                    <input id="docDegreeCert" type="file" name="docDegreeCert" onChange={handleFileChange} accept=".pdf,.jpg,.jpeg,.png" className="block w-full text-sm text-gray-500 border border-gray-200 rounded-lg bg-white file:py-2 file:px-4 file:bg-indigo-50 file:text-indigo-700" />
                     {renderAIBadge("docDegreeCert")}
                   </div>
                   <div className="flex flex-col gap-2">
-                    <label className="text-sm font-bold text-gray-700">Admission Letter</label>
-                    <input type="file" name="docAdmissionLetter" onChange={handleFileChange} accept=".pdf,.jpg,.jpeg,.png" className="block w-full text-sm text-gray-500 border border-gray-200 rounded-lg bg-white file:py-2 file:px-4 file:bg-indigo-50 file:text-indigo-700" required />
+                    <label htmlFor="docAdmissionLetter" className="text-sm font-bold text-gray-700">Admission Letter</label>
+                    <input id="docAdmissionLetter" type="file" name="docAdmissionLetter" onChange={handleFileChange} accept=".pdf,.jpg,.jpeg,.png" className="block w-full text-sm text-gray-500 border border-gray-200 rounded-lg bg-white file:py-2 file:px-4 file:bg-indigo-50 file:text-indigo-700" required />
                     {renderAIBadge("docAdmissionLetter")}
                   </div>
                   <div className="flex flex-col gap-2 md:col-span-2">
-                    <label className="text-sm font-bold text-gray-700">Fee Structure Document</label>
-                    <input type="file" name="docFeeStructure" onChange={handleFileChange} accept=".pdf,.jpg,.jpeg,.png" className="block w-full text-sm text-gray-500 border border-gray-200 rounded-lg bg-white file:py-2 file:px-4 file:bg-indigo-50 file:text-indigo-700" required />
+                    <label htmlFor="docFeeStructure" className="text-sm font-bold text-gray-700">Fee Structure Document</label>
+                    <input id="docFeeStructure" type="file" name="docFeeStructure" onChange={handleFileChange} accept=".pdf,.jpg,.jpeg,.png" className="block w-full text-sm text-gray-500 border border-gray-200 rounded-lg bg-white file:py-2 file:px-4 file:bg-indigo-50 file:text-indigo-700" required />
                     {renderAIBadge("docFeeStructure")}
                   </div>
                 </div>
@@ -557,22 +575,22 @@ export default function ApplyLoan() {
                 <div className="text-lg sm:text-xl text-emerald-800 font-bold border-l-4 border-emerald-600 pl-3 mb-6">Property Documents</div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                   <div className="flex flex-col gap-2">
-                    <label className="text-sm font-bold text-gray-700">Agreement to Sale / Allotment Letter</label>
-                    <input type="file" name="docAgreementSale" onChange={handleFileChange} accept=".pdf,.jpg,.jpeg,.png" className="block w-full text-sm text-gray-500 border border-gray-200 rounded-lg bg-white file:py-2 file:px-4 file:bg-emerald-50 file:text-emerald-700" required />
+                    <label htmlFor="docAgreementSale" className="text-sm font-bold text-gray-700">Agreement to Sale / Allotment Letter</label>
+                    <input id="docAgreementSale" type="file" name="docAgreementSale" onChange={handleFileChange} accept=".pdf,.jpg,.jpeg,.png" className="block w-full text-sm text-gray-500 border border-gray-200 rounded-lg bg-white file:py-2 file:px-4 file:bg-emerald-50 file:text-emerald-700" required />
                     {renderAIBadge("docAgreementSale")}
                   </div>
                   <div className="flex flex-col gap-2">
-                    <label className="text-sm font-bold text-gray-700">No Objection Certificate (NOC)</label>
-                    <input type="file" name="docNoc" onChange={handleFileChange} accept=".pdf,.jpg,.jpeg,.png" className="block w-full text-sm text-gray-500 border border-gray-200 rounded-lg bg-white file:py-2 file:px-4 file:bg-emerald-50 file:text-emerald-700" required />
+                    <label htmlFor="docNoc" className="text-sm font-bold text-gray-700">No Objection Certificate (NOC)</label>
+                    <input id="docNoc" type="file" name="docNoc" onChange={handleFileChange} accept=".pdf,.jpg,.jpeg,.png" className="block w-full text-sm text-gray-500 border border-gray-200 rounded-lg bg-white file:py-2 file:px-4 file:bg-emerald-50 file:text-emerald-700" required />
                     {renderAIBadge("docNoc")}
                   </div>
                   <div className="flex flex-col gap-2">
-                    <label className="text-sm font-bold text-gray-700">Encumbrance Certificate (Manual Review)</label>
-                    <input type="file" name="docEncumbranceCert" onChange={handleFileChange} accept=".pdf,.jpg,.jpeg,.png" className="block w-full text-sm text-gray-500 border border-gray-200 rounded-lg bg-white file:py-2 file:px-4 file:bg-emerald-50 file:text-emerald-700" required />
+                    <label htmlFor="docEncumbranceCert" className="text-sm font-bold text-gray-700">Encumbrance Certificate (Manual Review)</label>
+                    <input id="docEncumbranceCert" type="file" name="docEncumbranceCert" onChange={handleFileChange} accept=".pdf,.jpg,.jpeg,.png" className="block w-full text-sm text-gray-500 border border-gray-200 rounded-lg bg-white file:py-2 file:px-4 file:bg-emerald-50 file:text-emerald-700" required />
                   </div>
                   <div className="flex flex-col gap-2">
-                    <label className="text-sm font-bold text-gray-700">Building Plan (Optional for Land/Plots)</label>
-                    <input type="file" name="docBuildingPlan" onChange={handleFileChange} accept=".pdf,.jpg,.jpeg,.png" className="block w-full text-sm text-gray-500 border border-gray-200 rounded-lg bg-white file:py-2 file:px-4 file:bg-emerald-50 file:text-emerald-700" />
+                    <label htmlFor="docBuildingPlan" className="text-sm font-bold text-gray-700">Building Plan (Optional for Land/Plots)</label>
+                    <input id="docBuildingPlan" type="file" name="docBuildingPlan" onChange={handleFileChange} accept=".pdf,.jpg,.jpeg,.png" className="block w-full text-sm text-gray-500 border border-gray-200 rounded-lg bg-white file:py-2 file:px-4 file:bg-emerald-50 file:text-emerald-700" />
                   </div>
                 </div>
               </div>
@@ -582,34 +600,34 @@ export default function ApplyLoan() {
               <div className="text-lg sm:text-xl text-blue-800 font-bold border-l-4 border-blue-600 pl-3 mb-6">Co-Applicant & Financial Guarantor</div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-4 sm:mb-6">
                 <div className="flex flex-col gap-2">
-                  <label className="font-bold text-gray-700">Guarantor Full Name </label>
-                  <input name="nomineeName" placeholder="Guarantor Full Name" value={form.nomineeName} onChange={handlevalueChange} className="p-3 rounded-lg border border-gray-300 w-full" required />
+                  <label htmlFor="nomineeName" className="font-bold text-gray-700">Guarantor Full Name </label>
+                  <input id="nomineeName" name="nomineeName" placeholder="Guarantor Full Name" value={form.nomineeName} onChange={handlevalueChange} className="p-3 rounded-lg border border-gray-300 w-full" required />
                 </div>
 
                 <div className="flex flex-col gap-2">
-                  <label className="font-bold text-gray-700">Guarantor Age </label>
-                  <input name="nomineeAge" type="number" placeholder="Guarantor Age" value={form.nomineeAge} onChange={handlevalueChange} className="p-3 rounded-lg border border-gray-300 w-full" required />
+                  <label htmlFor="nomineeAge" className="font-bold text-gray-700">Guarantor Age </label>
+                  <input id="nomineeAge" name="nomineeAge" type="number" placeholder="Guarantor Age" value={form.nomineeAge} onChange={handlevalueChange} className="p-3 rounded-lg border border-gray-300 w-full" required />
                 </div>
                 <div className="flex flex-col gap-2">
-                    <label className="text-sm font-bold text-gray-700">Guarantor Photo</label>
-                    <input type="file" name="docGuarantorPhoto" onChange={handleFileChange} accept=".jpg,.jpeg,.png,.pdf" className="block w-full text-sm text-gray-500 border border-gray-200 rounded-lg bg-white file:py-2 file:px-4 file:bg-blue-50 file:text-blue-700" required />
+                    <label htmlFor="docGuarantorPhoto" className="text-sm font-bold text-gray-700">Guarantor Photo</label>
+                    <input id="docGuarantorPhoto" type="file" name="docGuarantorPhoto" onChange={handleFileChange} accept=".jpg,.jpeg,.png,.pdf" className="block w-full text-sm text-gray-500 border border-gray-200 rounded-lg bg-white file:py-2 file:px-4 file:bg-blue-50 file:text-blue-700" required />
                 </div>
 
                 <div className="flex flex-col gap-2">
-                    <label className="text-sm font-bold text-gray-700">Guarantor Signature</label>
-                    <input type="file" name="docGuarantorSignature" onChange={handleFileChange} accept=".jpg,.jpeg,.png,.pdf" className="block w-full text-sm text-gray-500 border border-gray-200 rounded-lg bg-white file:py-2 file:px-4 file:bg-blue-50 file:text-blue-700" required />
+                    <label htmlFor="docGuarantorSignature" className="text-sm font-bold text-gray-700">Guarantor Signature</label>
+                    <input id="docGuarantorSignature" type="file" name="docGuarantorSignature" onChange={handleFileChange} accept=".jpg,.jpeg,.png,.pdf" className="block w-full text-sm text-gray-500 border border-gray-200 rounded-lg bg-white file:py-2 file:px-4 file:bg-blue-50 file:text-blue-700" required />
                 </div>
                 
 
                 {(isEducation || isPersonal || isHome) && (
                   <>
                     <div className="flex flex-col gap-2">
-                      <label className="font-bold text-gray-700">Guarantor Employer</label>
-                      <input name="guarantorOrganization" placeholder="Company Name" value={form.guarantorOrganization} onChange={handlevalueChange} className="p-3 rounded-lg border border-gray-300 w-full" required />
+                      <label htmlFor="guarantorOrganization" className="font-bold text-gray-700">Guarantor Employer</label>
+                      <input id="guarantorOrganization" name="guarantorOrganization" placeholder="Company Name" value={form.guarantorOrganization} onChange={handlevalueChange} className="p-3 rounded-lg border border-gray-300 w-full" required />
                     </div>
                     <div className="flex flex-col gap-2">
-                      <label className="font-bold text-gray-700">Guarantor Monthly Income (₹)</label>
-                      <input name="guarantorIncome" type="number" placeholder="Monthly Income" value={form.guarantorIncome} onChange={handlevalueChange} className="p-3 rounded-lg border border-gray-300 w-full" required />
+                      <label htmlFor="guarantorIncome" className="font-bold text-gray-700">Guarantor Monthly Income (₹)</label>
+                      <input id="guarantorIncome" name="guarantorIncome" type="number" placeholder="Monthly Income" value={form.guarantorIncome} onChange={handlevalueChange} className="p-3 rounded-lg border border-gray-300 w-full" required />
                     </div>
                   </>
                 )}
@@ -618,13 +636,13 @@ export default function ApplyLoan() {
               {(isEducation || isPersonal || isHome) && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mt-4">
                   <div className="flex flex-col gap-2">
-                    <label className="text-sm font-bold text-gray-700">Guarantor KYC (Aadhaar/PAN)</label>
-                    <input type="file" name="docGuarantorKyc" onChange={handleFileChange} accept=".jpg,.jpeg,.png,.pdf" className="block w-full text-sm text-gray-500 border border-gray-200 rounded-lg bg-white file:py-2 file:px-4 file:bg-blue-50 file:text-blue-700" required />
+                    <label htmlFor="docGuarantorKyc" className="text-sm font-bold text-gray-700">Guarantor KYC (Aadhaar/PAN)</label>
+                    <input id="docGuarantorKyc" type="file" name="docGuarantorKyc" onChange={handleFileChange} accept=".jpg,.jpeg,.png,.pdf" className="block w-full text-sm text-gray-500 border border-gray-200 rounded-lg bg-white file:py-2 file:px-4 file:bg-blue-50 file:text-blue-700" required />
                   </div>
 
                   <div className="flex flex-col gap-2">
-                    <label className="text-sm font-bold text-gray-700">Guarantor Income Proof (Salary Slips/ITR)</label>
-                    <input type="file" name="docGuarantorFinancials" onChange={handleFileChange} accept=".jpg,.jpeg,.png,.pdf" className="block w-full text-sm text-gray-500 border border-gray-200 rounded-lg bg-white file:py-2 file:px-4 file:bg-blue-50 file:text-blue-700" required />
+                    <label htmlFor="docGuarantorFinancials" className="text-sm font-bold text-gray-700">Guarantor Income Proof (Salary Slips/ITR)</label>
+                    <input id="docGuarantorFinancials" type="file" name="docGuarantorFinancials" onChange={handleFileChange} accept=".jpg,.jpeg,.png,.pdf" className="block w-full text-sm text-gray-500 border border-gray-200 rounded-lg bg-white file:py-2 file:px-4 file:bg-blue-50 file:text-blue-700" required />
                    
                   </div>
                 </div>
@@ -644,7 +662,7 @@ export default function ApplyLoan() {
             <div className="flex flex-col-reverse sm:flex-row justify-center gap-4 sm:gap-8 mt-4 pt-8 border-t border-gray-200">
               <button type="button" onClick={() => router.push("/dashboard/customer")} className="w-full sm:w-48 h-12 cursor-pointer hover:font-bold hover:-translate-y-0.5 hover:shadow-md bg-gray-200 text-gray-700 rounded-xl hover:bg-red-500 hover:text-white transition">Discard</button>
               <button type="submit" disabled={isSubmitDisabled || isUnderageAndNoIncome} className={`w-full sm:w-64 h-12 cursor-pointer hover:-translate-y-0.5 hover:font-bold hover:shadow-md text-white transition rounded-xl sm:rounded-2xl shadow-md ${(isSubmitDisabled || isUnderageAndNoIncome) ? 'bg-gray-400 cursor-not-allowed' : 'bg-indigo-500 hover:bg-blue-700'}`}>
-                {click ? "Submitting..." : Object.values(aiStatuses).some(s => s.loading) ? "Waiting for AI..." : "Submit Application"}
+                {getSubmitButtonText()}
               </button>
             </div>
 
