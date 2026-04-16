@@ -4,7 +4,8 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
+    EDUCATION_DOC_PATH = 'documents/education/'
+    HOME_DOC_PATH = 'documents/home/'
     dependencies = [
         ('loans', '0010_loanapplication_occ_and_more'),
     ]
@@ -33,57 +34,57 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='loanapplication',
             name='doc_10th_cert',
-            field=models.FileField(blank=True, null=True, upload_to='documents/education/'),
+            field=models.FileField(blank=True, null=True, upload_to=EDUCATION_DOC_PATH),
         ),
         migrations.AddField(
             model_name='loanapplication',
             name='doc_12th_cert',
-            field=models.FileField(blank=True, null=True, upload_to='documents/education/'),
+            field=models.FileField(blank=True, null=True, upload_to=EDUCATION_DOC_PATH),
         ),
         migrations.AddField(
             model_name='loanapplication',
             name='doc_admission_letter',
-            field=models.FileField(blank=True, null=True, upload_to='documents/education/'),
+            field=models.FileField(blank=True, null=True, upload_to=EDUCATION_DOC_PATH),
         ),
         migrations.AddField(
             model_name='loanapplication',
             name='doc_agreement_sale',
-            field=models.FileField(blank=True, null=True, upload_to='documents/home/'),
+            field=models.FileField(blank=True, null=True, upload_to=HOME_DOC_PATH),
         ),
         migrations.AddField(
             model_name='loanapplication',
             name='doc_building_plan',
-            field=models.FileField(blank=True, null=True, upload_to='documents/home/'),
+            field=models.FileField(blank=True, null=True, upload_to=HOME_DOC_PATH),
         ),
         migrations.AddField(
             model_name='loanapplication',
             name='doc_degree_cert',
-            field=models.FileField(blank=True, null=True, upload_to='documents/education/'),
+            field=models.FileField(blank=True, null=True, upload_to=EDUCATION_DOC_PATH),
         ),
         migrations.AddField(
             model_name='loanapplication',
             name='doc_encumbrance_cert',
-            field=models.FileField(blank=True, null=True, upload_to='documents/home/'),
+            field=models.FileField(blank=True, null=True, upload_to=HOME_DOC_PATH),
         ),
         migrations.AddField(
             model_name='loanapplication',
             name='doc_fee_structure',
-            field=models.FileField(blank=True, null=True, upload_to='documents/education/'),
+            field=models.FileField(blank=True, null=True, upload_to=EDUCATION_DOC_PATH),
         ),
         migrations.AddField(
             model_name='loanapplication',
             name='doc_guarantor_financials',
-            field=models.FileField(blank=True, null=True, upload_to='documents/education/'),
+            field=models.FileField(blank=True, null=True, upload_to=EDUCATION_DOC_PATH),
         ),
         migrations.AddField(
             model_name='loanapplication',
             name='doc_guarantor_kyc',
-            field=models.FileField(blank=True, null=True, upload_to='documents/education/'),
+            field=models.FileField(blank=True, null=True, upload_to=EDUCATION_DOC_PATH),
         ),
         migrations.AddField(
             model_name='loanapplication',
             name='doc_noc',
-            field=models.FileField(blank=True, null=True, upload_to='documents/home/'),
+            field=models.FileField(blank=True, null=True, upload_to=HOME_DOC_PATH),
         ),
         migrations.AddField(
             model_name='loanapplication',
