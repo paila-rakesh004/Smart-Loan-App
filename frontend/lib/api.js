@@ -1,5 +1,4 @@
 import axios from 'axios';
-
 const BASE_URL = 'http://127.0.0.1:8000/api/';
 
 const API = axios.create({
@@ -30,7 +29,7 @@ API.interceptors.response.use(
     const originalRequest = error.config;
 
     if (error?.response?.status === 401 && originalRequest.url?.includes('token/') && !originalRequest.url?.includes('refresh')) {
-        throw error; 
+     throw error;
     }
 
     if (error?.response?.status === 401 && !originalRequest._retry) {

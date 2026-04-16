@@ -17,7 +17,7 @@ def calculate_mock_cibil(years, transactions, fds, pending_loans, income, loan_a
             affordability_bonus = 50  
         elif dti_ratio > 0.6:
             affordability_bonus = -50 
-            affordability_bonus = -150
+            
     else:
         affordability_bonus = -50 
 

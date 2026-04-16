@@ -7,11 +7,11 @@ class User(AbstractUser):
     is_customer = models.BooleanField(default=False)
     is_officer = models.BooleanField(default=False)
     phone_number = models.CharField(max_length=15, unique=True, blank=True, null=True)
-    pan_number = models.CharField(max_length=10, blank=True, null=True)
-    aadhar_number = models.CharField(max_length=12, blank=True, null=True)
-    address = models.TextField(blank=True, null=True)
+    pan_number = models.CharField(max_length=10, blank=True, default="")
+    aadhar_number = models.CharField(max_length=12, blank=True, default="")
+    address = models.TextField(blank=True, default="")
     age = models.IntegerField(null=True, blank=True)
-    reset_otp = models.CharField(max_length=6, blank=True, null=True)
+    reset_otp = models.CharField(max_length=6, blank=True,default="")
     otp_expiry = models.DateTimeField(blank=True, null=True)
 
     

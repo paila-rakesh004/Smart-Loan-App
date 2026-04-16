@@ -14,12 +14,12 @@ class LoanApplication(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
     
     cibil_score = models.IntegerField(null=True, blank=True)
-    risk_score = models.CharField(max_length=100, null=True, blank=True)
-    officer_notes = models.TextField(null=True, blank=True)
+    risk_score = models.CharField(max_length=100, blank=True,default="")
+    officer_notes = models.TextField(blank=True,default="")
     ai_verification_data = models.JSONField(default=dict, blank=True, null=True)
     
     occupation = models.CharField(max_length=100)
-    occ = models.CharField(max_length=100, null=True, blank=True)
+    occ = models.CharField(max_length=100, blank=True,default="")
     organization_name = models.CharField(max_length=100)
     monthly_income = models.DecimalField(max_digits=12, decimal_places=2)
     loan_type = models.CharField(max_length=50)
@@ -31,29 +31,29 @@ class LoanApplication(models.Model):
     bank_statements = models.FileField(upload_to='temporary_proofs/bank_statements/', null=True, blank=True) 
     emp_id_card = models.FileField(upload_to='emp_ids/', null=True, blank=True)
     
-    nominee_name = models.CharField(max_length=255, blank=True, null=True)
+    nominee_name = models.CharField(max_length=255, blank=True,default="")
     nominee_age = models.IntegerField(blank=True, null=True) 
-    nominee_relation = models.CharField(max_length=100, blank=True, null=True)
+    nominee_relation = models.CharField(max_length=100, blank=True,default="")
 
     guarantor_income = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
-    guarantor_organization = models.CharField(max_length=255, blank=True, null=True)
+    guarantor_organization = models.CharField(max_length=255, blank=True,default="")
 
+    EDUCATION_DOC_PATH = 'documents/education/'
+    doc_10th_cert = models.FileField(upload_to=EDUCATION_DOC_PATH, blank=True, null=True)
+    doc_12th_cert = models.FileField(upload_to=EDUCATION_DOC_PATH, blank=True, null=True)
+    doc_degree_cert = models.FileField(upload_to=EDUCATION_DOC_PATH, blank=True, null=True)
+    doc_admission_letter = models.FileField(upload_to=EDUCATION_DOC_PATH, blank=True, null=True)
+    doc_fee_structure = models.FileField(upload_to=EDUCATION_DOC_PATH, blank=True, null=True)
+    doc_guarantor_kyc = models.FileField(upload_to=EDUCATION_DOC_PATH, blank=True, null=True)
+    doc_guarantor_financials = models.FileField(upload_to=EDUCATION_DOC_PATH, blank=True, null=True)
+    doc_guarantor_photo = models.FileField(upload_to=EDUCATION_DOC_PATH, blank=True, null=True)
+    doc_guarantor_signature = models.FileField(upload_to=EDUCATION_DOC_PATH, blank=True, null=True)
 
-    doc_10th_cert = models.FileField(upload_to='documents/education/', blank=True, null=True)
-    doc_12th_cert = models.FileField(upload_to='documents/education/', blank=True, null=True)
-    doc_degree_cert = models.FileField(upload_to='documents/education/', blank=True, null=True)
-    doc_admission_letter = models.FileField(upload_to='documents/education/', blank=True, null=True)
-    doc_fee_structure = models.FileField(upload_to='documents/education/', blank=True, null=True)
-    doc_guarantor_kyc = models.FileField(upload_to='documents/education/', blank=True, null=True)
-    doc_guarantor_financials = models.FileField(upload_to='documents/education/', blank=True, null=True)
-    doc_guarantor_photo = models.FileField(upload_to='documents/education/', blank=True, null=True)
-    doc_guarantor_signature = models.FileField(upload_to='documents/education/', blank=True, null=True)
-
-    
-    doc_agreement_sale = models.FileField(upload_to='documents/home/', blank=True, null=True)
-    doc_encumbrance_cert = models.FileField(upload_to='documents/home/', blank=True, null=True)
-    doc_building_plan = models.FileField(upload_to='documents/home/', blank=True, null=True) 
-    doc_noc = models.FileField(upload_to='documents/home/', blank=True, null=True)
+    HOME_DOC_PATH = 'documents/home/'
+    doc_agreement_sale = models.FileField(upload_to=HOME_DOC_PATH, blank=True, null=True)
+    doc_encumbrance_cert = models.FileField(upload_to=HOME_DOC_PATH, blank=True, null=True)
+    doc_building_plan = models.FileField(upload_to=HOME_DOC_PATH, blank=True, null=True) 
+    doc_noc = models.FileField(upload_to=HOME_DOC_PATH, blank=True, null=True)
 
 
     created_at = models.DateTimeField(auto_now_add=True)

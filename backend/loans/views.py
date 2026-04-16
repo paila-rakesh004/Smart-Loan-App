@@ -144,12 +144,12 @@ class OfficerAllLoansView(APIView):
 
 class OfficerUpdateLoanView(APIView):
     permission_classes = [permissions.IsAuthenticated, IsOfficerUser]
-
+    err = "Loan not found"
     def patch(self, request, pk):
         try:
             loan = LoanApplication.objects.get(id=pk)
         except LoanApplication.DoesNotExist:
-            return Response({"error": "Loan not found"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"error": self.err}, status=status.HTTP_404_NOT_FOUND)
 
         loan.status = request.data.get('status', loan.status)
         loan.officer_notes = request.data.get('officer_notes', loan.officer_notes)
@@ -176,7 +176,7 @@ class CalculateRiskView(APIView):
             loan = LoanApplication.objects.get(id=pk)
             user = loan.user
         except LoanApplication.DoesNotExist:
-            return Response({"error": "Loan not found"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"error": self.err}, status=status.HTTP_404_NOT_FOUND)
 
        
         with connection.cursor() as cursor:
@@ -243,7 +243,7 @@ class OfficerLoanStatsView(APIView):
     permission_classes = [permissions.IsAuthenticated, IsOfficerUser]
 
     def get(self, request):
-        user = request.user
+        
         
         
         gold = LoanApplication.objects.filter(loan_type__icontains='Gold').count()
@@ -316,7 +316,8 @@ class RecalculateCibilView(APIView):
             loan = LoanApplication.objects.get(id=pk)
             user = loan.user
         except LoanApplication.DoesNotExist:
-            return Response({"error": "Loan not found"}, status=status.HTTP_404_NOT_FOUND)
+            self.err = "Loan not found"
+            return Response({"error": self.err}, status=status.HTTP_404_NOT_FOUND)
 
       
         with connection.cursor() as cursor:
