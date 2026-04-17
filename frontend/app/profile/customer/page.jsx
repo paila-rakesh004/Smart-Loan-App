@@ -3,18 +3,68 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import API from '@/lib/api'; 
 import { toast } from "react-toastify";
+import PropTypes from 'prop-types';
+
+const PAGE_WRAPPER = "min-h-[100vh] font-sans bg-linear-to-r from-[#eef2f7] to-[#d9e4f5] p-4 sm:p-6 lg:p-10";
+const LOADER_BG = "flex items-center justify-center min-h-[100vh] bg-linear-to-r from-[#eef2f7] to-[#d9e4f5]";
+const AVATAR_STYLE = "w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-linear-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-4xl sm:text-5xl font-bold shadow-lg mb-4";
+
+const DisabledField = ({ id, label, value }) => (
+  <div>
+    <label htmlFor={id} className="block text-gray-500 text-sm font-semibold mb-1">{label}</label>
+    <input
+      type="text"
+      id={id}
+      value={value || "N/A"}
+      disabled
+      className="w-full bg-gray-200 text-gray-500 border border-gray-300 rounded-xl p-3 cursor-not-allowed font-medium"
+    />
+  </div>
+);
+DisabledField.propTypes = { id: PropTypes.string.isRequired, label: PropTypes.string.isRequired, value: PropTypes.string };
+
+const EditField = ({ id, name, label, type, value, onChange }) => (
+  <div>
+    <label htmlFor={id} className="block text-gray-700 font-semibold mb-2">{label}</label>
+    <input
+      type={type}
+      id={id}
+      name={name}
+      value={value}
+      onChange={onChange}
+      className="w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition"
+      required
+    />
+  </div>
+);
+EditField.propTypes = { id: PropTypes.string.isRequired, name: PropTypes.string.isRequired, label: PropTypes.string.isRequired, type: PropTypes.string.isRequired, value: PropTypes.string, onChange: PropTypes.func.isRequired };
+
+const PasswordField = ({ id, label, type, value, onChange, extraClass = "" }) => (
+  <div>
+    <label htmlFor={id} className="block text-gray-700 font-semibold mb-2">{label}</label>
+    <input
+      type={type}
+      id={id}
+      value={value}
+      onChange={onChange}
+      className={`w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-red-400 transition ${extraClass}`}
+      required
+    />
+  </div>
+);
+PasswordField.propTypes = { id: PropTypes.string.isRequired, label: PropTypes.string.isRequired, type: PropTypes.string.isRequired, value: PropTypes.string.isRequired, onChange: PropTypes.func.isRequired, extraClass: PropTypes.string };
+
 
 const CustomerProfile = () => {
   const router = useRouter();
   
   const [showpassword, setShowpassword] = useState(false);
   const [click, setClick] = useState(false);
-  const[loading,setLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
  
   const [profile, setProfile] = useState({ 
     username: '', email: '', phone_number: '', first_name: '', last_name: '' 
   });
-  
   
   const [editForm, setEditForm] = useState({ 
     username: '', email: '', phone_number: '' 
@@ -22,12 +72,11 @@ const CustomerProfile = () => {
   
   const [stats, setStats] = useState({
      total_applied: 0, total_approved: 0, total_rejected: 0
-     });
+  });
   const [passwords, setPasswords] = useState({ 
     old_password: '', new_password: '' 
   });
 
-  
   const handleEditChange = (e) => {
     setEditForm({ ...editForm, [e.target.name]: e.target.value });
   };
@@ -36,8 +85,6 @@ const CustomerProfile = () => {
     e.preventDefault();
     try {
       const res = await API.put('users/update-profile/', editForm);
-      
-      
       setProfile({ ...profile, ...res.data });
       localStorage.setItem('username', res.data.username); 
       toast.success("Profile updated successfully!");
@@ -51,7 +98,6 @@ const CustomerProfile = () => {
     try {
       setClick(true);
       await API.put('users/change-password/', passwords);
-      
       setPasswords({ old_password: '', new_password: '' });
       toast.success("Password changed securely!");
     } catch (error) {
@@ -60,6 +106,7 @@ const CustomerProfile = () => {
       setClick(false);
     }
   };
+
   useEffect(() => {
     const token = localStorage.getItem('access_token');
     if (!token) {
@@ -69,24 +116,24 @@ const CustomerProfile = () => {
 
     const fetchProfileData = async () => {
       try {
-        const profileRes = await API.get('users/profile/');
+        const [profileRes, statsRes] = await Promise.all([
+          API.get('users/profile/'),
+          API.get('loans/customer/stats/')
+        ]);
         
         setProfile(profileRes.data);
         
-       
         setEditForm({
           username: profileRes.data.username || '',
           email: profileRes.data.email || '',
           phone_number: profileRes.data.phone_number || ''
         });
 
-        const statsRes = await API.get('loans/customer/stats/');
         setStats(statsRes.data);
 
       } catch (error) {
         toast.error(error.response?.data?.error || "Data Fetching failed");
-      }
-      finally{
+      } finally {
         setLoading(false);
       }
     };
@@ -94,21 +141,19 @@ const CustomerProfile = () => {
     fetchProfileData();
   }, [router]);
 
-
   const avatarInitial = profile.username ? profile.username.charAt(0).toUpperCase() : "U";
 
   if(loading){
     return(
-      <div className='flex items-center justify-center h-screen bg-linear-to-r from-[#eef2f7] to-[#d9e4f5]'>
+      <div className={LOADER_BG}>
         <div className='animate-ping w-15 h-15 border-6 rounded-full border-b-transparent border-blue-500'></div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen font-sans bg-linear-to-r from-[#eef2f7] to-[#d9e4f5] p-4 sm:p-6 lg:p-10">
+    <div className={PAGE_WRAPPER}>
       
-    
       <div className="max-w-6xl mx-auto mb-8 flex flex-col md:flex-row justify-between items-center gap-4">
         <h1 className="text-2xl sm:text-3xl font-bold text-indigo-900 order-1 md:order-2 text-center md:text-right">
           My Profile
@@ -123,10 +168,9 @@ const CustomerProfile = () => {
 
       <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
         
-       
         <div className="col-span-1 space-y-6">
           <div className="bg-white rounded-3xl shadow-xl p-6 flex flex-col items-center text-center">
-            <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-linear-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-4xl sm:text-5xl font-bold shadow-lg mb-4">
+            <div className={AVATAR_STYLE}>
               {avatarInitial}
             </div>
             <h2 className="text-xl sm:text-2xl font-bold text-gray-800">{profile.username}</h2>
@@ -154,7 +198,6 @@ const CustomerProfile = () => {
           </div>
         </div>
 
-        
         <div className="col-span-1 lg:col-span-2 space-y-6">
           
           <div className="bg-white rounded-3xl shadow-xl p-6 sm:p-8">
@@ -164,77 +207,26 @@ const CustomerProfile = () => {
             
             <form onSubmit={handleUpdateProfile} className="space-y-6">
               
-              
               <div className="bg-gray-50 p-5 rounded-2xl border border-gray-200">
                 <h4 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4 flex items-center gap-2">
                   🔒 Verified Legal Identity
                 </h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="first_name" className="block text-gray-500 text-sm font-semibold mb-1">First Name</label>
-                    <input
-                      type="text"
-                      id="first_name"
-                      value={profile.first_name || "N/A"}
-                      disabled
-                      className="w-full bg-gray-200 text-gray-500 border border-gray-300 rounded-xl p-3 cursor-not-allowed font-medium"
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor='last_name' className="block text-gray-500 text-sm font-semibold mb-1">Last Name</label>
-                    <input
-                      type="text"
-                      id='last_name'
-                      value={profile.last_name || "N/A"}
-                      disabled
-                      className="w-full bg-gray-200 text-gray-500 border border-gray-300 rounded-xl p-3 cursor-not-allowed font-medium"
-                    />
-                  </div>
+                  <DisabledField id="first_name" label="First Name" value={profile.first_name} />
+                  <DisabledField id="last_name" label="Last Name" value={profile.last_name} />
                 </div>
                 <p className="text-xs text-gray-400 mt-3">
                   Need to update your legal name? <a href="mailto:dumimailra@gmail.com" className="text-blue-500 hover:underline">Contact Support</a>
                 </p>
               </div>
 
-              
               <div className="pt-2">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="sm:col-span-2">
-                    <label htmlFor='username' className="block text-gray-700 font-semibold mb-2">Username</label>
-                    <input
-                      type="text"
-                      name="username"
-                      id='username'
-                      value={editForm.username}
-                      onChange={handleEditChange}
-                      className="w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition"
-                      required
-                    />
+                    <EditField id="username" name="username" label="Username" type="text" value={editForm.username} onChange={handleEditChange} />
                   </div>
-                  <div>
-                    <label htmlFor='email' className="block text-gray-700 font-semibold mb-2">Email Address</label>
-                    <input
-                      type="email"
-                      name="email"
-                      id='email'
-                      value={editForm.email}
-                      onChange={handleEditChange}
-                      className="w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor='phone_number' className="block text-gray-700 font-semibold mb-2">Mobile Number</label>
-                    <input
-                      type="text"
-                      id='phone_number'
-                      name="phone_number"
-                      value={editForm.phone_number}
-                      onChange={handleEditChange}
-                      className="w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition"
-                      required
-                    />
-                  </div>
+                  <EditField id="email" name="email" label="Email Address" type="email" value={editForm.email} onChange={handleEditChange} />
+                  <EditField id="phone_number" name="phone_number" label="Mobile Number" type="text" value={editForm.phone_number} onChange={handleEditChange} />
                 </div>
               </div>
 
@@ -252,26 +244,23 @@ const CustomerProfile = () => {
               Security
             </h3>
             <form onSubmit={handleChangePassword} className="space-y-6">
+              
+              <PasswordField 
+                id="old_password" 
+                label="Current Password" 
+                type={showpassword ? "text" : "password"} 
+                value={passwords.old_password} 
+                onChange={(e) => setPasswords({ ...passwords, old_password: e.target.value })} 
+              />
+              
               <div>
-                <label htmlFor='old_password' className="block text-gray-700 font-semibold mb-2">Current Password</label>
-                <input
-                  type={showpassword ? "text" : "password"}
-                  id='old_password'
-                  value={passwords.old_password}
-                  onChange={(e) => setPasswords({ ...passwords, old_password: e.target.value })}
-                  className="w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-red-400 transition"
-                  required
-                />
-              </div>
-              <div>
-                <label htmlFor='new_password' className="block text-gray-700 font-semibold mb-2">New Password</label>
-                <input
-                  type={showpassword ? "text" : "password"}
-                  id='new_password'
-                  value={passwords.new_password}
-                  onChange={(e) => setPasswords({ ...passwords, new_password: e.target.value })}
-                  className="w-full border border-gray-300 rounded-xl p-3 pr-14 focus:outline-none focus:ring-2 focus:ring-red-400 transition"
-                  required
+                <PasswordField 
+                  id="new_password" 
+                  label="New Password" 
+                  type={showpassword ? "text" : "password"} 
+                  value={passwords.new_password} 
+                  onChange={(e) => setPasswords({ ...passwords, new_password: e.target.value })} 
+                  extraClass="pr-14"
                 />
                 <div className="mt-3 flex items-center">
                   <input

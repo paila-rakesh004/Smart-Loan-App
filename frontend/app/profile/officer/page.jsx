@@ -4,6 +4,11 @@ import { useRouter } from 'next/navigation';
 import API from '@/lib/api'; 
 import { toast } from "react-toastify";
 
+const PAGE_WRAPPER_CLASSES = "min-h-[100vh] font-sans bg-gradient-to-r from-[#eef2f7] to-[#d9e4f5] p-4 sm:p-6 lg:p-10";
+const LOADER_CONTAINER_CLASSES = "flex justify-center items-center min-h-[100vh]";
+const AVATAR_CLASSES = "w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-gradient-to-br from-blue-700 to-indigo-800 flex items-center justify-center text-white text-4xl sm:text-5xl font-bold shadow-lg mb-4";
+const FORM_LABEL_CLASSES = "block text-gray-700 font-semibold mb-2";
+
 const OfficerProfile = () => {
   const router = useRouter();
   
@@ -12,7 +17,6 @@ const OfficerProfile = () => {
   const [newUsername, setNewUsername] = useState('');
   const [passwords, setPasswords] = useState({ old_password: '', new_password: '' });
   const [loading,setLoading] = useState(true)
-
   const [stats, setStats] = useState({ 
     gold: 0, home: 0, personal: 0, education: 0, pending: 0, approved: 0, rejected: 0 
   });
@@ -21,7 +25,6 @@ const OfficerProfile = () => {
     e.preventDefault();
     try {
       const res = await API.put('users/update-profile/', { username: newUsername });
-      
       setProfile({ ...profile, username: res.data.username});
       localStorage.setItem('username', res.data.username); 
       toast.success("Profile updated successfully!");
@@ -35,13 +38,13 @@ const OfficerProfile = () => {
     e.preventDefault();
     try {
       await API.put('users/change-password/', passwords);
-      
       setPasswords({ old_password: '', new_password: '' });
       toast.success("Password changed securely!");
     } catch (error) {
       toast.error(error.response?.data?.error || "Failed to change password.");
     }
   };
+
   useEffect(() => {
     const token = localStorage.getItem('access_token');
     if (!token) {
@@ -54,49 +57,46 @@ const OfficerProfile = () => {
       router.push('/profile/customer');
       return;
     }
+
     const fetchProfileData = async () => {
       try {
-        const profileRes = await API.get('users/profile/');
+        const [profileRes, statsRes] = await Promise.all([
+          API.get('users/profile/'),
+          API.get('loans/officer/stats/')
+        ]);
+
         setProfile(profileRes.data);
         setNewUsername(profileRes.data.username);
-
-        const statsRes = await API.get('loans/officer/stats/');
         setStats(statsRes.data);
 
       } catch (error) {
         if (error.response?.status === 403) {
             router.push('/profile/customer');
         }
-      }
-      finally{
+      } finally {
         setLoading(false)
       }
     };
-
     fetchProfileData();
   }, [router]);
+
   const avatarInitial = profile.username ? profile.username.charAt(0).toUpperCase() : "O";
-  if(loading){
+
+  if (loading) {
     return(
-      <div className='flex justify-center items-center h-screen'>
+      <div className={LOADER_CONTAINER_CLASSES}>
         <div className='animate-spin rounded-full border-6 border-gray-300 border-t-blue-700 h-15 w-15'></div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen font-sans bg-gradient-to-r from-[#eef2f7] to-[#d9e4f5] p-4 sm:p-6 lg:p-10">
+    <div className={PAGE_WRAPPER_CLASSES}>
       
-    
       <div className="max-w-6xl mx-auto mb-8 flex flex-col md:flex-row justify-between items-center gap-4">
-        
-       
-       
         <h1 className="text-2xl sm:text-3xl font-bold text-indigo-900 order-1 md:order-2 text-center md:text-right">
           Officer Profile
         </h1>
-        
-        
         <button
           onClick={() => router.push('/dashboard/officer')}
           className="px-6 py-2 bg-white text-blue-900 font-bold rounded-lg shadow-md cursor-pointer hover:-translate-y-1 transition transform order-2 md:order-1 w-full md:w-auto text-center"
@@ -104,26 +104,20 @@ const OfficerProfile = () => {
           ← Back to Dashboard
         </button>
       </div>
-
-     
-      <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
-        
       
+      <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
         <div className="col-span-1 space-y-6">
-          
           <div className="bg-white rounded-3xl shadow-xl p-6 flex flex-col items-center text-center">
-            <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-gradient-to-br from-blue-700 to-indigo-800 flex items-center justify-center text-white text-4xl sm:text-5xl font-bold shadow-lg mb-4">
+            <div className={AVATAR_CLASSES}>
               {avatarInitial}
             </div>
             <h2 className="text-xl sm:text-2xl font-bold text-gray-800">{profile.username}</h2>
             <p className="text-gray-500 mt-1 text-sm sm:text-base">{profile.email || "Officer Account"}</p>
           </div>
-
           <div className="bg-white rounded-3xl shadow-xl p-6">
             <h3 className="text-lg sm:text-xl font-bold text-gray-800 border-l-4 border-blue-600 pl-3 mb-6">
               Loans Stats
             </h3>
-            
             
             <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-2 gap-3 mb-6">
               <div className="flex flex-col p-3 bg-yellow-50 rounded-xl border border-yellow-200 text-center">
@@ -143,11 +137,9 @@ const OfficerProfile = () => {
                 <span className="text-lg sm:text-xl font-bold text-blue-600">{stats.education}</span>
               </div>
             </div>
-
             <h3 className="text-lg sm:text-xl font-bold text-gray-800 border-l-4 border-indigo-600 pl-3 mb-4 mt-2">
               My Actions
             </h3>
-
             <div className="space-y-3">
               <div className="flex justify-between items-center p-3 bg-orange-100 rounded-xl border border-orange-200">
                 <span className="font-semibold text-gray-700 text-sm">Pending</span>
@@ -162,19 +154,16 @@ const OfficerProfile = () => {
                 <span className="text-lg font-bold text-red-600">{stats.rejected}</span>
               </div>
             </div>
-
           </div>
         </div>
-
       
         <div className="col-span-1 lg:col-span-2 space-y-6">
-          
           <div className="bg-white rounded-3xl shadow-xl p-6 sm:p-8">
             <h3 className="text-xl sm:text-2xl font-bold text-gray-800 border-l-4 border-indigo-500 pl-3 mb-6">
               Account Details
             </h3>
             <form onSubmit={handleUpdateUsername} className="space-y-4">
-                <label htmlFor='newUsername' className="block text-gray-700 font-semibold mb-2">Username</label>
+                <label htmlFor='newUsername' className={FORM_LABEL_CLASSES}>Username</label>
                 <input
                   type="text"
                   value={newUsername}
@@ -190,14 +179,13 @@ const OfficerProfile = () => {
               </button>
             </form>
           </div>
-
           <div className="bg-white rounded-3xl shadow-xl p-6 sm:p-8">
             <h3 className="text-xl sm:text-2xl font-bold text-gray-800 border-l-4 border-red-500 pl-3 mb-6">
               Security
             </h3>
             <form onSubmit={handleChangePassword} className="space-y-6">
               <div>
-                <label htmlFor='old_password' className="block text-gray-700 font-semibold mb-2">Current Password</label>
+                <label htmlFor='old_password' className={FORM_LABEL_CLASSES}>Current Password</label>
                 <input
                   type={showpassword ? "text" : "password"}
                   value={passwords.old_password}
@@ -207,7 +195,7 @@ const OfficerProfile = () => {
                 />
               </div>
               <div>
-                <label htmlFor='new_password' className="block text-gray-700 font-semibold mb-2">New Password</label>
+                <label htmlFor='new_password' className={FORM_LABEL_CLASSES}>New Password</label>
                 <input
                   type={showpassword ? "text" : "password"}
                   value={passwords.new_password}
@@ -235,12 +223,9 @@ const OfficerProfile = () => {
               </button>
             </form>
           </div>
-
         </div>
-
       </div>
     </div>
   );
 };
-
 export default OfficerProfile;
