@@ -23,6 +23,7 @@ export const useOfficerProfile = () => {
       localStorage.setItem('username', res.data.username); 
       toast.success("Profile updated successfully!");
     } catch (error) {
+        console.log(error);
       toast.error("Failed to update profile.");
     }
   };

@@ -1,8 +1,7 @@
 "use client";
-
 import React from 'react';
 import PropTypes from 'prop-types';
-import { useOfficerProfile } from '@/hooks/profiles/officer/useOfficer';
+import { useOfficerProfile } from '@/hooks/profile/officer/useOfficerProfile';
 
 const PAGE_WRAPPER_CLASSES = "min-h-[100vh] font-sans bg-gradient-to-r from-[#eef2f7] to-[#d9e4f5] p-4 sm:p-6 lg:p-10";
 const LOADER_CONTAINER_CLASSES = "flex justify-center items-center min-h-[100vh]";

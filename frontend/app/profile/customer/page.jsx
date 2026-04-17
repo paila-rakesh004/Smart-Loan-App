@@ -1,8 +1,7 @@
 "use client";
-
 import React from 'react';
 import PropTypes from 'prop-types';
-import { useCustomerProfile } from '@/hooks/profiles/customer/useCustomer';
+import { useCustomerProfile } from '@/hooks/profile/customer/useCustomerProfile';
 
 const PAGE_WRAPPER = "min-h-[100vh] font-sans bg-linear-to-r from-[#eef2f7] to-[#d9e4f5] p-4 sm:p-6 lg:p-10";
 const LOADER_BG = "flex items-center justify-center min-h-[100vh] bg-linear-to-r from-[#eef2f7] to-[#d9e4f5]";
