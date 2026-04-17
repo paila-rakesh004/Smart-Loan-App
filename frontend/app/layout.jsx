@@ -6,6 +6,7 @@ import PropTypes from "prop-types";
 export default function RootLayout({children}) {
   return (
     <html lang="en">
+      <title>Loan App</title>
       <body>
         {children}
 

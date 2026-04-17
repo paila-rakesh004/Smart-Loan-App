@@ -1,76 +1,35 @@
 "use client";
-import React, { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import API from "@/lib/api";
-
+import React from "react";
 import { UserCircleIcon, ArrowLeftStartOnRectangleIcon } from '@heroicons/react/24/solid';
+import { useCustomerDashboard } from "@/hooks/dashboards/customer/useCustomerDashboard";
 
-const Page = () => {
-  const router = useRouter();
-  const [user, setUser] = useState("User");
-  const [profile, setProfile] = useState(null);
-  const [loans, setLoans] = useState([]);
-  const[loading,setLoading] = useState(true);
+const getStatusClasses = (status) => {
+  if (status === 'Eligible') return 'bg-green-100 text-green-700';
+  if (status === 'Not Eligible') return 'bg-red-100 text-red-700';
+  return 'bg-yellow-100 text-yellow-700';
+};
 
-  const getStatusClasses = (status) => {
-    if (status === 'Eligible') return 'bg-green-100 text-green-700';
-    if (status === 'Not Eligible') return 'bg-red-100 text-red-700';
-    return 'bg-yellow-100 text-yellow-700';
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("refresh_token");
-    localStorage.removeItem("username");
-    localStorage.removeItem('is_officer');
-    router.push("/login");
-  };
-  const handleProfile = () =>{
-    router.push('/profile/customer')
-  }
-  const handleLoan = () => {
-    router.push("/loan/apply");
-  };
-
-  useEffect(() => {
-  const token = localStorage.getItem("access_token");
-  if (!token) {
-    router.push("/login");
-    return;
-  }
-
-  const storedUser = localStorage.getItem("username");
-  if (storedUser) setUser(storedUser);
-
-  const fetchData = async () => {
-    try {
-      const profileRes = await API.get("users/profile/");
-      const loanRes = await API.get("loans/my-loans/");
-
-      setProfile(profileRes.data);
-      setLoans(loanRes.data);
-    
-    } catch (error) {
-      console.log("Failed to load data.",error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  fetchData();
-}, [router]);
+const CustomerDashboard = () => {
+  const {
+    user,
+    profile,
+    loans,
+    loading,
+    handleLogout,
+    handleProfile,
+    handleLoan
+  } = useCustomerDashboard();
 
   if (loading) {
-  return (
-    <div className="flex items-center justify-center h-screen bg-linear-to-r from-[#eef2f7] to-[#d9e4f5]">
-      <div className="w-15 h-15 border-6 border-blue-500 border-b-transparent rounded-full animate-ping"></div>
-    </div>
-  );
+    return (
+      <div className="flex items-center justify-center h-screen bg-linear-to-r from-[#eef2f7] to-[#d9e4f5]">
+        <div className="w-15 h-15 border-6 border-blue-500 border-b-transparent rounded-full animate-ping"></div>
+      </div>
+    );
   }
 
   return (
     <div className="relative font-serif bg-linear-to-r from-[#eef2f7] to-[#d9e4f5] min-h-screen pb-10">
-      
       
       <div className="fixed top-0 left-0 w-full bg-linear-to-r from-[#eef2f7] to-[#d9e4f5] z-50 py-4 px-4 sm:px-8 shadow-sm">
         <div className="max-w-7xl mx-auto bg-white shadow-xl rounded-xl p-4 sm:p-6 flex flex-col md:flex-row justify-between items-center gap-4">
@@ -82,7 +41,6 @@ const Page = () => {
           </div>
 
           <div className="flex justify-center gap-2 sm:gap-4">
-            
             <button
               onClick={handleLoan}
               className="bg-blue-600 cursor-pointer mr-25 md:m-0 text-white px-4 py-2 sm:px-6 sm:py-2 rounded-lg font-bold text-sm sm:text-base hover:bg-blue-800 transition transform hover:-translate-y-1 shadow-md"
@@ -106,12 +64,9 @@ const Page = () => {
         </div>
       </div>
 
-      
       <div className="h-44 md:h-32"></div>
 
-      
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 font-sans">
-        
         <div className="bg-white shadow-lg rounded-3xl p-6 sm:p-10 w-full">
           
           <h2 className="mb-8 text-gray-800 text-2xl sm:text-3xl font-bold text-center sm:text-left">
@@ -145,7 +100,6 @@ const Page = () => {
             My Loan Applications
           </h2>
 
-        
           <div className="overflow-x-auto rounded-xl border border-gray-200 shadow-sm">
             <table className="w-full min-w-175 text-sm sm:text-base">
               <thead>
@@ -193,4 +147,4 @@ const Page = () => {
   );
 };
 
-export default Page;
+export default CustomerDashboard;

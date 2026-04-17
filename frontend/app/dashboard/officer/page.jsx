@@ -1,11 +1,8 @@
 "use client";
-import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import API from '@/lib/api'; 
-import { toast } from "react-toastify";
+import React from 'react';
 import { UserCircleIcon, ArrowLeftStartOnRectangleIcon } from '@heroicons/react/24/solid';
 import PropTypes from 'prop-types';
-
+import { useOfficerDashboard } from '@/hooks/dashboards/officer/useOfficerDashboard';
 
 const DocumentCard = ({ title, url, badgeKey, colorClass = "bg-gray-50 border-gray-200", renderBadge }) => {
   if (!url) return null;
@@ -29,121 +26,30 @@ DocumentCard.propTypes = {
 };
 
 
-const Page = () => {
-  const router = useRouter();
-  
-  const [loans, setLoans] = useState([]);
-  const [selectedLoan, setSelectedLoan] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [riskScore, setRiskScore] = useState(null);
-  const [notes, setNotes] = useState('');
-  const [sure,setSure] = useState(false);
-  const [status,setStatus] = useState('Eligible');
-
-  const handleLogout = () => {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
-    localStorage.removeItem('username');
-    localStorage.removeItem('is_officer');
-    router.push('/login');
-  };
-  
-  const handleProfile = () => {
-    router.push('/profile/officer');
-  }
-
-  const handleRowClick = async (loan) => {
-    setSelectedLoan(loan);
-    setRiskScore(null);
-    setNotes('');
-
-    try {
-      const res = await API.get(`loans/officer/${loan.id}/recalculate-cibil/`);
-      const freshScore = res.data.new_cibil_score;
-      setSelectedLoan(prev => ({ ...prev, actual_cibil: freshScore }));
-      setLoans(loans.map(l => l.id === loan.id ? { ...l, actual_cibil: freshScore } : l));
-      toast.success("Cibil Score Calculated");
-    } catch (error) {
-      console.error("Error calculating CIBIL score:", error);
-      toast.error("Failed to calculate CIBIL score.");
-    }
-  };
-
-  const handleCalculateRisk = async () => {
-    try {
-      const res = await API.get(`loans/officer/${selectedLoan.id}/calculate-risk/`);
-      const score = res.data.risk_score;
-      setRiskScore(score);
-      toast.success("Risk Score calculated successfully!");
-      setLoans(loans.map(loan => loan.id === selectedLoan.id ? { ...loan, risk_score: res.data.risk_score } : loan));
-    } catch (error) {
-      console.error("Error calculating risk score:", error);
-      toast.error(error?.response?.data?.error || "Failed to calculate risk score.");
-    }
-  };
-
-  const confirmUpdate = async (newStatus) => {
-    try {
-      await API.patch(`loans/officer/${selectedLoan.id}/update-status/`, {
-        status: newStatus,
-        cibil_score: selectedLoan.actual_cibil === "N/A" ? null : selectedLoan.actual_cibil,
-        officer_notes: notes,
-        risk_score: riskScore
-      });
-
-      toast.success(`Applicant is ${newStatus} for loan approval!`);
-      setLoans(loans.map(loan => loan.id === selectedLoan.id ? { ...loan, status: newStatus } : loan));
-      setSelectedLoan(null);
-      
-    } catch (error) {
-      console.log("Error updating application status.", error);
-    }
-    finally{
-      setSure(false);
-    }
-  }
-
-  const handleEligible = () => {
-    setSure(true);
-    setStatus('Eligible');
-    };
-  const handleNotEligible = () => {
-    setSure(true);
-    setStatus('Not Eligible'); 
-  };
-
-  useEffect(() => {
-    const token = localStorage.getItem('access_token');
-    if (!token) {
-      router.push('/login');
-      return;
-    }
-    const isOfficer = localStorage.getItem('is_officer');
-    if (isOfficer !== 'true') {
-      toast.error("Security Alert: Unauthorized Access");
-      router.push('/dashboard/customer');
-      return;
-    }
-
-    const fetchAllLoans = async () => {
-      try {
-        const res = await API.get('loans/officer/all-loans/');
-        setLoans(res.data);
-      } catch (error) {
-        if (error.response?.status === 403) {
-            router.push('/dashboard/customer');
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchAllLoans();
-  }, [router]);
+const OfficerDashboard = () => {
+  const {
+    loans,
+    selectedLoan,
+    setSelectedLoan,
+    loading,
+    riskScore,
+    notes,
+    setNotes,
+    sure,
+    setSure,
+    status,
+    handleLogout,
+    handleProfile,
+    handleRowClick,
+    handleCalculateRisk,
+    confirmUpdate,
+    handleEligible,
+    handleNotEligible
+  } = useOfficerDashboard();
 
   const renderOfficerAIBadge = (documentKey) => {
-    if (!selectedLoan?.ai_verification_data?.[documentKey]) {
-      return null; 
-    }
+    if (!selectedLoan?.ai_verification_data?.[documentKey]) return null; 
+    
     const aiData = selectedLoan.ai_verification_data[documentKey];
 
     if (aiData.decision === "AUTO_APPROVE") {
@@ -280,7 +186,6 @@ const Page = () => {
               </>
             )}
 
-        
             {selectedLoan.loan_type === 'Home' && (
               <>
                 <h3 className="mt-10 mb-6 text-gray-800 text-xl sm:text-2xl border-l-4 border-emerald-600 pl-3 font-bold">
@@ -301,7 +206,6 @@ const Page = () => {
               </p>
             </div>
 
-           
             <h4 className="mt-10 mb-6 text-gray-800 text-xl sm:text-2xl border-l-4 border-blue-600 pl-3 font-bold">
               Co-Applicant / Guarantor Details
             </h4>
@@ -318,7 +222,6 @@ const Page = () => {
               <DocumentCard title="Guarantor Photo" url={selectedLoan.doc_guarantor_photo} colorClass="bg-blue-50 border-blue-200" renderBadge={renderOfficerAIBadge} />
               <DocumentCard title="Guarantor Signature" url={selectedLoan.doc_guarantor_signature} colorClass="bg-blue-50 border-blue-200" renderBadge={renderOfficerAIBadge} />
             </div>
-          
             
             <h3 className="mt-10 mb-6 text-gray-800 text-xl sm:text-2xl border-l-4 border-blue-600 pl-3 font-bold">
               Risk Assessment
@@ -428,19 +331,20 @@ const Page = () => {
           </div>
         )}
       </div>
+
       {sure && (
-                <div className='flex flex-col items-center justify-center gap-5 w-70 h-40 z-10 bg-white shadow-md rounded-4xl p-4 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 '>
-                    <div className='text-3xl'>Are you Sure ? </div>
-                        <div className='flex gap-8'>
-                            <button className='rounded text-xl w-10 h-8 text-white bg-blue-500 cursor-pointer hover:bg-indigo-800'
-                             onClick={() => confirmUpdate(status)}>Yes</button>
-                            <button className='rounded text-xl w-10 h-8 text-white bg-red-500 cursor-pointer hover:bg-red-800'
-                             onClick={() => setSure(false)}>No</button>
-                        </div>
-                  </div>
-              )}
+        <div className='flex flex-col items-center justify-center gap-5 w-70 h-40 z-10 bg-white shadow-md rounded-4xl p-4 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 '>
+            <div className='text-3xl'>Are you Sure ? </div>
+                <div className='flex gap-8'>
+                    <button className='rounded text-xl w-10 h-8 text-white bg-blue-500 cursor-pointer hover:bg-indigo-800'
+                     onClick={() => confirmUpdate(status)}>Yes</button>
+                    <button className='rounded text-xl w-10 h-8 text-white bg-red-500 cursor-pointer hover:bg-red-800'
+                     onClick={() => setSure(false)}>No</button>
+                </div>
+          </div>
+      )}
     </div>
   );
 };
 
-export default Page;
+export default OfficerDashboard;

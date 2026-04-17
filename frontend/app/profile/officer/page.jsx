@@ -1,86 +1,46 @@
 "use client";
-import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import API from '@/lib/api'; 
-import { toast } from "react-toastify";
+
+import React from 'react';
+import PropTypes from 'prop-types';
+import { useOfficerProfile } from '@/hooks/profiles/officer/useOfficer';
 
 const PAGE_WRAPPER_CLASSES = "min-h-[100vh] font-sans bg-gradient-to-r from-[#eef2f7] to-[#d9e4f5] p-4 sm:p-6 lg:p-10";
 const LOADER_CONTAINER_CLASSES = "flex justify-center items-center min-h-[100vh]";
 const AVATAR_CLASSES = "w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-gradient-to-br from-blue-700 to-indigo-800 flex items-center justify-center text-white text-4xl sm:text-5xl font-bold shadow-lg mb-4";
 const FORM_LABEL_CLASSES = "block text-gray-700 font-semibold mb-2";
 
+const PasswordField = ({ id, label, type, value, onChange, extraClass = "" }) => (
+  <div>
+    <label htmlFor={id} className="block text-gray-700 font-semibold mb-2">{label}</label>
+    <input
+      type={type}
+      id={id}
+      value={value}
+      onChange={onChange}
+      className={`w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-red-400 transition ${extraClass}`}
+      required
+    />
+  </div>
+);
+PasswordField.propTypes = { id: PropTypes.string.isRequired, label: PropTypes.string.isRequired, type: PropTypes.string.isRequired, value: PropTypes.string.isRequired, onChange: PropTypes.func.isRequired, extraClass: PropTypes.string };
+
+
 const OfficerProfile = () => {
-  const router = useRouter();
-  
-  const [showpassword, setShowpassword] = useState(false);
-  const [profile, setProfile] = useState({ username: '', email: '' });
-  const [newUsername, setNewUsername] = useState('');
-  const [passwords, setPasswords] = useState({ old_password: '', new_password: '' });
-  const [loading,setLoading] = useState(true)
-  const [stats, setStats] = useState({ 
-    gold: 0, home: 0, personal: 0, education: 0, pending: 0, approved: 0, rejected: 0 
-  });
-
-  const handleUpdateUsername = async (e) => {
-    e.preventDefault();
-    try {
-      const res = await API.put('users/update-profile/', { username: newUsername });
-      setProfile({ ...profile, username: res.data.username});
-      localStorage.setItem('username', res.data.username); 
-      toast.success("Profile updated successfully!");
-    } catch(error){
-      console.log("Some thing went wrong", error);
-      toast.error("Failed to update profile.");
-    }
-  };
-
-  const handleChangePassword = async (e) => {
-    e.preventDefault();
-    try {
-      await API.put('users/change-password/', passwords);
-      setPasswords({ old_password: '', new_password: '' });
-      toast.success("Password changed securely!");
-    } catch (error) {
-      toast.error(error.response?.data?.error || "Failed to change password.");
-    }
-  };
-
-  useEffect(() => {
-    const token = localStorage.getItem('access_token');
-    if (!token) {
-      router.push('/login');
-      return;
-    }
-    const isOfficer = localStorage.getItem('is_officer');
-    if(!isOfficer){
-      toast.error("Security Alert: Unauthorized Access");
-      router.push('/profile/customer');
-      return;
-    }
-
-    const fetchProfileData = async () => {
-      try {
-        const [profileRes, statsRes] = await Promise.all([
-          API.get('users/profile/'),
-          API.get('loans/officer/stats/')
-        ]);
-
-        setProfile(profileRes.data);
-        setNewUsername(profileRes.data.username);
-        setStats(statsRes.data);
-
-      } catch (error) {
-        if (error.response?.status === 403) {
-            router.push('/profile/customer');
-        }
-      } finally {
-        setLoading(false)
-      }
-    };
-    fetchProfileData();
-  }, [router]);
-
-  const avatarInitial = profile.username ? profile.username.charAt(0).toUpperCase() : "O";
+  const {
+    router,
+    showpassword,
+    setShowpassword,
+    profile,
+    newUsername,
+    setNewUsername,
+    passwords,
+    setPasswords,
+    loading,
+    stats,
+    handleUpdateUsername,
+    handleChangePassword,
+    avatarInitial
+  } = useOfficerProfile();
 
   if (loading) {
     return(
@@ -184,24 +144,23 @@ const OfficerProfile = () => {
               Security
             </h3>
             <form onSubmit={handleChangePassword} className="space-y-6">
+              
+              <PasswordField 
+                id="old_password" 
+                label="Current Password" 
+                type={showpassword ? "text" : "password"} 
+                value={passwords.old_password} 
+                onChange={(e) => setPasswords({ ...passwords, old_password: e.target.value })} 
+              />
+              
               <div>
-                <label htmlFor='old_password' className={FORM_LABEL_CLASSES}>Current Password</label>
-                <input
-                  type={showpassword ? "text" : "password"}
-                  value={passwords.old_password}
-                  onChange={(e) => setPasswords({ ...passwords, old_password: e.target.value })}
-                  className="w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-red-400 transition"
-                  required
-                />
-              </div>
-              <div>
-                <label htmlFor='new_password' className={FORM_LABEL_CLASSES}>New Password</label>
-                <input
-                  type={showpassword ? "text" : "password"}
-                  value={passwords.new_password}
-                  onChange={(e) => setPasswords({ ...passwords, new_password: e.target.value })}
-                  className="w-full border border-gray-300 rounded-xl p-3 pr-14 focus:outline-none focus:ring-2 focus:ring-red-400 transition"
-                  required
+                <PasswordField 
+                  id="new_password" 
+                  label="New Password" 
+                  type={showpassword ? "text" : "password"} 
+                  value={passwords.new_password} 
+                  onChange={(e) => setPasswords({ ...passwords, new_password: e.target.value })} 
+                  extraClass="pr-14"
                 />
                 <div className="mt-3 flex items-center">
                   <input

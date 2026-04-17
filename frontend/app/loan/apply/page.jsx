@@ -1,316 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import API from "@/lib/api";
-import { toast } from "react-toastify";
 import { UserCircleIcon, ArrowLeftStartOnRectangleIcon, ArrowLeftIcon, CheckCircleIcon } from '@heroicons/react/24/solid';
-
+import { useApplyLoan } from "@/hooks/loan/useLoan";
 
 export default function ApplyLoan() {
-  const router = useRouter();
-  const [loadingStatus, setLoadingStatus] = useState(true);
-  const [click, setClick] = useState(false);
-  const [aiStatuses, setAiStatuses] = useState({});
-  const [isNameLocked, setIsNameLocked] = useState(false);
-  const [showInfo, setShowInfo] = useState(false);
-
-
-  const [kycStatus, setKycStatus] = useState({
-    documents_present: { pan_card: false, aadhar_card: false, passport_photo: false }
-  });
-
-  const [form, setForm] = useState({
-    firstName: "",
-    lastName: "",
-    age : null,
-    occupationType: "",
-    occupation: "",
-    organizationName: "",
-    monthlyIncome: "",
-    LoanType: "",
-    tenure: "",
-    loanAmount: "",
-   
-    panCard: null,
-    aadharCard: null,
-    passportPhoto: null,
-    
-    salarySlips: null,
-    itrDocument: null,
-    bankStatements: null,
-    empIdCard: null,
-    
-    
-    nomineeName: "",
-    nomineeAge : "",
-    guarantorOrganization: "",
-    guarantorIncome: "",
-    docGuarantorKyc: null,
-    docGuarantorFinancials: null,
-    docGuarantorPhoto: null,
-    docGuarantorSignature: null,
-
-    doc10thCert: null,
-    doc12thCert: null,
-    docDegreeCert: null,
-    docAdmissionLetter: null,
-    docFeeStructure: null,
-
-    docAgreementSale: null,
-    docEncumbranceCert: null,
-    docBuildingPlan: null,
-    docNoc: null,
-  });
-
-  const [replaceDocs, setReplaceDocs] = useState({
-    aadharCard : false,
-    panCard : false,
-    passportPhoto : false
-  }) 
-
-  const toggleReplaceDoc = (docName) => {
-    setReplaceDocs(prev => ({ ...prev, [docName]: !prev[docName] }));
-    
-    if (replaceDocs[docName]) {
-      setForm(prev => ({ ...prev, [docName]: null }));
-      setAiStatuses(prev => {
-        const newStatuses = { ...prev };
-        delete newStatuses[docName];
-        return newStatuses;
-      });
-    }
-  };
-  
-  
-  const isStudent = form.occupationType === "Student";
-  const isEmployed = form.occupationType === "Employed";
-  const requiresITR = ["Self-Employed", "Business", "Other"].includes(form.occupationType);
-  const isEducation = form.LoanType === "Education";
-  const isPersonal = form.LoanType === "Personal";
-  const isHome = form.LoanType === "Home";
-
-  const getSubmitButtonText = () => {
-    if (click) return "Submitting...";
-    if (Object.values(aiStatuses).some(s => s.loading)) return "Waiting for AI...";
-    return "Submit Application";
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("refresh_token");
-    localStorage.removeItem("username");
-    localStorage.removeItem('is_officer');
-    router.push("/login");
-  };
-
-  const handlevalueChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
-
-  const handleLockIdentity = () => {
-    if (!form.firstName.trim() || !form.lastName.trim()) {
-      toast.error("Please enter both First and Last Name.");
-      return;
-    }
-    setIsNameLocked(true);
-    toast.success("Legal identity confirmed & locked for AI verification.");
-  };
-
-  const verifyDocumentWithAI = async (fieldName, file, inputElement) => {
-    setAiStatuses((prev) => ({ ...prev, [fieldName]: { loading: true } }));
-
-    const documentTypeMap = {
-      panCard: "PAN Card",
-      aadharCard: "Aadhaar Card",
-      salarySlips: "Salary Slip",
-      empIdCard: "Employee ID",
-      itrDocument: "ITR",
-      bankStatements: "Bank Statement",
-      doc10thCert: "10th Certificate",
-      doc12thCert: "12th Certificate",
-      docDegreeCert: "Degree Certificate",
-      docAdmissionLetter: "Admission Letter",
-      docFeeStructure: "Fee Structure",
-      docGuarantorKyc: "PAN Card", 
-      docGuarantorFinancials: "Salary Slip", 
-      docAgreementSale: "Agreement to Sale",
-      docNoc: "No Objection Certificate"
-    };
-
-    const expectedDocType = documentTypeMap[fieldName] || "Unknown";
-
-    const formData = new FormData();
-    formData.append("document", file);
-    formData.append("expected_doc_type", expectedDocType); 
-    formData.append("first_name", form.firstName);
-    formData.append("last_name", form.lastName);
-    formData.append("organization_name", form.organizationName);
-    formData.append("monthly_income", form.monthlyIncome);
-
-    try {
-      const res = await API.post("loans/verify-document/", formData);
-
-      const { decision, confidence_score, ai_reasoning, extracted_data } = res.data;
-      const scorePct = (confidence_score * 100).toFixed(0);
-
-      setAiStatuses((prev) => ({
-        ...prev,
-        [fieldName]: { loading: false, decision: decision, confidence: scorePct, reasoning: ai_reasoning },
-      }));
-
-      if (fieldName === "aadharCard" && extracted_data?.calculated_age) {
-          setForm(prev => ({ ...prev, age: extracted_data.calculated_age }));
-          toast.info(`Age Extracted: ${extracted_data.calculated_age} years old`);
-      }
-
-      if (decision === "REJECTED_PLEASE_REUPLOAD") {
-        toast.error(`Document Rejected: ${ai_reasoning}`);
-        setForm((prev) => ({ ...prev, [fieldName]: null }));
-        if (inputElement) inputElement.value = "";
-      }
-    } catch {
-      setAiStatuses((prev) => ({
-        ...prev,
-        [fieldName]: { loading: false, decision: "MANUAL_REVIEW", reasoning: "AI scan failed. Will be manually reviewed." },
-      }));
-    }
-  };
-
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    const fieldName = e.target.name;
-    if (!file) return;
-
-    const aiWorthyDocs = new Set([
-      "panCard", "aadharCard", "salarySlips", "empIdCard", "itrDocument",
-      "doc10thCert", "doc12thCert", "docDegreeCert", "docAdmissionLetter", "docFeeStructure",
-      "docAgreementSale", "docNoc"
-    ]);
-
-    if (aiWorthyDocs.has(fieldName) && (!form.firstName || !form.lastName)) {
-      toast.error("Please enter and lock your Legal First and Last Name before uploading documents!");
-      e.target.value = ""; 
-      return;
-    }
-
-    setForm({ ...form, [fieldName]: file });
-
-    if (aiWorthyDocs.has(fieldName)) {
-      verifyDocumentWithAI(fieldName, file, e.target);
-    }
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    const isAiLoading = Object.values(aiStatuses).some((status) => status.loading);
-    if (isAiLoading) {
-      toast.warning("Please wait for AI verification to complete.");
-      return;
-    }
-
-    const dataToSend = new FormData();
-  
-    dataToSend.append("occupation", form.occupationType);
-    dataToSend.append("occ", form.occupation);
-    dataToSend.append("organization_name", form.organizationName);
-    dataToSend.append("monthly_income", form.monthlyIncome);
-    dataToSend.append("loan_amount", form.loanAmount);
-    dataToSend.append("loan_type", form.LoanType);
-    dataToSend.append("tenure", form.tenure);
-    dataToSend.append("nominee_name", form.nomineeName);
-    dataToSend.append("nominee_age", form.nomineeAge);
-    dataToSend.append("doc_guarantor_photo", form.docGuarantorPhoto);
-    dataToSend.append("doc_guarantor_signature", form.docGuarantorSignature);
-
-    
-    const appendIfExists = (fieldsObj) => {
-      Object.entries(fieldsObj).forEach(([key, value]) => {
-        if (value) dataToSend.append(key, value);
-      });
-    };
-
-    
-    appendIfExists({
-      pan_card_file: form.panCard,
-      aadhar_card_file: form.aadharCard,
-      passport_photo: form.passportPhoto,
-      age: form.age,
-      bank_statements: form.bankStatements,
-      doc_guarantor_kyc: form.docGuarantorKyc,
-      doc_guarantor_financials: form.docGuarantorFinancials,
-    });
-
-    
-    if (requiresITR) {
-      appendIfExists({ itr_document: form.itrDocument });
-    } else if (isEmployed) {
-      appendIfExists({ salary_slips: form.salarySlips, emp_id_card: form.empIdCard });
-    }
-
- 
-    if (isEducation) {
-      dataToSend.append("guarantor_organization", form.guarantorOrganization);
-      dataToSend.append("guarantor_income", form.guarantorIncome);
-      appendIfExists({
-        doc_10th_cert: form.doc10thCert,
-        doc_12th_cert: form.doc12thCert,
-        doc_degree_cert: form.docDegreeCert,
-        doc_admission_letter: form.docAdmissionLetter,
-        doc_fee_structure: form.docFeeStructure,
-      });
-    }
-
-    if (isHome) {
-      appendIfExists({
-        doc_agreement_sale: form.docAgreementSale,
-        doc_encumbrance_cert: form.docEncumbranceCert,
-        doc_building_plan: form.docBuildingPlan,
-        doc_noc: form.docNoc,
-      });
-    }
-
-   
-    dataToSend.append("ai_statuses", JSON.stringify(aiStatuses));
-    setClick(true);
-
-    try {
-      await API.post("loans/apply/", dataToSend);
-      toast.success("Loan submitted successfully!");
-      router.push("/dashboard/customer");
-    } catch (error) {
-      toast.error(error.response?.data?.error || "Something went wrong");
-    } finally {
-      setClick(false);
-    }
-  };
-  useEffect(() => {
-    const token = localStorage.getItem("access_token");
-    if (!token) return router.push("/login");
-
-    const fetchInitialData = async () => {
-      try {
-        const userRes = await API.get("users/check-status/");
-
-        if (userRes.data.first_name || userRes.data.last_name) {
-          setForm((prev) => ({ ...prev, firstName: userRes.data.first_name || "", lastName: userRes.data.last_name || "" }));
-          setIsNameLocked(true); 
-        }
-
-        const kycRes = await API.get("users/my-kyc/");
-        setKycStatus(kycRes.data);
-
-      } catch {
-        toast.error("Failed to load profile data.");
-      } finally {
-        setLoadingStatus(false);
-      }
-    };
-    fetchInitialData();
-  }, [router]);
-
-  const isSubmitDisabled = click || Object.values(aiStatuses).some(s => s.loading) || Object.values(aiStatuses).some(s => s.decision === 'REJECTED_PLEASE_REUPLOAD');
+  const {
+    loadingStatus, router, aiStatuses, isNameLocked, showInfo, setShowInfo,
+    kycStatus, form, replaceDocs, toggleReplaceDoc, isStudent, isEmployed, requiresITR,
+    isEducation, isPersonal, isHome, isUnderageAndNoIncome, isSubmitDisabled,
+    getSubmitButtonText, handleLogout, handlevalueChange, handleLockIdentity,
+    handleFileChange, handleSubmit
+  } = useApplyLoan();
 
   if (loadingStatus) return <div className="flex w-full min-h-screen justify-center items-center"><div className="w-15 h-15 border-6 border-indigo-500 border-b-transparent rounded-full animate-ping"></div></div>;
 
@@ -377,11 +77,8 @@ export default function ApplyLoan() {
     );
   };
   
-  const isUnderageAndNoIncome = form.age && form.age < 20 && (form.monthlyIncome === "" || Number(form.monthlyIncome) === 0);
-  
   return (
     <div className="font-serif bg-linear-to-r from-[#eef2f7] to-[#d9e4f5] min-h-screen pb-10">
-      
       <div className="fixed top-0 left-0 w-full bg-linear-to-r from-[#eef2f7] to-[#d9e4f5] z-60 py-4 px-4 sm:px-8 shadow-sm">
         <div className="max-w-7xl mx-auto bg-white shadow-xl rounded-xl p-4 sm:p-6 flex justify-between items-center">
           <button onClick={() => router.push("/dashboard/customer")}><ArrowLeftIcon className="w-7 h-7 sm:w-9 sm:h-9 text-gray-700 cursor-pointer hover:-translate-y-0.5 transition" /></button>
@@ -398,7 +95,6 @@ export default function ApplyLoan() {
       <div className="w-full max-w-5xl mx-auto px-4 sm:px-8">
         <div className="bg-white shadow-lg rounded-2xl sm:rounded-4xl p-5 sm:p-8 md:p-10">
           <form onSubmit={handleSubmit} className="flex flex-col gap-6 sm:gap-8">
-            
             <div className="bg-blue-50/50 p-5 sm:p-8 rounded-2xl border border-blue-100">
               <div className="text-lg sm:text-xl text-blue-800 font-bold border-l-4 border-blue-600 pl-3 mb-6">Legal Identity</div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
@@ -481,7 +177,6 @@ export default function ApplyLoan() {
                     <option value="Personal">Personal Loan</option>
                     {!isStudent && <option value="Home">Home Loan</option>}
                     <option value="Education">Education Loan</option>
-                    {/* <option value="Gold">Gold Loan</option> */}
                   </select>
                 </div>
                 
@@ -595,7 +290,7 @@ export default function ApplyLoan() {
                 </div>
               </div>
             )}
-            
+
             <div className="bg-blue-50/50 p-5 sm:p-8 rounded-2xl border border-blue-100">
               <div className="text-lg sm:text-xl text-blue-800 font-bold border-l-4 border-blue-600 pl-3 mb-6">Co-Applicant & Financial Guarantor</div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-4 sm:mb-6">
@@ -643,7 +338,6 @@ export default function ApplyLoan() {
                   <div className="flex flex-col gap-2">
                     <label htmlFor="docGuarantorFinancials" className="text-sm font-bold text-gray-700">Guarantor Income Proof (Salary Slips/ITR)</label>
                     <input id="docGuarantorFinancials" type="file" name="docGuarantorFinancials" onChange={handleFileChange} accept=".jpg,.jpeg,.png,.pdf" className="block w-full text-sm text-gray-500 border border-gray-200 rounded-lg bg-white file:py-2 file:px-4 file:bg-blue-50 file:text-blue-700" required />
-                   
                   </div>
                 </div>
               )}

@@ -151,6 +151,7 @@ class ResetPasswordWithOTPView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
+
         username = request.data.get('username')
         otp = request.data.get('otp')
         new_password = request.data.get('new_password')
@@ -164,9 +165,7 @@ class ResetPasswordWithOTPView(APIView):
 
             
             user.set_password(new_password)
-    
-            user.reset_otp = None
-            user.otp_expiry = None
+            
             user.save()
             
             return Response({"message": "Password reset successfully!"}, status=status.HTTP_200_OK)
