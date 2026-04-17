@@ -20,16 +20,13 @@ const OfficerProfile = () => {
   const handleUpdateUsername = async (e) => {
     e.preventDefault();
     try {
-      const token = localStorage.getItem('access_token');
-      const res = await API.put('users/update-profile/', { username: newUsername },{
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await API.put('users/update-profile/', { username: newUsername });
       
       setProfile({ ...profile, username: res.data.username});
       localStorage.setItem('username', res.data.username); 
       toast.success("Profile updated successfully!");
     } catch(error){
-      console.log(error);
+      console.log("Some thing went wrong", error);
       toast.error("Failed to update profile.");
     }
   };
@@ -37,10 +34,7 @@ const OfficerProfile = () => {
   const handleChangePassword = async (e) => {
     e.preventDefault();
     try {
-      const token = localStorage.getItem('access_token');
-      await API.put('users/change-password/', passwords, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await API.put('users/change-password/', passwords);
       
       setPasswords({ old_password: '', new_password: '' });
       toast.success("Password changed securely!");
@@ -62,15 +56,11 @@ const OfficerProfile = () => {
     }
     const fetchProfileData = async () => {
       try {
-        const profileRes = await API.get('users/profile/', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const profileRes = await API.get('users/profile/');
         setProfile(profileRes.data);
         setNewUsername(profileRes.data.username);
 
-        const statsRes = await API.get('loans/officer/stats/', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const statsRes = await API.get('loans/officer/stats/');
         setStats(statsRes.data);
 
       } catch (error) {
@@ -88,7 +78,7 @@ const OfficerProfile = () => {
   const avatarInitial = profile.username ? profile.username.charAt(0).toUpperCase() : "O";
   if(loading){
     return(
-      <div className='flex justify-center items-center h-screen bg-gradient-to-r from-[#eef2f7] to-[#d9e4f5]'>
+      <div className='flex justify-center items-center h-screen'>
         <div className='animate-spin rounded-full border-6 border-gray-300 border-t-blue-700 h-15 w-15'></div>
       </div>
     )
@@ -100,7 +90,8 @@ const OfficerProfile = () => {
     
       <div className="max-w-6xl mx-auto mb-8 flex flex-col md:flex-row justify-between items-center gap-4">
         
-        {/* Title is forced to the top on mobile using order-1, flips to right on desktop */}
+       
+       
         <h1 className="text-2xl sm:text-3xl font-bold text-indigo-900 order-1 md:order-2 text-center md:text-right">
           Officer Profile
         </h1>
