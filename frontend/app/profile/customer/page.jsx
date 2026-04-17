@@ -1,74 +1,14 @@
 "use client";
+
 import React from 'react';
-import PropTypes from 'prop-types';
-import { useCustomerProfile } from '@/hooks/profile/customer/useCustomerProfile';
-
-const PAGE_WRAPPER = "min-h-[100vh] font-sans bg-linear-to-r from-[#eef2f7] to-[#d9e4f5] p-4 sm:p-6 lg:p-10";
-const LOADER_BG = "flex items-center justify-center min-h-[100vh] bg-linear-to-r from-[#eef2f7] to-[#d9e4f5]";
-const AVATAR_STYLE = "w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-linear-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-4xl sm:text-5xl font-bold shadow-lg mb-4";
-
-const DisabledField = ({ id, label, value }) => (
-  <div>
-    <label htmlFor={id} className="block text-gray-500 text-sm font-semibold mb-1">{label}</label>
-    <input
-      type="text"
-      id={id}
-      value={value || "N/A"}
-      disabled
-      className="w-full bg-gray-200 text-gray-500 border border-gray-300 rounded-xl p-3 cursor-not-allowed font-medium"
-    />
-  </div>
-);
-DisabledField.propTypes = { id: PropTypes.string.isRequired, label: PropTypes.string.isRequired, value: PropTypes.string };
-
-const EditField = ({ id, name, label, type, value, onChange }) => (
-  <div>
-    <label htmlFor={id} className="block text-gray-700 font-semibold mb-2">{label}</label>
-    <input
-      type={type}
-      id={id}
-      name={name}
-      value={value}
-      onChange={onChange}
-      className="w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition"
-      required
-    />
-  </div>
-);
-EditField.propTypes = { id: PropTypes.string.isRequired, name: PropTypes.string.isRequired, label: PropTypes.string.isRequired, type: PropTypes.string.isRequired, value: PropTypes.string, onChange: PropTypes.func.isRequired };
-
-const PasswordField = ({ id, label, type, value, onChange, extraClass = "" }) => (
-  <div>
-    <label htmlFor={id} className="block text-gray-700 font-semibold mb-2">{label}</label>
-    <input
-      type={type}
-      id={id}
-      value={value}
-      onChange={onChange}
-      className={`w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-red-400 transition ${extraClass}`}
-      required
-    />
-  </div>
-);
-PasswordField.propTypes = { id: PropTypes.string.isRequired, label: PropTypes.string.isRequired, type: PropTypes.string.isRequired, value: PropTypes.string.isRequired, onChange: PropTypes.func.isRequired, extraClass: PropTypes.string };
-
+import { useCustomerProfile } from '@/hooks/profiles/customer/useCustomer';
+import { PAGE_WRAPPER, LOADER_BG, AVATAR_STYLE, DisabledField, EditField, PasswordField } from '@/components/SharedProfileUI';
 
 const CustomerProfile = () => {
   const {
-    router,
-    showpassword,
-    setShowpassword,
-    click,
-    loading,
-    profile,
-    editForm,
-    stats,
-    passwords,
-    setPasswords,
-    handleEditChange,
-    handleUpdateProfile,
-    handleChangePassword,
-    avatarInitial
+    router, showpassword, setShowpassword, click, loading, profile, editForm,
+    stats, passwords, setPasswords, handleEditChange, handleUpdateProfile,
+    handleChangePassword, avatarInitial
   } = useCustomerProfile();
 
   if(loading){
@@ -134,7 +74,6 @@ const CustomerProfile = () => {
             </h3>
             
             <form onSubmit={handleUpdateProfile} className="space-y-6">
-              
               <div className="bg-gray-50 p-5 rounded-2xl border border-gray-200">
                 <h4 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4 flex items-center gap-2">
                   🔒 Verified Legal Identity
@@ -172,7 +111,6 @@ const CustomerProfile = () => {
               Security
             </h3>
             <form onSubmit={handleChangePassword} className="space-y-6">
-              
               <PasswordField 
                 id="old_password" 
                 label="Current Password" 
@@ -180,7 +118,6 @@ const CustomerProfile = () => {
                 value={passwords.old_password} 
                 onChange={(e) => setPasswords({ ...passwords, old_password: e.target.value })} 
               />
-              
               <div>
                 <PasswordField 
                   id="new_password" 
