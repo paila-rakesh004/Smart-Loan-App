@@ -7,50 +7,31 @@ const PAGE_WRAPPER = "min-h-[100vh] font-sans bg-linear-to-r from-[#eef2f7] to-[
 const LOADER_BG = "flex items-center justify-center min-h-[100vh] bg-linear-to-r from-[#eef2f7] to-[#d9e4f5]";
 const AVATAR_STYLE = "w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-linear-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-4xl sm:text-5xl font-bold shadow-lg mb-4";
 
-const DisabledField = ({ id, label, value }) => (
-  <div>
-    <label htmlFor={id} className="block text-gray-500 text-sm font-semibold mb-1">{label}</label>
-    <input
-      type="text"
-      id={id}
-      value={value || "N/A"}
-      disabled
-      className="w-full bg-gray-200 text-gray-500 border border-gray-300 rounded-xl p-3 cursor-not-allowed font-medium"
-    />
-  </div>
-);
-DisabledField.propTypes = { id: PropTypes.string.isRequired, label: PropTypes.string.isRequired, value: PropTypes.string };
+const FormField = ({ id, name, label, type = "text", value, onChange, disabled = false, focusRingColor = "indigo", extraClass = "" }) => {
+  const isDisabled = disabled;
+  const labelColor = isDisabled ? "text-gray-500 text-sm font-semibold mb-1" : "block text-gray-700 font-semibold mb-2";
+  const inputBaseClass = "w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 transition";
+  const inputDisabledClass = isDisabled ? "bg-gray-200 text-gray-500 cursor-not-allowed font-medium" : "";
+  const inputFocusClass = `focus:ring-${focusRingColor}-400`;
+  const inputClass = `${inputBaseClass} ${inputDisabledClass} ${inputFocusClass} ${extraClass}`.trim();
 
-const EditField = ({ id, name, label, type, value, onChange }) => (
-  <div>
-    <label htmlFor={id} className="block text-gray-700 font-semibold mb-2">{label}</label>
-    <input
-      type={type}
-      id={id}
-      name={name}
-      value={value}
-      onChange={onChange}
-      className="w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition"
-      required
-    />
-  </div>
-);
-EditField.propTypes = { id: PropTypes.string.isRequired, name: PropTypes.string.isRequired, label: PropTypes.string.isRequired, type: PropTypes.string.isRequired, value: PropTypes.string, onChange: PropTypes.func.isRequired };
-
-const PasswordField = ({ id, label, type, value, onChange, extraClass = "" }) => (
-  <div>
-    <label htmlFor={id} className="block text-gray-700 font-semibold mb-2">{label}</label>
-    <input
-      type={type}
-      id={id}
-      value={value}
-      onChange={onChange}
-      className={`w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-red-400 transition ${extraClass}`}
-      required
-    />
-  </div>
-);
-PasswordField.propTypes = { id: PropTypes.string.isRequired, label: PropTypes.string.isRequired, type: PropTypes.string.isRequired, value: PropTypes.string.isRequired, onChange: PropTypes.func.isRequired, extraClass: PropTypes.string };
+  return (
+    <div>
+      <label htmlFor={id} className={labelColor}>{label}</label>
+      <input
+        type={type}
+        id={id}
+        name={name}
+        value={value || (isDisabled ? "N/A" : value)}
+        onChange={onChange}
+        disabled={isDisabled}
+        className={inputClass}
+        required={!isDisabled}
+      />
+    </div>
+  );
+};
+FormField.propTypes = { id: PropTypes.string.isRequired, name: PropTypes.string, label: PropTypes.string.isRequired, type: PropTypes.string, value: PropTypes.string, onChange: PropTypes.func, disabled: PropTypes.bool, focusRingColor: PropTypes.string, extraClass: PropTypes.string };
 
 
 const CustomerProfile = () => {
@@ -140,21 +121,21 @@ const CustomerProfile = () => {
                   🔒 Verified Legal Identity
                 </h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <DisabledField id="first_name" label="First Name" value={profile.first_name} />
-                  <DisabledField id="last_name" label="Last Name" value={profile.last_name} />
+                  <FormField id="first_name" label="First Name" value={profile.first_name} disabled />
+                  <FormField id="last_name" label="Last Name" value={profile.last_name} disabled />
                 </div>
                 <p className="text-xs text-gray-400 mt-3">
                   Need to update your legal name? <a href="mailto:dumimailra@gmail.com" className="text-blue-500 hover:underline">Contact Support</a>
                 </p>
               </div>
 
-              <div className="pt-2">
+<div className="pt-2">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="sm:col-span-2">
-                    <EditField id="username" name="username" label="Username" type="text" value={editForm.username} onChange={handleEditChange} />
+                    <FormField id="username" name="username" label="Username" type="text" value={editForm.username} onChange={handleEditChange} />
                   </div>
-                  <EditField id="email" name="email" label="Email Address" type="email" value={editForm.email} onChange={handleEditChange} />
-                  <EditField id="phone_number" name="phone_number" label="Mobile Number" type="text" value={editForm.phone_number} onChange={handleEditChange} />
+                  <FormField id="email" name="email" label="Email Address" type="email" value={editForm.email} onChange={handleEditChange} />
+                  <FormField id="phone_number" name="phone_number" label="Mobile Number" type="text" value={editForm.phone_number} onChange={handleEditChange} />
                 </div>
               </div>
 
@@ -173,21 +154,23 @@ const CustomerProfile = () => {
             </h3>
             <form onSubmit={handleChangePassword} className="space-y-6">
               
-              <PasswordField 
+              <FormField 
                 id="old_password" 
                 label="Current Password" 
                 type={showpassword ? "text" : "password"} 
                 value={passwords.old_password} 
-                onChange={(e) => setPasswords({ ...passwords, old_password: e.target.value })} 
+                onChange={(e) => setPasswords({ ...passwords, old_password: e.target.value })}
+                focusRingColor="red"
               />
               
               <div>
-                <PasswordField 
+                <FormField 
                   id="new_password" 
                   label="New Password" 
                   type={showpassword ? "text" : "password"} 
                   value={passwords.new_password} 
-                  onChange={(e) => setPasswords({ ...passwords, new_password: e.target.value })} 
+                  onChange={(e) => setPasswords({ ...passwords, new_password: e.target.value })}
+                  focusRingColor="red"
                   extraClass="pr-14"
                 />
                 <div className="mt-3 flex items-center">
