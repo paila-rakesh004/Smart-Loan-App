@@ -105,12 +105,10 @@ class SendOTPView(APIView):
             
             otp = str(secrets.randbelow(900000) + 100000)
             
-            
+            print("sending otp")
             user.reset_otp = otp
             user.otp_expiry = timezone.now() + timedelta(minutes=2)
             user.save()
-
-            
             if user.email:
                 send_mail(
                     subject="Your Password Reset OTP",

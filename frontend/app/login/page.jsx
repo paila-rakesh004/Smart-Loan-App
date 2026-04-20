@@ -20,7 +20,6 @@ export default function Login() {
     <div className="min-h-screen w-full bg-[url('/bgimg.png')] bg-cover bg-center font-serif">
       <div className="min-h-screen w-full bg-black/70 flex flex-col md:flex-row">
         
-        {/* Left Side: Hero Text */}
         <div className="flex-[0.5] text-white flex flex-col justify-center px-6 sm:px-10 md:px-16 py-10">
           <h1 className="text-3xl text-indigo-500 sm:text-4xl md:text-6xl font-bold">
             Smart Loan System
@@ -83,7 +82,7 @@ export default function Login() {
                 onChange={handleChange}
                 required
                 disabled={loading}
-                maxLength="10"
+                
               />
 
              
