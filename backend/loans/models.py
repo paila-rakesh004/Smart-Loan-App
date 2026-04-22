@@ -8,8 +8,8 @@ class LoanApplication(models.Model):
     
     STATUS_CHOICES = [
         ('Pending', 'Pending'),
-        ('Approved', 'Approved'),
-        ('Rejected', 'Rejected'),
+        ('Eligible', 'Eligible'),
+        ('Not Eligible', 'Not Eligible'),
     ]
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
     

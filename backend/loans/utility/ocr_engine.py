@@ -21,7 +21,6 @@ def extract_text_from_image(image_file):
         raw_text = ""
 
         if file_name.endswith('.pdf') or content_type == 'application/pdf':
-            print("Detected PDF. Slicing into images...")
             
             if POPPLER_PATH:
                 pages = convert_from_bytes(image_bytes, poppler_path=POPPLER_PATH)
@@ -33,7 +32,6 @@ def extract_text_from_image(image_file):
                 raw_text += page_text + "\n"
                 
         else:
-            print("Detected Image. Extracting directly...")
             img = Image.open(io.BytesIO(image_bytes))
             raw_text = pytesseract.image_to_string(img, lang='eng')
 
@@ -41,7 +39,6 @@ def extract_text_from_image(image_file):
         return raw_text.strip()
         
     except Exception as e:
-        print(f"!!! OCR Extraction Failed !!!\nError: {e}")
         
         image_file.seek(0)
-        return None
+        return e

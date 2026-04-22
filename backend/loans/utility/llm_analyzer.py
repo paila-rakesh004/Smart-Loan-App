@@ -2,7 +2,9 @@ import json
 from django.conf import settings
 from google import genai
 from google.genai import types
+from datetime import date
 
+current_year = date.today().year
 
 client = genai.Client(api_key=settings.GEMINI_API_KEY)
 
@@ -20,13 +22,13 @@ def analyze_document_with_llm(masked_ocr_text,expected_doc_type="Unknown"):
     
     CRITICAL RULES:
     1. VALIDATE DOCUMENT TYPE FIRST: You MUST compare the document you are reading against the EXPECTED DOCUMENT TYPE. If they do NOT match (e.g., expected Aadhaar Card but found a Salary Slip), you MUST return a confidence_score of 0.0, set ai_reasoning to "Document Mismatch", and list exactly "Document Mismatch: Expected {expected_doc_type}, but found [Insert Actual Type]" in the anomalies array.
-    2. The current year is 2026. Do NOT flag 2026 dates as future.
+    2. The current year is {current_year}. Do NOT flag {current_year} dates as future.
     3. If Salary Slip: Count distinct months. Extract Employer name and Net Monthly Income.
     4. If Employee ID: Look for expiration date. Extract Employer Name and Employee Number.
     5. If ITR (Income Tax Return): Extract the Assessment Year (e.g., 2025) and the Gross Total Income (numeric only).
     6. If Vintage Proof (Bank Statement/Welcome Letter): Extract the Account Opening Year or the oldest transaction year shown (YYYY format).
     7. While verifying Aadhar card, consider only address, aadhar number and whether it is faked or original. ignore the date of issue.
-    8. If you feel any document is inappropriate or faked document, then flag it.
+    8. If you feel any text in the document is inappropriate or faked, then flag it.
     
     You MUST return a strict JSON object with this exact structure:
     {{
@@ -72,7 +74,4 @@ def analyze_document_with_llm(masked_ocr_text,expected_doc_type="Unknown"):
     except json.JSONDecodeError:
         return {"error": "LLM returned invalid JSON"}
     except Exception as e:
-        print("!!! GEMINI CRASHED !!!")
-        print(f"Error Type: {type(e)}")
-        print(f"Error Message: {str(e)}")
-        return {"error": str(e)}
+        return {"error": str(e), "error_type": type(e).__name__}

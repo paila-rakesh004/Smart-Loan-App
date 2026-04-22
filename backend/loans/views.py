@@ -111,7 +111,6 @@ class ApplyLoanView(APIView):
             }, status=status.HTTP_201_CREATED)
 
         except Exception as e:
-            print(f"Loan Application Error: {e}")
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         
 
@@ -290,10 +289,8 @@ class VerifyDocumentView(APIView):
                 request.user.first_name = first_name
                 request.user.last_name = last_name
                 request.user.save() 
-                print(f"Permanently saved Legal Name for {request.user.username}: {first_name} {last_name}")
         try:
             ai_result = process_loan_document(image_file=document,user=request.user,declared_org=declared_org,declared_income=declared_income,declared_years=declared_years,expected_doc_type=expected_doc_type)
-            print(ai_result)
             
             if ai_result.get("status") == "failed":
                 return Response(ai_result, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
@@ -302,7 +299,6 @@ class VerifyDocumentView(APIView):
             return Response(ai_result, status=status.HTTP_200_OK)
             
         except Exception as e:
-            print(f"CRASH IN AI PROCESSING: {str(e)}")
             return Response(
                 {"error": f"Server Error during AI processing: {str(e)}"}, 
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR

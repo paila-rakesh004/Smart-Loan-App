@@ -15,6 +15,4 @@ def mask_sensitive_data(raw_text):
     return sanitized_text
 
 
-if __name__ == "__main__":
-    messy_text = "DOB:01/01/2000  Aadhaar No:1234 5678 9012  Permanent Account Number:ABCDE1234F  Signature:Valid"
-    print("DIRECT TEST RESULT:", mask_sensitive_data(messy_text))
+
