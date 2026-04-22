@@ -273,13 +273,13 @@ class VerifyDocumentView(APIView):
     parser_classes = (MultiPartParser, FormParser)
 
     def post(self, request):
-        document = request.FILES.get('document')
-        expected_doc_type = request.POST.get('expected_doc_type','Unknown')
-        declared_org = request.POST.get('organization_name', '')
-        declared_income = request.POST.get('monthly_income', '')
-        declared_years = request.POST.get('years_at_previous_bank', '')
-        first_name = request.POST.get('first_name', '').strip()
-        last_name = request.POST.get('last_name', '').strip()
+        document = request.data.get('document')
+        expected_doc_type = request.data.get('expected_doc_type','Unknown')
+        declared_org = request.data.get('organization_name', '')
+        declared_income = request.data.get('monthly_income', '')
+        declared_years = request.data.get('years_at_previous_bank', '')
+        first_name = request.data.get('first_name', '').strip()
+        last_name = request.data.get('last_name', '').strip()
         if not document:
             return Response({"error": "No document provided."}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -303,6 +303,7 @@ class VerifyDocumentView(APIView):
                 {"error": f"Server Error during AI processing: {str(e)}"}, 
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+        
 
 class RecalculateCibilView(APIView):
     permission_classes = [permissions.IsAuthenticated,IsOfficerUser]
