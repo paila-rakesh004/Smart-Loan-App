@@ -47,7 +47,7 @@ export default function ApplyLoan() {
           <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
             <div className="flex items-center gap-2">
               <CheckCircleIcon className="w-6 h-6 text-green-500" />
-              <span className="text-sm font-semibold text-green-700">Retrieved from Bank Vault</span>
+              <span className="text-sm font-semibold text-green-700">Previously uploaded file</span>
             </div>
             {fileUrl && (
               <a 
@@ -162,7 +162,7 @@ export default function ApplyLoan() {
                 </div>
                 <div className="flex flex-col gap-2">
                   <label htmlFor="monthlyIncome" className="font-bold text-gray-700">Monthly Income (₹) {isStudent && "(Enter 0 if none)"}</label>
-                  <input id="monthlyIncome" name="monthlyIncome" type="number" onChange={handlevalueChange} className="p-3 rounded-lg border border-gray-300 w-full" required />
+                  <input id="monthlyIncome" name="monthlyIncome" type="number" min="0" onChange={handlevalueChange} className="p-3 rounded-lg border border-gray-300 w-full" required />
                 </div>
               </div>
             </div>
@@ -182,12 +182,12 @@ export default function ApplyLoan() {
                 
                 <div className="flex flex-col gap-2">
                   <label htmlFor="tenure" className="font-bold text-gray-700">Tenure </label>
-                  <input id="tenure" name="tenure" type="number" placeholder="Tenure (Months)" onChange={handlevalueChange} className="p-3 rounded-lg border border-gray-300 w-full h-12.5" required />
+                  <input id="tenure" name="tenure" type="number" min="0" placeholder="Tenure (Months)" onChange={handlevalueChange} className="p-3 rounded-lg border border-gray-300 w-full h-12.5" required />
                 </div>
 
                 <div className="flex flex-col gap-2 md:col-span-2">
                   <label htmlFor="loanAmount" className="font-bold text-gray-700">Amount </label>
-                  <input id="loanAmount" name="loanAmount" type="number" placeholder="Amount (₹)" onChange={handlevalueChange} className="p-3 rounded-lg border border-gray-300 w-full" required />
+                  <input id="loanAmount" name="loanAmount" type="number" min="0" placeholder="Amount (₹)" onChange={handlevalueChange} className="p-3 rounded-lg border border-gray-300 w-full" required />
                 </div>
               </div>
             </div>
@@ -301,16 +301,16 @@ export default function ApplyLoan() {
 
                 <div className="flex flex-col gap-2">
                   <label htmlFor="nomineeAge" className="font-bold text-gray-700">Guarantor Age </label>
-                  <input id="nomineeAge" name="nomineeAge" type="number" placeholder="Guarantor Age" value={form.nomineeAge} onChange={handlevalueChange} className="p-3 rounded-lg border border-gray-300 w-full" required />
+                  <input id="nomineeAge" name="nomineeAge" type="number" min="0" placeholder="Guarantor Age" value={form.nomineeAge} onChange={handlevalueChange} className="p-3 rounded-lg border border-gray-300 w-full" required />
                 </div>
                 <div className="flex flex-col gap-2">
                     <label htmlFor="docGuarantorPhoto" className="text-sm font-bold text-gray-700">Guarantor Photo</label>
-                    <input id="docGuarantorPhoto" type="file" name="docGuarantorPhoto" onChange={handleFileChange} accept=".jpg,.jpeg,.png,.pdf" className="block w-full text-sm text-gray-500 border border-gray-200 rounded-lg bg-white file:py-2 file:px-4 file:bg-blue-50 file:text-blue-700" required />
+                    <input id="docGuarantorPhoto" type="file" name="docGuarantorPhoto" onChange={handleFileChange} accept=".jpg,.jpeg,.png,.pdf" className="block w-full text-sm text-gray-500 border border-gray-200  cursor-pointer rounded-lg bg-white file:py-2 file:px-4 file:bg-blue-50 file:text-blue-700" required />
                 </div>
 
                 <div className="flex flex-col gap-2">
                     <label htmlFor="docGuarantorSignature" className="text-sm font-bold text-gray-700">Guarantor Signature</label>
-                    <input id="docGuarantorSignature" type="file" name="docGuarantorSignature" onChange={handleFileChange} accept=".jpg,.jpeg,.png,.pdf" className="block w-full text-sm text-gray-500 border border-gray-200 rounded-lg bg-white file:py-2 file:px-4 file:bg-blue-50 file:text-blue-700" required />
+                    <input id="docGuarantorSignature" type="file" name="docGuarantorSignature" onChange={handleFileChange} accept=".jpg,.jpeg,.png,.pdf" className="block w-full text-sm text-gray-500 border border-gray-200 cursor-pointer rounded-lg bg-white file:py-2 file:px-4 file:bg-blue-50 file:text-blue-700" required />
                 </div>
                 
 
@@ -322,7 +322,7 @@ export default function ApplyLoan() {
                     </div>
                     <div className="flex flex-col gap-2">
                       <label htmlFor="guarantorIncome" className="font-bold text-gray-700">Guarantor Monthly Income (₹)</label>
-                      <input id="guarantorIncome" name="guarantorIncome" type="number" placeholder="Monthly Income" value={form.guarantorIncome} onChange={handlevalueChange} className="p-3 rounded-lg border border-gray-300 w-full" required />
+                      <input id="guarantorIncome" name="guarantorIncome" type="number" min="0" placeholder="Monthly Income" value={form.guarantorIncome} onChange={handlevalueChange} className="p-3 rounded-lg border border-gray-300 w-full" required />
                     </div>
                   </>
                 )}

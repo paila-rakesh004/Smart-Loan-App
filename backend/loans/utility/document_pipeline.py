@@ -200,6 +200,7 @@ def process_loan_document(image_file, user, declared_org="", declared_income="",
 
     final_decision = _calculate_final_decision(confidence, len(anomalies))
 
+
     return {
         "status": "success",
         "decision": final_decision,

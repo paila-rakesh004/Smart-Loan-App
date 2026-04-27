@@ -101,9 +101,17 @@ class SendOTPView(APIView):
         
         try:
             user = User.objects.get(username=username)
+        
+            if user.otp_expiry and timezone.now() < user.otp_expiry:
+                time_remaining = (user.otp_expiry - timezone.now()).total_seconds()
+                if time_remaining > 90: 
+                    return Response(
+                        {"error": f"OTP already sent. Please wait {int(time_remaining)} seconds before requesting again."}, 
+                        status=status.HTTP_429_TOO_MANY_REQUESTS
+                    )
             
             
-            otp = str(secrets.randbelow(900000) + 100000)
+            otp = str(secrets.randbelow(1000000)).zfill(6)
             
             user.reset_otp = otp
             user.otp_expiry = timezone.now() + timedelta(minutes=2)
