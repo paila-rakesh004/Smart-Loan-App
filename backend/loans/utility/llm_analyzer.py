@@ -6,7 +6,11 @@ from datetime import date
 
 current_year = date.today().year
 
-client = genai.Client(api_key=settings.GEMINI_API_KEY)
+
+def _get_client():
+    if not settings.GEMINI_API_KEY:
+        raise ValueError("GEMINI_API_KEY is not configured.")
+    return genai.Client(api_key=settings.GEMINI_API_KEY)
 
 def analyze_document_with_llm(masked_ocr_text,expected_doc_type="Unknown"):
    
@@ -56,6 +60,7 @@ def analyze_document_with_llm(masked_ocr_text,expected_doc_type="Unknown"):
     {masked_ocr_text}
     """
     try:
+        client = _get_client()
         response = client.models.generate_content(
             model='gemini-2.0-flash',
             contents=prompt,
