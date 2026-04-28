@@ -1,12 +1,12 @@
 from datetime import timedelta
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 from django.test import TestCase, override_settings
 from django.utils import timezone
 from rest_framework.test import APIClient
 from django.contrib.auth import get_user_model
 
-from users.models import UserFinancialData
+from users.models import UserFinancialData, auto_delete_file_on_change
 
 User = get_user_model()
 
@@ -22,6 +22,7 @@ class UserViewsTest(TestCase):
             password="password123",
             first_name="Test",
             last_name="User",
+            is_customer=True,
         )
         self.financials = UserFinancialData.objects.create(
             username=self.user.username,
@@ -42,6 +43,22 @@ class UserViewsTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data["username"], "testuser")
         self.assertEqual(response.data["first_name"], "Test")
+
+    def test_user_and_financial_data_string_representations(self):
+        self.assertEqual(str(self.user), "testuser")
+        self.assertEqual(str(self.financials), "testuser (Score: 720)")
+
+    def test_token_response_includes_user_roles(self):
+        self.client.force_authenticate(user=None)
+
+        response = self.client.post(
+            "/api/token/",
+            {"username": "testuser", "password": "password123"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.data["is_customer"])
+        self.assertFalse(response.data["is_officer"])
 
     def test_update_profile(self):
         data = {
@@ -94,6 +111,15 @@ class UserViewsTest(TestCase):
         self.assertFalse(response.data["is_new_user"])
         self.assertEqual(response.data["first_name"], "Test")
 
+    @patch("users.views.UserFinancialData.objects.get")
+    def test_check_status_handles_null_financial_username(self, mock_get):
+        mock_get.return_value.username = None
+
+        response = self.client.get("/api/users/check-status/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.data["is_new_user"])
+
     def test_check_kyc_status_without_documents(self):
         response = self.client.get("/api/users/my-kyc/")
 
@@ -136,6 +162,16 @@ class UserViewsTest(TestCase):
 
         self.assertEqual(response.status_code, 429)
         self.assertIn("OTP already sent", response.data["error"])
+
+    def test_send_otp_rejects_user_without_email(self):
+        self.client.force_authenticate(user=None)
+        self.user.email = ""
+        self.user.save()
+
+        response = self.client.post("/api/users/send-otp/", {"username": "testuser"})
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data["error"], "No email address linked to this username.")
 
     def test_verify_otp_success_and_failure(self):
         self.client.force_authenticate(user=None)
@@ -184,6 +220,31 @@ class UserViewsTest(TestCase):
         self.user.refresh_from_db()
         self.assertTrue(self.user.check_password("brandnew123"))
 
+    def test_reset_password_rejects_expired_otp(self):
+        self.client.force_authenticate(user=None)
+        self.user.reset_otp = "123456"
+        self.user.otp_expiry = timezone.now() - timedelta(minutes=1)
+        self.user.save()
+
+        response = self.client.post(
+            "/api/users/reset-password-otp/",
+            {"username": "testuser", "otp": "123456", "new_password": "brandnew123"},
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data["error"], "OTP expired.")
+
+    def test_reset_password_rejects_invalid_otp(self):
+        self.client.force_authenticate(user=None)
+
+        response = self.client.post(
+            "/api/users/reset-password-otp/",
+            {"username": "testuser", "otp": "000000", "new_password": "brandnew123"},
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data["error"], "Security validation failed. Please try again.")
+
     @override_settings(
         MEDIA_URL="/media/",
         STORAGES={
@@ -206,3 +267,27 @@ class UserViewsTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.data["is_kyc_complete"])
         self.assertTrue(response.data["documents_present"]["pan_card"])
+
+    def test_file_cleanup_signal_deletes_replaced_documents(self):
+        old_user = MagicMock()
+        old_user.pan_card_file = MagicMock()
+        old_user.aadhar_card_file = MagicMock()
+        old_user.passport_photo = MagicMock()
+
+        self.user.pan_card_file = "vault/pan_cards/new-pan.pdf"
+        self.user.aadhar_card_file = "vault/aadhar_cards/new-aadhar.pdf"
+        self.user.passport_photo = "vault/photos/new-photo.jpg"
+
+        with patch("users.models.User.objects.get", return_value=old_user):
+            auto_delete_file_on_change(User, self.user)
+
+        old_user.pan_card_file.delete.assert_called_once_with(save=False)
+        old_user.aadhar_card_file.delete.assert_called_once_with(save=False)
+        old_user.passport_photo.delete.assert_called_once_with(save=False)
+
+    def test_file_cleanup_signal_ignores_new_or_missing_users(self):
+        unsaved_user = User(username="unsaved")
+        self.assertFalse(auto_delete_file_on_change(User, unsaved_user))
+
+        with patch("users.models.User.objects.get", side_effect=User.DoesNotExist):
+            self.assertFalse(auto_delete_file_on_change(User, self.user))
