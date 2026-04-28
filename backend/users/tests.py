@@ -184,6 +184,17 @@ class UserViewsTest(TestCase):
         self.user.refresh_from_db()
         self.assertTrue(self.user.check_password("brandnew123"))
 
+    @override_settings(
+        MEDIA_URL="/media/",
+        STORAGES={
+            "default": {
+                "BACKEND": "django.core.files.storage.FileSystemStorage",
+            },
+            "staticfiles": {
+                "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+            },
+        },
+    )
     def test_kyc_status_reports_uploaded_documents(self):
         self.user.pan_card_file = "vault/pan_cards/pan.pdf"
         self.user.aadhar_card_file = "vault/aadhar_cards/aadhar.pdf"
