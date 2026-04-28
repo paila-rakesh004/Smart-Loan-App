@@ -12,7 +12,8 @@ def _get_client():
         raise ValueError("GEMINI_API_KEY is not configured.")
     return genai.Client(api_key=settings.GEMINI_API_KEY)
 
-def analyze_document_with_llm(masked_ocr_text,expected_doc_type="Unknown"):
+
+def analyze_document_with_llm(masked_ocr_text, expected_doc_type="Unknown"):
    
     if not masked_ocr_text:
         return {"error": "No text provided to LLM"}
