@@ -1,13 +1,11 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status,permissions
-from django.contrib.auth import authenticate
-from rest_framework.authtoken.models import Token
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from .serializers import UserProfileSerializer
+from .models import UserFinancialData
 from django.db import connection
 from django.contrib.auth import get_user_model
-from django.db import connection 
 from django.utils import timezone
 from datetime import timedelta
 from django.core.mail import send_mail
@@ -32,15 +30,13 @@ class CheckUserStatus(APIView):
 
     def get(self,request):
         user = request.user
+        financials = UserFinancialData.objects.get(username=user.username)
+        row = financials.username
 
-        with connection.cursor() as cursor:
-            cursor.execute("SELECT 1 FROM user_financial_data WHERE username = %s",[user.username])
-            row = cursor.fetchone()
-
-            if row is None:
-                is_new = True
-            else:
-                is_new = False
+        if row is None:
+            is_new = True
+        else:
+            is_new = False
         return Response({"is_new_user" : is_new, "first_name" : request.user.first_name, "last_name" : request.user.last_name})
     
 
@@ -49,6 +45,7 @@ class UpdateProfileView(APIView):
 
     def put(self, request):
         user = request.user
+        financials = UserFinancialData.objects.get(username=user.username)
         new_username = request.data.get('username')
         old_username = user.username 
 
@@ -58,19 +55,13 @@ class UpdateProfileView(APIView):
             return Response({"error": "Username is required."}, status=status.HTTP_400_BAD_REQUEST)
 
         if new_username != old_username:
-            with connection.cursor() as cursor:
-                cursor.execute("""
-                    UPDATE user_financial_data 
-                    SET username = %s 
-                    WHERE username = %s
-                """, [new_username, old_username])
-            
+            financials.username = new_username
+            financials.save()
             user.username = new_username
         if email:
             user.email = email
         if phone_number:
             user.phone_number = phone_number
-        
         user.save()
         return Response({"message": "Profile updated successfully!", "username": user.username,"email" : user.email, "phone_number" : user.phone_number}, status=status.HTTP_200_OK)
 

@@ -70,3 +70,5 @@ db.sqlite3
 
 tests/
 test-results/
+
+.coverage

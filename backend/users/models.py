@@ -39,3 +39,23 @@ def auto_delete_file_on_change(sender, instance, **kwargs):
     
     if old_user.passport_photo and old_user.passport_photo != instance.passport_photo:
         old_user.passport_photo.delete(save=False)
+
+
+
+class UserFinancialData(models.Model):
+    id = models.AutoField(primary_key=True)
+    username = models.CharField(max_length=150)
+    years_as_customer = models.IntegerField()
+    total_transaction_amount = models.FloatField()
+    total_loan_amount = models.FloatField()
+    tenure_months = models.IntegerField()
+    income = models.FloatField()
+    pending_loan = models.FloatField()
+    fixed_deposits = models.FloatField()
+    credit_score = models.IntegerField()
+
+    def __str__(self):
+        return f"{self.username} (Score: {self.credit_score})"
+
+    class Meta:
+        db_table = "user_financial_data"

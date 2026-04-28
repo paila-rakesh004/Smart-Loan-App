@@ -1,7 +1,9 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from .models import User
+from .models import UserFinancialData
 
+admin.site.register(UserFinancialData)
 @admin.register(User)
 class CustomUserAdmin(UserAdmin):
     list_display = ('username', 'email', 'is_customer', 'is_officer', 'phone_number')

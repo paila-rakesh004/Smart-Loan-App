@@ -4,7 +4,7 @@ from rest_framework import status, permissions
 from rest_framework.parsers import MultiPartParser, FormParser
 from .serializers import LoanApplicationSerializer
 from .models import LoanApplication
-from django.db import connection
+from users.models import UserFinancialData
 from django.contrib.auth import get_user_model
 import os
 import json
@@ -175,47 +175,36 @@ class CalculateRiskView(APIView):
             loan = LoanApplication.objects.get(id=pk)
             user = loan.user
         except LoanApplication.DoesNotExist:
-            return Response({"error": self.err}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"error": "Loan application not found."}, status=status.HTTP_404_NOT_FOUND)
 
-       
-        with connection.cursor() as cursor:
-            cursor.execute("""
-                SELECT years_as_customer, total_transaction_amount, pending_loan, fixed_deposits, credit_score 
-                FROM user_financial_data 
-                WHERE username = %s
-            """, [user.username])
-            row = cursor.fetchone()
+     
+        try:
+            financials = UserFinancialData.objects.get(username=user.username)
+        except UserFinancialData.DoesNotExist:
+            return Response(
+                {"error": "Financial ML data not found for this user in the database."}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
-       
-        if not row:
-            return Response({"error": "Financial ML data not found for this user in the database."}, status=status.HTTP_400_BAD_REQUEST)
-
-        
-        years_as_customer, total_transaction_amount, pending_loan, fixed_deposits, credit_score = row
-
-        
         input_data = {
-            'years_as_customer': float(years_as_customer),
-            'total_transaction_amount': float(total_transaction_amount),
+            'years_as_customer': float(financials.years_as_customer),
+            'total_transaction_amount': float(financials.total_transaction_amount),
             'total_loan_amount': float(loan.loan_amount),
             'tenure_months': float(loan.tenure),
             'income': float(loan.monthly_income * 12), 
-            'pending_loan': float(pending_loan),
-            'fixed_deposits': float(fixed_deposits),
-            'credit_score': float(credit_score)
+            'pending_loan': float(financials.pending_loan),
+            'fixed_deposits': float(financials.fixed_deposits),
+            'credit_score': float(financials.credit_score)
         }
-
         
         input_df = pd.DataFrame([input_data])
         prediction = risk_model.predict(input_df)
         predicted_label = label_encoder.inverse_transform(prediction)[0]
 
-        
         loan.risk_score = predicted_label
         loan.save()
-
         return Response({"risk_score": predicted_label}, status=status.HTTP_200_OK)
-
+    
 class CustomerLoanStatsView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -312,25 +301,16 @@ class RecalculateCibilView(APIView):
         try:
             loan = LoanApplication.objects.get(id=pk)
             user = loan.user
+            financials = UserFinancialData.objects.get(username=user.username)
         except LoanApplication.DoesNotExist:
             self.err = "Loan not found"
             return Response({"error": self.err}, status=status.HTTP_404_NOT_FOUND)
 
-      
-        with connection.cursor() as cursor:
-            cursor.execute("""
-                SELECT years_as_customer, total_transaction_amount, fixed_deposits, pending_loan 
-                FROM user_financial_data 
-                WHERE username = %s
-            """, [user.username])
-            row = cursor.fetchone()
 
-        if not row:
-            return Response({"error": "ML data not found"}, status=status.HTTP_400_BAD_REQUEST)
-
-        years, transactions, fds, pending_loans = row
-
-        
+        years = financials.years_as_customer
+        transactions = financials.total_transaction_amount
+        fds = financials.fixed_deposits
+        pending_loans = financials.pending_loan
         income = float(loan.monthly_income)
         loan_amount = float(loan.loan_amount)
         tenure = int(loan.tenure)
@@ -346,12 +326,7 @@ class RecalculateCibilView(APIView):
             tenure=tenure
         )
 
-       
-        with connection.cursor() as cursor:
-            cursor.execute("""
-                UPDATE user_financial_data 
-                SET credit_score = %s 
-                WHERE username = %s
-            """, [new_score, user.username])
+        financials.credit_score = new_score
+        financials.save()
 
         return Response({"new_cibil_score": new_score}, status=status.HTTP_200_OK)
