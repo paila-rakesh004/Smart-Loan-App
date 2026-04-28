@@ -26,7 +26,6 @@ class Migration(migrations.Migration):
             ],
             options={
                 'db_table': 'user_financial_data',
-                'managed': False,
             },
         ),
     ]

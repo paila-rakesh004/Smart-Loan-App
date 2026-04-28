@@ -1,0 +1,17 @@
+[run]
+source =
+    users
+    loans
+omit =
+    */migrations/*
+    loans/utility/*
+    loans/ml_model/*
+    */tests.py
+    manage.py
+
+[report]
+show_missing = True
+skip_covered = True
+
+[xml]
+output = coverage.xml
