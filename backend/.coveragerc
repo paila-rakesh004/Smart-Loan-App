@@ -1,17 +1,18 @@
 [run]
-source =
-    users
-    loans
+relative_files = True
+include =
+    backend/users/*.py
+    backend/loans/*.py
 omit =
-    */migrations/*
-    loans/utility/*
-    loans/ml_model/*
+    backend/**/migrations/*
+    backend/loans/utility/*
+    backend/loans/ml_model/*
     */tests.py
-    manage.py
+    backend/manage.py
 
 [report]
 show_missing = True
 skip_covered = True
 
 [xml]
-output = coverage.xml
+output = backend/coverage.xml
