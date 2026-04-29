@@ -5,16 +5,12 @@ import { toast } from "react-toastify";
 
 export const useOfficerProfile = () => {
   const router = useRouter();
-  
   const [showpassword, setShowpassword] = useState(false);
   const [profile, setProfile] = useState({ username: '', email: '' });
   const [newUsername, setNewUsername] = useState('');
   const [passwords, setPasswords] = useState({ old_password: '', new_password: '' });
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState({ 
-    gold: 0, home: 0, personal: 0, education: 0, pending: 0, approved: 0, rejected: 0 
-  });
-
+  const [stats, setStats] = useState({ gold: 0, home: 0, personal: 0, education: 0, pending: 0, approved: 0, rejected: 0  });
   const handleUpdateUsername = async (e) => {
     e.preventDefault();
     try {
@@ -23,11 +19,10 @@ export const useOfficerProfile = () => {
       localStorage.setItem('username', res.data.username); 
       toast.success("Profile updated successfully!");
     } catch (error) {
-        console.log(error);
-      toast.error("Failed to update profile.");
+      const message = error?.response?.data?.error || "Username Already Exists!";
+      toast.error(message);
     }
   };
-
   const handleChangePassword = async (e) => {
     e.preventDefault();
     try {
@@ -35,10 +30,10 @@ export const useOfficerProfile = () => {
       setPasswords({ old_password: '', new_password: '' });
       toast.success("Password changed securely!");
     } catch (error) {
-      toast.error(error.response?.data?.error || "Failed to change password.");
+      const message = error?.response?.data?.error || "Failed to change password.";
+      toast.error(message);
     }
   };
-
   useEffect(() => {
     const token = localStorage.getItem('access_token');
     if (!token) {
@@ -51,14 +46,12 @@ export const useOfficerProfile = () => {
       router.push('/profile/customer');
       return;
     }
-
     const fetchProfileData = async () => {
       try {
         const [profileRes, statsRes] = await Promise.all([
           API.get('users/profile/'),
           API.get('loans/officer/stats/')
         ]);
-
         setProfile(profileRes.data);
         setNewUsername(profileRes.data.username);
         setStats(statsRes.data);
@@ -73,7 +66,6 @@ export const useOfficerProfile = () => {
     };
     fetchProfileData();
   }, [router]);
-
   const avatarInitial = profile.username ? profile.username.charAt(0).toUpperCase() : "O";
 
   return {

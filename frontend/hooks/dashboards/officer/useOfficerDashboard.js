@@ -5,7 +5,6 @@ import { toast } from "react-toastify";
 
 export const useOfficerDashboard = () => {
   const router = useRouter();
-  
   const [loans, setLoans] = useState([]);
   const [selectedLoan, setSelectedLoan] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -13,7 +12,6 @@ export const useOfficerDashboard = () => {
   const [notes, setNotes] = useState('');
   const [sure, setSure] = useState(false);
   const [status, setStatus] = useState('Eligible');
-
   const handleLogout = () => {
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
@@ -21,16 +19,13 @@ export const useOfficerDashboard = () => {
     localStorage.removeItem('is_officer');
     router.push('/login');
   };
-  
   const handleProfile = () => {
     router.push('/profile/officer');
   };
-
   const handleRowClick = async (loan) => {
     setSelectedLoan(loan);
     setRiskScore(null);
     setNotes('');
-
     try {
       const res = await API.get(`loans/officer/${loan.id}/recalculate-cibil/`);
       const freshScore = res.data.new_cibil_score;
@@ -38,11 +33,10 @@ export const useOfficerDashboard = () => {
       setLoans(loans.map(l => l.id === loan.id ? { ...l, actual_cibil: freshScore } : l));
       toast.success("Cibil Score Calculated");
     } catch (error) {
-      console.error("Error calculating CIBIL score:", error);
-      toast.error("Failed to calculate CIBIL score.");
+      const message = error?.response?.data?.message ||error?.message ||"Failed to calculate CIBIL score.";
+      toast.error(message);
     }
   };
-
   const handleCalculateRisk = async () => {
     try {
       const res = await API.get(`loans/officer/${selectedLoan.id}/calculate-risk/`);
@@ -51,11 +45,10 @@ export const useOfficerDashboard = () => {
       toast.success("Risk Score calculated successfully!");
       setLoans(loans.map(loan => loan.id === selectedLoan.id ? { ...loan, risk_score: res.data.risk_score } : loan));
     } catch (error) {
-      console.error("Error calculating risk score:", error);
-      toast.error(error?.response?.data?.error || "Failed to calculate risk score.");
+      const message = error?.response?.data?.error || "Failed to calculate risk score.";
+      toast.error(message);
     }
   };
-
   const confirmUpdate = async (newStatus) => {
     try {
       await API.patch(`loans/officer/${selectedLoan.id}/update-status/`, {
@@ -64,28 +57,24 @@ export const useOfficerDashboard = () => {
         officer_notes: notes,
         risk_score: riskScore
       });
-
       toast.success(`Applicant is ${newStatus} for loan approval!`);
       setLoans(loans.map(loan => loan.id === selectedLoan.id ? { ...loan, status: newStatus } : loan));
       setSelectedLoan(null);
-      
     } catch (error) {
-      console.log("Error updating application status.", error);
+      const message = error?.response?.data?.error || "Failed to update application status.";
+      toast.error(message);
     } finally {
       setSure(false);
     }
   };
-
   const handleEligible = () => {
     setSure(true);
     setStatus('Eligible');
   };
-
   const handleNotEligible = () => {
     setSure(true);
     setStatus('Not Eligible'); 
   };
-
   useEffect(() => {
     const token = localStorage.getItem('access_token');
     if (!token) {
@@ -98,7 +87,6 @@ export const useOfficerDashboard = () => {
       router.push('/dashboard/customer');
       return;
     }
-
     const fetchAllLoans = async () => {
       try {
         const res = await API.get('loans/officer/all-loans/');

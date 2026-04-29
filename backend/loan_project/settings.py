@@ -2,14 +2,11 @@ from pathlib import Path
 import os
 from datetime import timedelta
 from dotenv import load_dotenv
-
 load_dotenv()
-
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 DEBUG = False
 ALLOWED_HOSTS = ['*']
-
 INSTALLED_APPS = [
     'cloudinary_storage', 
     'django.contrib.admin',
@@ -76,8 +73,6 @@ else:
         }
     }
 
-
-
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',},
@@ -112,9 +107,6 @@ SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('Bearer',), 
 }
 
-
-
-
 STORAGES = {
     "default": {
         "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
@@ -124,18 +116,12 @@ STORAGES = {
     },
 }
 
-
-
-
-
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
-
-
 
 GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
 

@@ -75,3 +75,12 @@ test-results/
 .bandit
 
 security_report.html
+
+users_dataset_updated.csv
+pyvenv.cfg
+python.exe
+pythonw.exe
+sonar-project.properties
+.github/
+
+.venv/
