@@ -3,7 +3,9 @@ from PIL import Image
 import io
 import os  
 from pdf2image import convert_from_bytes
+import logging
 
+logger = logging.getLogger(__name__)
 if os.name == 'nt':
     pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
     POPPLER_PATH = r"C:\Users\user\Downloads\Release-25.12.0-0\poppler-25.12.0\Library\bin"
@@ -38,7 +40,7 @@ def extract_text_from_image(image_file):
         image_file.seek(0)
         return raw_text.strip()
         
-    except Exception as e:
-        print(f"OCR Error: {str(e)}")
+    except Exception:
+        logger.exception("OCR Failed")
         image_file.seek(0)
         return ""

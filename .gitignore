@@ -72,3 +72,6 @@ tests/
 test-results/
 
 .coverage
+.bandit
+
+security_report.html

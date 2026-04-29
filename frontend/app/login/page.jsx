@@ -1,6 +1,5 @@
 "use client";
 import { useLogin } from "@/hooks/auth/useLogin"; 
-
 export default function Login() {
   const {
     role,
@@ -14,12 +13,9 @@ export default function Login() {
     rolelabel,
     router
   } = useLogin();
-
-
   return (
     <div className="min-h-screen w-full bg-[url('/bgimg.png')] bg-cover bg-center font-serif">
       <div className="min-h-screen w-full bg-black/70 flex flex-col md:flex-row">
-        
         <div className="flex-[0.5] text-white flex flex-col justify-center px-6 sm:px-10 md:px-16 py-10">
           <h1 className="text-3xl text-indigo-500 sm:text-4xl md:text-6xl font-bold">
             Smart Loan System
@@ -28,12 +24,8 @@ export default function Login() {
             A smarter way to manage your loan applications with speed, security, and simplicity. 
           </p>
         </div>
-
-      
         <div className="flex-[0.5] flex justify-center items-center px-6 py-10">
           <div className="w-full max-w-sm backdrop-blur-lg bg-white/20 border border-white/30 rounded-2xl shadow-xl p-5 sm:p-6">
-            
-           
             <div className="flex flex-col sm:flex-row gap-2 sm:justify-between mb-4">
               <button
                 className={`px-4 py-2 rounded-md font-bold transition transform ${
@@ -56,8 +48,6 @@ export default function Login() {
                 Officer Login
               </button>
             </div>
-
-            
             <form onSubmit={handleSubmit} className="flex flex-col gap-3">
               <label htmlFor="username" className="text-sm font-medium text-white">
                 {role === "customer" ? "Username" : "Bank Officer ID"}
@@ -71,7 +61,6 @@ export default function Login() {
                 required
                 disabled={loading}
               />
-
               <label htmlFor="password" className="text-sm font-medium text-white">Password</label>
               <input
                 id="password"
@@ -82,10 +71,7 @@ export default function Login() {
                 onChange={handleChange}
                 required
                 disabled={loading}
-                
               />
-
-             
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-sm text-white">
                 <div className="flex items-center gap-2">
                   <input
@@ -106,7 +92,6 @@ export default function Login() {
                   Forgot Password?
                 </button>
               </div>
-
               <button
                 type="submit"
                 disabled={loading}
@@ -114,7 +99,6 @@ export default function Login() {
               >
                 {loading ? "Signing in..." : `Login as ${rolelabel}`}
               </button>
-
               <button
                 type="button"
                 className="text-center cursor-pointer text-white mt-2 bg-blue-500 py-2 rounded-md hover:bg-blue-700 transition transform hover:-translate-y-1"
@@ -126,7 +110,6 @@ export default function Login() {
           </div>
         </div>
       </div>
-
       {loading && (
         <div className="fixed inset-0 bg-black/40 flex flex-col justify-center items-center z-50">
           <div className="w-14 h-14 border-4 border-gray-200 border-t-indigo-600 rounded-full animate-spin"></div>

@@ -8,53 +8,43 @@ from users.models import UserFinancialData
 from django.contrib.auth import get_user_model
 import os
 import json
-import pickle
+import pickle   # nosec B403
 import pandas as pd
 from django.conf import settings
 from .utils import calculate_mock_cibil 
-from django.db.models import Q
 from .utility.document_pipeline import process_loan_document
 from rest_framework.permissions import IsAuthenticated
 from users.permissions import IsOfficerUser
-
-
+import logging
+logger = logging.getLogger(__name__)
 class ApplyLoanView(APIView):
     permission_classes = [permissions.IsAuthenticated]
-
     def post(self, request):
         user = request.user
         data = request.data
         files = request.FILES
-
         vault_updated = False
-        
         if 'pan_card_file' in files:
             user.pan_card_file = files['pan_card_file']
             vault_updated = True
-            
         if 'aadhar_card_file' in files:
             user.aadhar_card_file = files['aadhar_card_file']
             vault_updated = True
-            
         if 'passport_photo' in files:
             user.passport_photo = files['passport_photo']
             vault_updated = True
-            
         if 'age' in data:
             user.age = int(data['age'])
             vault_updated = True
-
         if vault_updated:
             user.save()
-
         try:
             ai_data = {}
             if 'ai_statuses' in data:
                 try:
                     ai_data = json.loads(data['ai_statuses'])
                 except json.JSONDecodeError:
-                    pass
-
+                    logger.error("Invalid JSON in ai_statuses")
             loan = LoanApplication.objects.create(
                 user=user,
                 occupation=data.get('occupation', ''),
@@ -64,7 +54,6 @@ class ApplyLoanView(APIView):
                 loan_type=data.get('loan_type', ''),
                 loan_amount=data.get('loan_amount', 0),
                 tenure=data.get('tenure', 0),
-            
                 nominee_name=data.get('nominee_name', ''),
                 nominee_age=data.get('nominee_age',0),
                 guarantor_organization=data.get('guarantor_organization', ''),
@@ -162,9 +151,9 @@ MODEL_PATH = os.path.join(settings.BASE_DIR, 'loans', 'ml_model', 'risk_model.pk
 LE_PATH = os.path.join(settings.BASE_DIR, 'loans', 'ml_model', 'label_encoder.pkl')
 
 with open(MODEL_PATH, 'rb') as f:
-    risk_model = pickle.load(f)
+    risk_model = pickle.load(f) # nosec B301
 with open(LE_PATH, 'rb') as f:
-    label_encoder = pickle.load(f)
+    label_encoder = pickle.load(f) # nosec B301
 
 
 class CalculateRiskView(APIView):

@@ -1,6 +1,5 @@
 from django.urls import path
 from .views import ApplyLoanView, MyLoansView, OfficerAllLoansView, OfficerUpdateLoanView, CalculateRiskView, RecalculateCibilView, CustomerLoanStatsView, OfficerLoanStatsView,VerifyDocumentView
-
 urlpatterns = [
     path('apply/', ApplyLoanView.as_view(), name='apply-loan'),
     path('my-loans/', MyLoansView.as_view(), name='my-loans'),
