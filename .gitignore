@@ -84,3 +84,5 @@ sonar-project.properties
 .github/
 
 .venv/
+
+vault/
