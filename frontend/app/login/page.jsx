@@ -1,6 +1,8 @@
 "use client";
 import { useLogin } from "@/hooks/auth/useLogin"; 
 export default function Login() {
+  const cus = "customer";
+  const off = "officer";
   const {
     role,
     setRole,
@@ -29,34 +31,34 @@ export default function Login() {
             <div className="flex flex-col sm:flex-row gap-2 sm:justify-between mb-4">
               <button
                 className={`px-4 py-2 rounded-md font-bold transition transform ${
-                  role === "customer"
+                  role === cus
                     ? "bg-indigo-500 text-white lg:hover:translate-x-2"
                     : "bg-indigo-100 hover:bg-indigo-500 hover:text-white hover:cursor-pointer lg:hover:translate-x-2"
                 }`}
-                onClick={() => setRole("customer")}
+                onClick={() => setRole(cus)}
               >
                 Customer Login
               </button>
               <button
                 className={`px-4 py-2 rounded-md font-bold transition transform ${
-                  role === "officer"
+                  role === off
                     ? "bg-indigo-500 text-white lg:hover:-translate-x-2"
                     : "bg-indigo-100 hover:bg-indigo-500 hover:text-white hover:cursor-pointer lg:hover:-translate-x-2"
                 }`}
-                onClick={() => setRole("officer")}
+                onClick={() => setRole(off)}
               >
                 Officer Login
               </button>
             </div>
             <form onSubmit={handleSubmit} className="flex flex-col gap-3">
               <label htmlFor="username" className="text-sm font-medium text-white">
-                {role === "customer" ? "Username" : "Bank Officer ID"}
+                {role === cus ? "Username" : "Bank Officer ID"}
               </label>
               <input
                 id="username"
                 className="p-2 border border-white/40 bg-white/30 rounded-xl outline-none text-white placeholder-white/70 focus:border-indigo-400 w-full"
                 name="username"
-                placeholder={role === "customer" ? "Enter Username" : "Enter Officer ID"}
+                placeholder={role === cus ? "Enter Username" : "Enter Officer ID"}
                 onChange={handleChange}
                 required
                 disabled={loading}

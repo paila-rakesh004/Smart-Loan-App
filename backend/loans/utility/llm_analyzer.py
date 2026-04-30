@@ -51,7 +51,7 @@ def analyze_document_with_llm(masked_ocr_text, expected_doc_type="Unknown"):
     try:
         client = _get_client()
         response = client.models.generate_content(
-            model='gemini-2.0-flash',
+            model='gemini-3-flash-preview',
             contents=prompt,
             config=types.GenerateContentConfig(temperature=0.0, response_mime_type="application/json",)
         )

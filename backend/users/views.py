@@ -13,6 +13,7 @@ from django.conf import settings
 import secrets
 from rest_framework_simplejwt.views import TokenObtainPairView
 from .serializers import CustomTokenObtainPairSerializer
+from .services import generate_and_send_otp
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
@@ -29,10 +30,7 @@ class CheckUserStatus(APIView):
         user = request.user
         financials = UserFinancialData.objects.get(username=user.username)
         row = financials.username
-        if row is None:
-            is_new = True
-        else:
-            is_new = False
+        is_new = (row is None)
         return Response({"is_new_user" : is_new, "first_name" : request.user.first_name, "last_name" : request.user.last_name})
 
 class UpdateProfileView(APIView):
@@ -44,15 +42,12 @@ class UpdateProfileView(APIView):
         old_username = user.username 
         email = request.data.get('email')
         phone_number = request.data.get('phone_number')
-        if not new_username:
-            return Response({"error": "Username is required."}, status=status.HTTP_400_BAD_REQUEST)
         if new_username != old_username:
             financials.username = new_username
             financials.save()
             user.username = new_username
-        if email:
+        if email or phone_number:
             user.email = email
-        if phone_number:
             user.phone_number = phone_number
         user.save()
         return Response({"message": "Profile updated successfully!", "username": user.username,"email" : user.email, "phone_number" : user.phone_number}, status=status.HTTP_200_OK)
@@ -76,30 +71,14 @@ class SendOTPView(APIView):
         username = request.data.get('username')
         try:
             user = User.objects.get(username=username)
-            if user.otp_expiry and timezone.now() < user.otp_expiry:
-                time_remaining = (user.otp_expiry - timezone.now()).total_seconds()
-                if time_remaining > 90: 
-                    return Response(
-                        {"error": f"OTP already sent. Please wait {int(time_remaining)} seconds before requesting again."}, 
-                        status=status.HTTP_429_TOO_MANY_REQUESTS
-                    )
-            otp = str(secrets.randbelow(1000000)).zfill(6)
-            user.reset_otp = otp
-            user.otp_expiry = timezone.now() + timedelta(minutes=2)
-            user.save()
-            if user.email:
-                send_mail(
-                    subject="Your Password Reset OTP",
-                    message=f"Hello {user.username},\n\nYour OTP for password reset is: {otp}\n\nThis OTP is valid for exactly 2 minutes. Do not share this code with anyone.",
-                    from_email=settings.EMAIL_HOST_USER,
-                    recipient_list=[user.email],
-                    fail_silently=False,
-                )
-                return Response({"message": "OTP sent successfully to your registered email."}, status=status.HTTP_200_OK)
+            success, message = generate_and_send_otp(user)
+            if success:
+                return Response({"message": message}, status=status.HTTP_200_OK)
             else:
-                return Response({"error": "No email address linked to this username."}, status=status.HTTP_400_BAD_REQUEST)
+                status_code = status.HTTP_429_TOO_MANY_REQUESTS if "wait" in message else status.HTTP_400_BAD_REQUEST
+                return Response({"error": message}, status=status_code)
         except User.DoesNotExist:
-            return Response({"message": "If this username exists, an OTP has been sent to the registered email."}, status=status.HTTP_200_OK)
+            return Response({"message": "If this username exists, an OTP has been sent."}, status=status.HTTP_200_OK)
 
 class VerifyOTPView(APIView):
     permission_classes = [AllowAny]
