@@ -1,13 +1,20 @@
 from django.urls import path
-from .views import  CheckKYCStatusView, UserProfileView, CheckUserStatus, UpdateProfileView, ChangePasswordView, SendOTPView, VerifyOTPView, ResetPasswordWithOTPView
+from .views import AuthViewSet, ProfileViewSet, KYCViewSet
+
+auth = AuthViewSet.as_view
+profile = ProfileViewSet.as_view
+kyc = KYCViewSet.as_view
 
 urlpatterns = [
-    path('my-kyc/', CheckKYCStatusView.as_view(), name='my-kyc'),
-    path('profile/', UserProfileView.as_view(), name='profile'),
-    path('check-status/',CheckUserStatus.as_view(),name='check-status'),
-    path('update-profile/', UpdateProfileView.as_view(), name='update-profile'),
-    path('change-password/', ChangePasswordView.as_view(), name='change-password'),
-    path('send-otp/', SendOTPView.as_view(), name='send-otp'),
-    path('verify-otp/', VerifyOTPView.as_view(), name='verify-otp'),
-    path('reset-password-otp/', ResetPasswordWithOTPView.as_view(), name='reset-password-otp'),
+
+    path('change-password/', auth({'put': 'change_password'}), name='change-password'),
+    path('send-otp/', auth({'post': 'send_otp'}), name='send-otp'),
+    path('verify-otp/', auth({'post': 'verify_otp'}), name='verify-otp'),
+    path('reset-password-otp/', auth({'post': 'reset_password'}), name='reset-password-otp'),
+
+    path('profile/', profile({'get': 'profile'}), name='profile'),
+    path('update-profile/', profile({'put': 'update_profile'}), name='update-profile'),
+    path('check-status/', profile({'get': 'check_status'}), name='check-status'),
+
+    path('my-kyc/', kyc({'get': 'kyc_status'}), name='kyc-status'),
 ]

@@ -10,6 +10,7 @@ export const useOfficerProfile = () => {
   const [newUsername, setNewUsername] = useState('');
   const [passwords, setPasswords] = useState({ old_password: '', new_password: '' });
   const [loading, setLoading] = useState(true);
+  const [click, setClick] = useState(false);
   const [stats, setStats] = useState({ gold: 0, home: 0, personal: 0, education: 0, pending: 0, approved: 0, rejected: 0  });
   const handleUpdateUsername = async (e) => {
     e.preventDefault();
@@ -25,6 +26,7 @@ export const useOfficerProfile = () => {
   };
   const handleChangePassword = async (e) => {
     e.preventDefault();
+    setClick(true);
     try {
       await API.put('users/change-password/', passwords);
       setPasswords({ old_password: '', new_password: '' });
@@ -32,6 +34,9 @@ export const useOfficerProfile = () => {
     } catch (error) {
       const message = error?.response?.data?.error || "Failed to change password.";
       toast.error(message);
+    }
+    finally{
+      setClick(false);
     }
   };
   useEffect(() => {
@@ -78,6 +83,7 @@ export const useOfficerProfile = () => {
     passwords,
     setPasswords,
     loading,
+    click,
     stats,
     handleUpdateUsername,
     handleChangePassword,

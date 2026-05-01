@@ -1,95 +1,33 @@
 "use client";
 import React from 'react';
-import PropTypes from 'prop-types';
 import { useCustomerProfile } from '@/hooks/profiles/customer/useCustomer';
+import ProfileHeader from '@/components/profile/ProfileHeader';
+import AvatarCard from '@/components/profile/AvatarCard';
+import UniversalFormField from '@/components/profile/UniversalFormField';
+import SecuritySection from '@/components/profile/SecuritySection';
 
 const PAGE_WRAPPER = "min-h-[100vh] font-sans bg-linear-to-r from-[#eef2f7] to-[#d9e4f5] p-4 sm:p-6 lg:p-10";
 const LOADER_BG = "flex items-center justify-center min-h-[100vh] bg-linear-to-r from-[#eef2f7] to-[#d9e4f5]";
-const AVATAR_STYLE = "w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-linear-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-4xl sm:text-5xl font-bold shadow-lg mb-4";
 
-const FormField = ({ id, name, label, type = "text", value, onChange, disabled = false, focusRingColor = "indigo", extraClass = "" }) => {
-  const isDisabled = disabled;
-  const labelColor = isDisabled ? "text-gray-500 text-sm font-semibold mb-1" : "block text-gray-700 font-semibold mb-2";
-  const inputBaseClass = "w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 transition";
-  const inputDisabledClass = isDisabled ? "bg-gray-200 text-gray-500 cursor-not-allowed font-medium" : "";
-  const inputFocusClass = `focus:ring-${focusRingColor}-400`;
-  const inputClass = `${inputBaseClass} ${inputDisabledClass} ${inputFocusClass} ${extraClass}`.trim();
-
-  return (
-    <div>
-      <label htmlFor={id} className={labelColor}>{label}</label>
-      <input
-        type={type}
-        id={id}
-        name={name}
-        value={value || (isDisabled ? "N/A" : value)}
-        onChange={onChange}
-        disabled={isDisabled}
-        className={inputClass}
-        required={!isDisabled}
-      />
-    </div>
-  );
-};
-FormField.propTypes = { id: PropTypes.string.isRequired, name: PropTypes.string, label: PropTypes.string.isRequired, type: PropTypes.string, value: PropTypes.string, onChange: PropTypes.func, disabled: PropTypes.bool, focusRingColor: PropTypes.string, extraClass: PropTypes.string };
-
-
-const CustomerProfile = () => {
+export default function CustomerProfile() {
   const {
-    router,
-    showpassword,
-    setShowpassword,
-    click,
-    loading,
-    profile,
-    editForm,
-    stats,
-    passwords,
-    setPasswords,
-    handleEditChange,
-    handleUpdateProfile,
-    handleChangePassword,
-    avatarInitial
+    router, showpassword, setShowpassword, click, loading, profile, editForm,
+    stats, passwords, setPasswords, handleEditChange, handleUpdateProfile,
+    handleChangePassword, avatarInitial
   } = useCustomerProfile();
 
-  if(loading){
-    return(
-      <div className={LOADER_BG}>
-        <div className='animate-ping w-15 h-15 border-6 rounded-full border-b-transparent border-blue-500'></div>
-      </div>
-    )
-  }
+  if(loading) return <div className={LOADER_BG}><div className='animate-ping w-15 h-15 border-6 rounded-full border-b-transparent border-blue-500'></div></div>;
 
   return (
     <div className={PAGE_WRAPPER}>
-      
-      <div className="max-w-6xl mx-auto mb-8 flex flex-col md:flex-row justify-between items-center gap-4">
-        <h1 className="text-2xl sm:text-3xl font-bold text-indigo-900 order-1 md:order-2 text-center md:text-right">
-          My Profile
-        </h1>
-        <button
-          onClick={() => router.push('/dashboard/customer')}
-          className="px-6 py-2 bg-white text-blue-900 font-bold rounded-lg shadow-md cursor-pointer hover:-translate-y-1 transition transform order-2 md:order-1 w-full md:w-auto text-center"
-        >
-          ← Back to Dashboard
-        </button>
-      </div>
+      <ProfileHeader title="My Profile" backRoute="/dashboard/customer" router={router} />
 
       <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
-        
         <div className="col-span-1 space-y-6">
-          <div className="bg-white rounded-3xl shadow-xl p-6 flex flex-col items-center text-center">
-            <div className={AVATAR_STYLE}>
-              {avatarInitial}
-            </div>
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-800">{profile.username}</h2>
-            <p className="text-gray-500 mt-1 text-sm sm:text-base">{profile.email || "No email provided"}</p>
-          </div>
+          <AvatarCard avatarInitial={avatarInitial} username={profile.username} subtitle={profile.email || "No email provided"} />
 
           <div className="bg-white rounded-3xl shadow-xl p-6">
-            <h3 className="text-lg sm:text-xl font-bold text-gray-800 border-l-4 border-blue-600 pl-3 mb-6">
-              Loan Statistics
-            </h3>
+            <h3 className="text-lg sm:text-xl font-bold text-gray-800 border-l-4 border-blue-600 pl-3 mb-6">Loan Statistics</h3>
             <div className="space-y-4">
               <div className="flex justify-between items-center p-4 bg-orange-100/50 rounded-xl border border-orange-100 transition hover:bg-orange-100">
                 <span className="font-semibold text-gray-700 text-sm sm:text-base">Total Applied</span>
@@ -108,102 +46,36 @@ const CustomerProfile = () => {
         </div>
 
         <div className="col-span-1 lg:col-span-2 space-y-6">
-          
           <div className="bg-white rounded-3xl shadow-xl p-6 sm:p-8">
-            <h3 className="text-xl sm:text-2xl font-bold text-gray-800 border-l-4 border-indigo-500 pl-3 mb-6">
-              Account Details
-            </h3>
-            
+            <h3 className="text-xl sm:text-2xl font-bold text-gray-800 border-l-4 border-indigo-500 pl-3 mb-6">Account Details</h3>
             <form onSubmit={handleUpdateProfile} className="space-y-6">
-              
               <div className="bg-gray-50 p-5 rounded-2xl border border-gray-200">
-                <h4 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4 flex items-center gap-2">
-                  🔒 Verified Legal Identity
-                </h4>
+                <h4 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4 flex items-center gap-2">🔒 Verified Legal Identity</h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <FormField id="first_name" label="First Name" value={profile.first_name} disabled />
-                  <FormField id="last_name" label="Last Name" value={profile.last_name} disabled />
+                  <UniversalFormField id="first_name" label="First Name" value={profile.first_name} disabled />
+                  <UniversalFormField id="last_name" label="Last Name" value={profile.last_name} disabled />
                 </div>
-                <p className="text-xs text-gray-400 mt-3">
-                  Need to update your legal name? <a href="mailto:dumimailra@gmail.com" className="text-blue-500 hover:underline">Contact Support</a>
-                </p>
+                <p className="text-xs text-gray-400 mt-3">Need to update your legal name? <a href="mailto:dumimailra@gmail.com" className="text-blue-500 hover:underline">Contact Support</a></p>
               </div>
 
-<div className="pt-2">
+              <div className="pt-2">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="sm:col-span-2">
-                    <FormField id="username" name="username" label="Username" type="text" value={editForm.username} onChange={handleEditChange} />
+                    <UniversalFormField id="username" name="username" label="Username" value={editForm.username} onChange={handleEditChange} />
                   </div>
-                  <FormField id="email" name="email" label="Email Address" type="email" value={editForm.email} onChange={handleEditChange} />
-                  <FormField id="phone_number" name="phone_number" label="Mobile Number" type="text" value={editForm.phone_number} onChange={handleEditChange} />
+                  <UniversalFormField id="email" name="email" label="Email Address" type="email" value={editForm.email} onChange={handleEditChange} />
+                  <UniversalFormField id="phone_number" name="phone_number" label="Mobile Number" value={editForm.phone_number} onChange={handleEditChange} />
                 </div>
               </div>
-
-              <button
-                type="submit"
-                className="bg-indigo-600 text-white px-8 py-3 cursor-pointer rounded-xl font-bold hover:bg-indigo-800 transition transform hover:-translate-y-1 w-full sm:w-auto mt-2 shadow-md"
-              >
+              <button type="submit" className="bg-indigo-600 text-white px-8 py-3 cursor-pointer rounded-xl font-bold hover:bg-indigo-800 transition transform hover:-translate-y-1 w-full sm:w-auto mt-2 shadow-md">
                 Save Changes
               </button>
             </form>
           </div>
 
-          <div className="bg-white rounded-3xl shadow-xl p-6 sm:p-8">
-            <h3 className="text-xl sm:text-2xl font-bold text-gray-800 border-l-4 border-red-500 pl-3 mb-6">
-              Security
-            </h3>
-            <form onSubmit={handleChangePassword} className="space-y-6">
-              
-              <FormField 
-                id="old_password" 
-                label="Current Password" 
-                type={showpassword ? "text" : "password"} 
-                value={passwords.old_password} 
-                onChange={(e) => setPasswords({ ...passwords, old_password: e.target.value })}
-                focusRingColor="red"
-              />
-              
-              <div>
-                <FormField 
-                  id="new_password" 
-                  label="New Password" 
-                  type={showpassword ? "text" : "password"} 
-                  value={passwords.new_password} 
-                  onChange={(e) => setPasswords({ ...passwords, new_password: e.target.value })}
-                  focusRingColor="red"
-                  extraClass="pr-14"
-                />
-                <div className="mt-3 flex items-center">
-                  <input
-                    type="checkbox"
-                    id="showPasswordToggle"
-                    onClick={() => {setShowpassword(!showpassword)}}
-                    className="w-4 h-4 accent-red-500 cursor-pointer"
-                  /> 
-                  <label htmlFor="showPasswordToggle" className="text-sm text-gray-600 ml-2 cursor-pointer select-none">
-                    {showpassword ? "Hide password" : "Show password" }
-                  </label>
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                disabled={click}
-                className={`w-full sm:w-auto px-8 py-3 rounded-xl font-bold transition transform shadow-md ${
-                click
-                  ? 'bg-gray-400 cursor-not-allowed text-white' 
-                  : 'bg-red-500 text-white cursor-pointer hover:bg-red-700 hover:-translate-y-1'
-              }`}
-              >
-                {click ? "Updating..." : "Update Password"}
-              </button>
-            </form>
-          </div>
-
+          <SecuritySection showpassword={showpassword} setShowpassword={setShowpassword} passwords={passwords} setPasswords={setPasswords} onSubmit={handleChangePassword} isUpdating={click} />
         </div>
       </div>
     </div>
   );
-};
-
-export default CustomerProfile;
+}
