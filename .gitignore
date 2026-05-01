@@ -81,7 +81,7 @@ pyvenv.cfg
 python.exe
 pythonw.exe
 sonar-project.properties
-.github/
+.github/workflows
 
 .venv/
 
