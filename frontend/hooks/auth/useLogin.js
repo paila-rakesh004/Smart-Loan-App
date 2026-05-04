@@ -12,24 +12,24 @@ export const useLogin = () => {
     username: "",
     password: ""
   });
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
+
   const handleHome = () => {
     router.push('/');
   };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await API.post("token/", { 
+      const res = await API.post("users/login/", { 
         username: formData.username,
         password: formData.password
       });
-      localStorage.setItem("access_token", res.data.access);
-      localStorage.setItem("refresh_token", res.data.refresh);
-      localStorage.setItem("username", formData.username);
-      localStorage.setItem('is_officer', res.data.is_officer);
+      
       if (role === "officer" && res.data.is_officer) {
         router.push("/dashboard/officer");
       } else if (role === "officer") {
@@ -46,18 +46,10 @@ export const useLogin = () => {
       setLoading(false);
     }
   };
+
   const rolelabel = role === "customer" ? "Customer" : "Officer";
   return {
-    role,
-    setRole,
-    loading,
-    showpass,
-    setShowpass,
-    formData,
-    handleChange,
-    handleSubmit,
-    handleHome,
-    rolelabel,
-    router
+    role, setRole, loading, showpass, setShowpass, formData,
+    handleChange, handleSubmit, handleHome, rolelabel, router
   };
 };

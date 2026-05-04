@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import API from '@/lib/api'; 
 import { toast } from "react-toastify";
+import { getCookie } from '@/hooks/utils/cookies';
 
 export const useOfficerDashboard = () => {
   const router = useRouter();
@@ -12,12 +13,15 @@ export const useOfficerDashboard = () => {
   const [notes, setNotes] = useState('');
   const [sure, setSure] = useState(false);
   const [status, setStatus] = useState('Eligible');
-  const handleLogout = () => {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
-    localStorage.removeItem('username');
-    localStorage.removeItem('is_officer');
-    router.push('/login');
+  const handleLogout = async () => {
+    try{
+      await API.post("users/logout/");
+    } catch (error) {
+      toast.error(error?.response?.data?.error || "Failed to logout.");
+    }
+    finally{
+      router.push('/login');
+    }
   };
   const handleProfile = () => {
     router.push('/profile/officer');
@@ -76,12 +80,7 @@ export const useOfficerDashboard = () => {
     setStatus('Not Eligible'); 
   };
   useEffect(() => {
-    const token = localStorage.getItem('access_token');
-    if (!token) {
-      router.push('/login');
-      return;
-    }
-    const isOfficer = localStorage.getItem('is_officer');
+    const isOfficer = getCookie('is_officer');
     if (isOfficer !== 'true') {
       toast.error("Security Alert: Unauthorized Access");
       router.push('/dashboard/customer');

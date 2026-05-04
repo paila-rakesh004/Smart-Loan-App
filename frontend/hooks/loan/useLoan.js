@@ -224,8 +224,6 @@ export const useApplyLoan = () => {
     }
   };
   useEffect(() => {
-    const token = localStorage.getItem("access_token");
-    if (!token) return router.push("/login");
     const fetchInitialData = async () => {
       try {
         const [userRes, kycRes] = await Promise.all([

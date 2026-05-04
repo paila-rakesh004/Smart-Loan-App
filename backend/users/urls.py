@@ -6,6 +6,10 @@ profile = ProfileViewSet.as_view
 kyc = KYCViewSet.as_view
 
 urlpatterns = [
+    path('login/', auth({'post': 'login'}), name='login'),
+    path('refresh/', auth({'post': 'refresh'}), name='refresh'),
+    path('logout/', auth({'post': 'logout'}), name='logout'),
+
 
     path('change-password/', auth({'put': 'change_password'}), name='change-password'),
     path('send-otp/', auth({'post': 'send_otp'}), name='send-otp'),
