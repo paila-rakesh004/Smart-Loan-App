@@ -24,7 +24,7 @@ export default function OfficerProfile() {
       
       <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
         <div className="col-span-1 space-y-6">
-          <AvatarCard avatarInitial={avatarInitial} username={profile.username} subtitle={profile.email || "Officer Account"} fromColor="blue-700" toColor="indigo-800" />
+          <AvatarCard avatarInitial={avatarInitial} username={profile.username} subtitle={profile.email || "Officer Account"}/>
           
           <div className="bg-white rounded-3xl shadow-xl p-6">
             <h3 className="text-lg sm:text-xl font-bold text-gray-800 border-l-4 border-blue-600 pl-3 mb-6">Loans Stats</h3>

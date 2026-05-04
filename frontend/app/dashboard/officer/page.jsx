@@ -1,30 +1,10 @@
 "use client";
 import React from 'react';
 import { UserCircleIcon, ArrowLeftStartOnRectangleIcon } from '@heroicons/react/24/solid';
-import PropTypes from 'prop-types';
 import { useOfficerDashboard } from '@/hooks/dashboards/officer/useOfficerDashboard';
-
-const DocumentCard = ({ title, url, badgeKey, colorClass = "bg-gray-50 border-gray-200", renderBadge }) => {
-  if (!url) return null;
-  return (
-    <div className={`${colorClass} border p-5 rounded-xl shadow-sm hover:shadow-md transition`}>
-      <p className="font-bold text-gray-700 mb-2">{title}</p>
-      <a className="text-blue-600 font-normal hover:font-bold hover:text-blue-800 underline block mb-2" href={url} target="_blank" rel="noopener noreferrer">
-        View Document
-      </a>
-      {badgeKey && renderBadge(badgeKey)}
-    </div>
-  );
-};
-
-DocumentCard.propTypes = {
-  title: PropTypes.string.isRequired,
-  url: PropTypes.string,
-  badgeKey: PropTypes.string,
-  colorClass: PropTypes.string,
-  renderBadge: PropTypes.func, 
-};
-
+import ActiveLoansTable from '@/components/officer-dashboard/LoanTable';
+import ConfirmationModal from '@/components/officer-dashboard/ConfirmationModel';
+import ApplicationDetails from '@/components/officer-dashboard/ApplicationDetails';
 
 const OfficerDashboard = () => {
   const {
@@ -103,245 +83,25 @@ const OfficerDashboard = () => {
 
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 font-sans">
         {selectedLoan ? (
-          
-          <div className={`${sure ? 'blur-sm pointer-events-none z-0 fixed' : 'bg-white shadow-lg rounded-2xl p-6 sm:p-10 w-full relative '}`}>
-            
-            <button onClick={() => setSelectedLoan(null)} className="mb-4 px-2 py-1 sm:px-4 sm:py-2 rounded-lg text-4xl sm:text-5xl cursor-pointer text-gray-600 hover:text-blue-600 transition hover:-translate-y-1">
-              ←
-            </button>
-            
-            <h2 className="mt-2 mb-6 text-gray-800 text-xl sm:text-2xl border-l-4 border-blue-600 pl-3 font-bold">
-              Application Details
-            </h2>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-blue-50/50 p-6 rounded-xl shadow-sm border border-blue-100 text-gray-800">
-              <div className="space-y-3">
-                <p><span className="font-bold text-gray-700">Applicant Name :</span> {selectedLoan.applicant_name || `User ID: ${selectedLoan.user}`}</p>
-                <p><span className="font-bold text-gray-700">Age:</span> {selectedLoan.applicant_age}</p>
-                <p><span className="font-bold text-gray-700">Loan Type :</span> {selectedLoan.loan_type}</p>
-                <p><span className="font-bold text-gray-700">Loan Amount :</span> ₹{selectedLoan.loan_amount}</p>
-                <p><span className="font-bold text-gray-700">Monthly Income : </span>₹{selectedLoan.monthly_income}</p>
-                <p><span className="font-bold text-gray-700">Occupation Type :</span> {selectedLoan.occupation}</p>
-                <p><span className="font-bold text-gray-700">Occupation :</span> {selectedLoan.occ}</p>
-              </div>
-
-              <div className="space-y-3">
-                <p><span className="font-bold text-gray-700">Applicant ID :</span> {selectedLoan.id}</p>
-                <p><span className="font-bold text-gray-700">Tenure :</span> {selectedLoan.tenure} months</p>
-                <p><span className="font-bold text-gray-700">Status :</span> 
-                  {(() => {
-                    const statusColorMap = {
-                      'Eligible': 'bg-green-100 text-green-700',
-                      'Not Eligible': 'bg-red-100 text-red-700'
-                    };
-                    const colorClass = statusColorMap[selectedLoan.status] || 'bg-yellow-100 text-yellow-700';
-                    return <span className={`ml-2 px-3 py-1 rounded-full text-sm font-bold ${colorClass}`}>{selectedLoan.status}</span>;
-                  })()}
-                </p>
-                
-                <div className="space-y-3 mt-4">
-                   <p><span className="font-bold text-gray-700">Live CIBIL Score :</span> <span className={selectedLoan.actual_cibil < 600 ? 'text-red-600 font-bold' : 'text-green-600 font-bold'}>{selectedLoan.actual_cibil || "N/A"}</span></p>
-                   <p><span className="font-bold text-gray-700">Total Transactions :</span> ₹{selectedLoan.total_transaction_amount || 0}</p>
-                   <p><span className="font-bold text-gray-700">Fixed Deposits :</span> ₹{selectedLoan.fixed_deposits || 0}</p>
-                   <p><span className="font-bold text-gray-700">Working At :</span> {selectedLoan.organization_name}</p>
-                </div>
-              </div>
-            </div>
-
-            <h3 className="mt-10 mb-6 text-gray-800 text-xl sm:text-2xl border-l-4 border-blue-600 pl-3 font-bold">
-              General KYC Documents
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              <DocumentCard title="PAN Card" url={selectedLoan.pan_card_file} badgeKey="panCard" colorClass="bg-red-50 border-red-200" renderBadge={renderOfficerAIBadge} />
-              <DocumentCard title="Aadhaar Card" url={selectedLoan.aadhar_card_file} badgeKey="aadharCard" colorClass="bg-red-50 border-red-200" renderBadge={renderOfficerAIBadge} />
-              <DocumentCard title="Passport Photo" url={selectedLoan.passport_photo} colorClass="bg-red-50 border-red-200" renderBadge={renderOfficerAIBadge} />
-            </div>
-
-            {(selectedLoan.itr_document || selectedLoan.bank_statements || selectedLoan.salary_slips || selectedLoan.emp_id_card) && (
-              <>
-                <h3 className="mt-10 mb-6 text-gray-800 text-xl sm:text-2xl border-l-4 border-indigo-600 pl-3 font-bold">
-                  Employment & Financial Proofs
-                </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                  <DocumentCard title="Bank Statements" url={selectedLoan.bank_statements} badgeKey="bankStatements" colorClass="bg-green-50 border-indigo-200" renderBadge={renderOfficerAIBadge} />
-                  <DocumentCard title="Income Proof (ITR)" url={selectedLoan.itr_document} badgeKey="itrDocument" colorClass="bg-green-50 border-indigo-200" renderBadge={renderOfficerAIBadge} />
-                  <DocumentCard title="Salary Slips" url={selectedLoan.salary_slips} badgeKey="salarySlips" colorClass="bg-green-50 border-indigo-200" renderBadge={renderOfficerAIBadge} />
-                  <DocumentCard title="Employee ID" url={selectedLoan.emp_id_card} badgeKey="empIdCard" colorClass="bg-green-50 border-indigo-200" renderBadge={renderOfficerAIBadge} />
-                </div>
-              </>
-            )}
-
-            {selectedLoan.loan_type === 'Education' && (
-              <>
-                <h3 className="mt-10 mb-6 text-gray-800 text-xl sm:text-2xl border-l-4 border-indigo-600 pl-3 font-bold">
-                  Academic Documents
-                </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                  <DocumentCard title="10th Certificate" url={selectedLoan.doc_10th_cert} badgeKey="doc10thCert" colorClass="bg-indigo-50 border-indigo-200" renderBadge={renderOfficerAIBadge} />
-                  <DocumentCard title="12th Certificate" url={selectedLoan.doc_12th_cert} badgeKey="doc12thCert" colorClass="bg-indigo-50 border-indigo-200" renderBadge={renderOfficerAIBadge} />
-                  <DocumentCard title="Degree Certificate" url={selectedLoan.doc_degree_cert} badgeKey="docDegreeCert" colorClass="bg-indigo-50 border-indigo-200" renderBadge={renderOfficerAIBadge} />
-                  <DocumentCard title="Admission Letter" url={selectedLoan.doc_admission_letter} badgeKey="docAdmissionLetter" colorClass="bg-indigo-50 border-indigo-200" renderBadge={renderOfficerAIBadge} />
-                  <DocumentCard title="Fee Structure" url={selectedLoan.doc_fee_structure} badgeKey="docFeeStructure" colorClass="bg-indigo-50 border-indigo-200" renderBadge={renderOfficerAIBadge} />
-                </div>
-              </>
-            )}
-
-            {selectedLoan.loan_type === 'Home' && (
-              <>
-                <h3 className="mt-10 mb-6 text-gray-800 text-xl sm:text-2xl border-l-4 border-emerald-600 pl-3 font-bold">
-                  Property Documents
-                </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                  <DocumentCard title="Agreement to Sale" url={selectedLoan.doc_agreement_sale} badgeKey="docAgreementSale" colorClass="bg-emerald-50 border-emerald-200" renderBadge={renderOfficerAIBadge} />
-                  <DocumentCard title="No Objection Certificate" url={selectedLoan.doc_noc} badgeKey="docNoc" colorClass="bg-emerald-50 border-emerald-200" renderBadge={renderOfficerAIBadge} />
-                  <DocumentCard title="Encumbrance Certificate" url={selectedLoan.doc_encumbrance_cert} colorClass="bg-emerald-50 border-emerald-200" renderBadge={renderOfficerAIBadge} />
-                  <DocumentCard title="Building Plan" url={selectedLoan.doc_building_plan} colorClass="bg-emerald-50 border-emerald-200" renderBadge={renderOfficerAIBadge} />
-                </div>
-              </>
-            )}
-
-            <div className="mt-8 mb-8 bg-gray-50 border border-gray-200 p-4 rounded-xl text-center shadow-sm">
-              <p className="text-xs sm:text-sm text-gray-500">
-                <span className="font-bold text-gray-700">Note:</span> The &quot;AI Pre-Screened&quot; tags are generated by automated LLM analysis. Please reverify flagged documents for quality assurance purposes.
-              </p>
-            </div>
-
-            <h4 className="mt-10 mb-6 text-gray-800 text-xl sm:text-2xl border-l-4 border-blue-600 pl-3 font-bold">
-              Co-Applicant / Guarantor Details
-            </h4>
-            <div className="bg-blue-50/50 p-6 rounded-xl border border-blue-100 mb-6">
-              <p><span className="font-bold text-gray-700">Name:</span> {selectedLoan.nominee_name || 'N/A'}</p>
-              <p><span className="font-bold text-gray-700">Age:</span> {selectedLoan.nominee_age || 'N/A'}</p>
-              {selectedLoan.guarantor_income && <p><span className="font-bold text-gray-700">Guarantor Income:</span> ₹{selectedLoan.guarantor_income}</p>}
-              {selectedLoan.guarantor_organization && <p><span className="font-bold text-gray-700">Guarantor Employer:</span> {selectedLoan.guarantor_organization}</p>}
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"> 
-              <DocumentCard title="Guarantor KYC" url={selectedLoan.doc_guarantor_kyc}  colorClass="bg-blue-50 border-blue-200" renderBadge={renderOfficerAIBadge} />
-              <DocumentCard title="Guarantor Financials" url={selectedLoan.doc_guarantor_financials} colorClass="bg-blue-50 border-blue-200" renderBadge={renderOfficerAIBadge} />
-              <DocumentCard title="Guarantor Photo" url={selectedLoan.doc_guarantor_photo} colorClass="bg-blue-50 border-blue-200" renderBadge={renderOfficerAIBadge} />
-              <DocumentCard title="Guarantor Signature" url={selectedLoan.doc_guarantor_signature} colorClass="bg-blue-50 border-blue-200" renderBadge={renderOfficerAIBadge} />
-            </div>
-            
-            <h3 className="mt-10 mb-6 text-gray-800 text-xl sm:text-2xl border-l-4 border-blue-600 pl-3 font-bold">
-              Risk Assessment
-            </h3>
-            <button
-              onClick={handleCalculateRisk}
-              className="bg-blue-600 text-white px-6 py-3 rounded-xl cursor-pointer font-bold hover:bg-blue-800 transition transform hover:-translate-y-1 w-full sm:w-auto shadow-md"
-            >
-              Calculate Risk Score
-            </button>
-            {riskScore && (() => {
-              const riskColorMap = {
-                'high': 'bg-red-600',
-                'medium': 'bg-yellow-500',
-                'low': 'bg-green-500'
-              };
-              const bgClass = riskColorMap[riskScore] || 'bg-green-500';
-              return <div className={`mt-6 p-5 rounded-xl text-white shadow-md max-w-full ${bgClass}`}>
-                <p className="text-lg"><span className="font-bold">Prediction:</span> <span className='font-bold capitalize ml-2'>{riskScore} Risk</span></p>
-              </div>;
-            })()}
-
-            <h3 className="mt-10 mb-6 text-gray-800 text-xl sm:text-2xl border-l-4 border-blue-600 pl-3 font-bold">
-              Officer Decision
-            </h3>
-            <textarea
-              rows="4"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Write any remarks or internal notes here..."
-              className="w-full border border-gray-300 rounded-xl p-4 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition"
-            />
-            
-            <div className="mt-8 flex flex-col sm:flex-row gap-4">
-              <button
-                onClick={() => handleEligible()}
-                disabled={selectedLoan.status === 'Eligible' || selectedLoan.status === 'Not Eligible'}
-                className={` text-white px-8 py-3 rounded-xl font-bold  shadow-md w-full sm:w-auto text-center ${selectedLoan.status === 'Eligible' || selectedLoan.status === 'Not Eligible' ? 'bg-gray-500 cursor-not-allowed' : 'bg-red-500 cursor-pointer hover:bg-red-600 transition transform hover:-translate-y-1'}`}
-              >
-                 Eligible for Loan
-              </button>
-              <button
-                onClick={() => handleNotEligible()}
-                disabled={selectedLoan.status === 'Not Eligible' || selectedLoan.status === 'Eligible'}
-                className={` text-white px-8 py-3 rounded-xl font-bold  shadow-md w-full sm:w-auto text-center ${selectedLoan.status === 'Eligible' || selectedLoan.status === 'Not Eligible'  ? 'bg-gray-500 cursor-not-allowed' : 'bg-red-500 cursor-pointer hover:bg-red-600 transition transform hover:-translate-y-1'}`}
-              >
-                 Not Eligible for Loan
-              </button>
-            </div>
-          </div>
-          
+          <ApplicationDetails 
+            sure={sure}
+            selectedLoan={selectedLoan}
+            setSelectedLoan={setSelectedLoan}
+            renderOfficerAIBadge={renderOfficerAIBadge}
+            riskScore={riskScore}
+            handleCalculateRisk={handleCalculateRisk}
+            notes={notes}
+            setNotes={setNotes}
+            handleEligible={handleEligible}
+            handleNotEligible={handleNotEligible}
+          />
         ) : (
-          
-          <div className="bg-white shadow-lg rounded-2xl p-6 sm:p-10 w-full">
-            <h2 className="mb-8 text-gray-800 text-xl sm:text-2xl border-l-4 border-blue-600 pl-3 font-bold">
-              Active Loan Applications
-            </h2>
-
-            <div className="overflow-x-auto rounded-xl border border-gray-200">
-              <table className="w-full min-w-150 border-collapse text-sm sm:text-base">
-                <thead>
-                  <tr className="bg-gray-100 text-left text-gray-700 border-b border-gray-200">
-                    <th className="p-4 font-bold">Applicant Name</th>
-                    <th className="p-4 font-bold">Amount</th>
-                    <th className="p-4 font-bold">Status</th>
-                    <th className="p-4 font-bold text-center">Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {loans.length > 0 ? (
-                    loans.map((loan) => (
-                      <tr key={loan.id} className="border-b border-gray-100 hover:bg-blue-50/50 transition">
-                        <td className="p-4 font-medium text-gray-800">{loan.applicant_name || `User ID: ${loan.user}`}</td>
-                        <td className="p-4 text-gray-700">₹{loan.loan_amount}</td>
-                        <td className="p-4">
-                          <span className={(() => {
-                            const statusColorMap = {
-                              'Eligible': 'bg-green-100 text-green-700',
-                              'Not Eligible': 'bg-red-100 text-red-700'
-                            };
-                            const colorClass = statusColorMap[loan.status] || 'bg-yellow-100 text-yellow-700';
-                            return `px-3 py-1 rounded-full text-xs sm:text-sm font-bold ${colorClass}`;
-                          })()}>
-                            {loan.status}
-                          </span>
-                        </td>
-                        <td className="p-4 text-center">
-                          <button
-                            onClick={() => handleRowClick(loan)}
-                            className="bg-blue-600 cursor-pointer text-white px-5 py-2 rounded-lg font-semibold hover:bg-blue-800 transition shadow-sm hover:-translate-y-0.5"
-                          >
-                            Review
-                          </button>
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan="4" className="text-center p-8 text-gray-500 font-medium italic">
-                        No active applications found.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
+          <ActiveLoansTable loans={loans} handleRowClick={handleRowClick} />
         )}
       </div>
 
       {sure && (
-        <div className='flex flex-col items-center justify-center gap-5 w-70 h-40 z-10 bg-white shadow-md rounded-4xl p-4 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 '>
-            <div className='text-3xl'>Are you Sure ? </div>
-                <div className='flex gap-8'>
-                    <button className='rounded text-xl w-10 h-8 text-white bg-blue-500 cursor-pointer hover:bg-indigo-800'
-                     onClick={() => confirmUpdate(status)}>Yes</button>
-                    <button className='rounded text-xl w-10 h-8 text-white bg-red-500 cursor-pointer hover:bg-red-800'
-                     onClick={() => setSure(false)}>No</button>
-                </div>
-          </div>
+        <ConfirmationModal confirmUpdate={confirmUpdate} setSure={setSure} status={status} />
       )}
     </div>
   );
