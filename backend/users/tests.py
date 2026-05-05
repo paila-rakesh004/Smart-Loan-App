@@ -1,5 +1,7 @@
 from datetime import timedelta
+from pathlib import Path
 from unittest.mock import MagicMock, patch
+import coverage
 from django.test import TestCase, override_settings
 from django.utils import timezone
 from rest_framework.test import APIClient
@@ -10,6 +12,33 @@ from users.authenticate import CookieJWTAuthentication
 from users.models import UserFinancialData, auto_delete_file_on_change
 
 User = get_user_model()
+
+
+def _include_recursive_app_files_in_coverage():
+    current_coverage = coverage.Coverage.current()
+    if current_coverage is None:
+        return
+
+    root = Path(__file__).resolve().parents[2]
+    extra_patterns = [
+        "backend/users/**/*.py",
+        "backend/loans/**/*.py",
+        str(root / "backend" / "users" / "**" / "*.py"),
+        str(root / "backend" / "loans" / "**" / "*.py"),
+    ]
+    include_patterns = list(current_coverage._inorout.include)
+    for pattern in extra_patterns:
+        if pattern not in include_patterns:
+            include_patterns.append(pattern)
+
+    current_coverage._inorout.include = include_patterns
+    current_coverage._inorout.include_match = coverage.files.GlobMatcher(
+        include_patterns,
+        "include",
+    )
+
+
+_include_recursive_app_files_in_coverage()
 
 
 class CookieJWTAuthenticationTest(TestCase):
@@ -99,6 +128,74 @@ class UserViewsTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.data["is_customer"])
         self.assertFalse(response.data["is_officer"])
+
+    @patch("users.views.auth_views.CustomTokenObtainPairSerializer")
+    def test_login_returns_serializer_errors(self, mock_serializer_class):
+        serializer = MagicMock()
+        serializer.is_valid.return_value = False
+        serializer.errors = {"username": ["This field is required."]}
+        mock_serializer_class.return_value = serializer
+        self.client.force_authenticate(user=None)
+        response = self.client.post(
+            "/api/users/login/",
+            {},
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data["username"], ["This field is required."])
+
+    def test_refresh_requires_cookie(self):
+        self.client.force_authenticate(user=None)
+        response = self.client.post("/api/users/refresh/")
+
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.data["error"], "No refresh token found in cookies.")
+
+    def test_refresh_sets_new_access_cookie(self):
+        self.client.force_authenticate(user=None)
+        refresh = str(RefreshToken.for_user(self.user))
+        self.client.cookies["refresh_token"] = refresh
+
+        response = self.client.post("/api/users/refresh/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["message"], "Token refreshed successfully.")
+        self.assertIn("access_token", response.cookies)
+
+    def test_refresh_rejects_invalid_cookie(self):
+        self.client.force_authenticate(user=None)
+        self.client.cookies["refresh_token"] = "not-a-valid-token"
+
+        response = self.client.post("/api/users/refresh/")
+
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.data["error"], "Invalid or expired refresh token.")
+
+    def test_logout_deletes_auth_cookies(self):
+        self.client.cookies["access_token"] = "access"
+        self.client.cookies["refresh_token"] = "refresh"
+        self.client.cookies["username"] = "testuser"
+        self.client.cookies["is_officer"] = "false"
+
+        response = self.client.post("/api/users/logout/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["message"], "Logged out successfully!")
+        self.assertEqual(response.cookies["access_token"].value, "")
+        self.assertEqual(response.cookies["refresh_token"].value, "")
+        self.assertEqual(response.cookies["username"].value, "")
+        self.assertEqual(response.cookies["is_officer"].value, "")
+
+    def test_change_password_requires_authenticated_user(self):
+        self.client.force_authenticate(user=None)
+        response = self.client.put(
+            "/api/users/change-password/",
+            {"old_password": "password123", "new_password": "newpass123"},
+        )
+
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.data["error"], "Authentication required")
+
     def test_update_profile(self):
         data = {
             "username": "newusername",
@@ -119,6 +216,24 @@ class UserViewsTest(TestCase):
         self.user.refresh_from_db()
         self.assertEqual(self.user.username, "testuser")
         self.assertEqual(self.user.email, "new@test.com")
+
+    def test_update_profile_rejects_duplicate_username(self):
+        User.objects.create_user(username="taken", password="password123")
+
+        response = self.client.put("/api/users/update-profile/", {"username": "taken"})
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data["error"], "This username already exists.")
+
+    def test_update_profile_renames_user_without_financial_data(self):
+        self.financials.delete()
+
+        response = self.client.put("/api/users/update-profile/", {"username": "renamed"})
+
+        self.assertEqual(response.status_code, 200)
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.username, "renamed")
+
     def test_change_password(self):
         data = {
             "old_password": "password123",
@@ -141,6 +256,15 @@ class UserViewsTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertFalse(response.data["is_new_user"])
         self.assertEqual(response.data["first_name"], "Test")
+
+    def test_check_status_for_missing_financial_data(self):
+        self.financials.delete()
+
+        response = self.client.get("/api/users/check-status/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.data["is_new_user"])
+
     @patch("users.views.UserFinancialData.objects.get")
     def test_check_status_handles_null_financial_username(self, mock_get):
         mock_get.return_value.username = None

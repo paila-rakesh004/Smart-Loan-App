@@ -237,6 +237,17 @@ class LoanViewsTest(TestCase):
         response = self.client.get("/api/loans/officer/999/recalculate-cibil/")
         self.assertEqual(response.status_code, 404)
         self.assertEqual(response.data["error"], "Loan not found")
+
+    def test_recalculate_cibil_returns_404_for_missing_financial_data(self):
+        loan = self.create_loan()
+        self.financials.delete()
+        self.client.force_authenticate(user=self.officer)
+
+        response = self.client.get(f"/api/loans/officer/{loan.id}/recalculate-cibil/")
+
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.data["error"], "Financial data not found")
+
     def test_calculate_risk_returns_404_for_missing_loan(self):
         self.client.force_authenticate(user=self.officer)
         response = self.client.get("/api/loans/officer/999/calculate-risk/")
