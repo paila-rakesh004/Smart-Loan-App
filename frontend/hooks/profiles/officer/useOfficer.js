@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import API from '@/lib/api'; 
 import { toast } from "react-toastify";
+import { getCookie } from '@/hooks/utils/cookies';
 
 export const useOfficerProfile = () => {
   const router = useRouter();
@@ -17,7 +18,6 @@ export const useOfficerProfile = () => {
     try {
       const res = await API.put('users/update-profile/', { username: newUsername });
       setProfile({ ...profile, username: res.data.username});
-      localStorage.setItem('username', res.data.username); 
       toast.success("Profile updated successfully!");
     } catch (error) {
       const message = error?.response?.data?.error || "Username Already Exists!";
@@ -40,12 +40,7 @@ export const useOfficerProfile = () => {
     }
   };
   useEffect(() => {
-    const token = localStorage.getItem('access_token');
-    if (!token) {
-      router.push('/login');
-      return;
-    }
-    const isOfficer = localStorage.getItem('is_officer');
+    const isOfficer = getCookie('is_officer');
     if (!isOfficer) {
       toast.error("Security Alert: Unauthorized Access");
       router.push('/profile/customer');

@@ -146,8 +146,47 @@ def _validate_by_document_type(doc_type_upper, extracted, db_pan, db_aadhaar, de
         if key in doc_type_upper:
             validator_func()
             break 
+           
+
+def _get_pre_llm_validation_error(doc_type_upper, declared_org, declared_income, declared_years):
+    validation_rules = {
+        "SALARY": (
+            bool(declared_income and declared_org),
+            "Missing baseline data: You must provide your Monthly Income and Organization Name before verifying a Salary Slip."
+        ),
+        "ITR": (
+            bool(declared_income),
+            "Missing baseline data: You must provide your Income before verifying an ITR document."
+        ),
+        "EMPLOYEE ID": (
+            bool(declared_org),
+            "Missing baseline data: You must provide your Organization Name before verifying an Employee ID."
+        ),
+        "VINTAGE": (
+            bool(declared_years),
+            "Missing baseline data: You must declare the account age (years) before verifying vintage documents."
+        )
+    }
+
+    for key, (is_valid, error_message) in validation_rules.items():
+        if key in doc_type_upper and not is_valid:
+            return error_message
+            
+    return None
 
 def process_loan_document(image_file, user, declared_org="", declared_income="", declared_years="", expected_doc_type="Unknown"):
+    
+    doc_type_upper = str(expected_doc_type).upper()
+    
+    validation_error = _get_pre_llm_validation_error(doc_type_upper, declared_org, declared_income, declared_years)
+    
+    if validation_error:
+        return {
+            "status": "failed", 
+            "decision": "MANUAL_REVIEW", 
+            "reason": validation_error
+        }
+
     raw_text = extract_text_from_image(image_file)
     if not raw_text:
         return {"status": "failed", "decision": "MANUAL_REVIEW", "reason": "OCR failed."}
@@ -165,7 +204,8 @@ def process_loan_document(image_file, user, declared_org="", declared_income="",
     extracted = llm_result.get("extracted_fields", {})
     
     db_name = f"{getattr(user, 'first_name', '').strip()} {getattr(user, 'last_name', '').strip()}".strip()
-    db_pan, db_aadhaar = getattr(user, 'pan_card_number', ''), getattr(user, 'aadhar_card_number', '')
+    db_pan = getattr(user, 'pan_card_number', '')
+    db_aadhaar = getattr(user, 'aadhar_card_number', '')
     
     clean_raw_text = re.sub(r'[^A-Z0-9]', '', raw_text.upper())
 

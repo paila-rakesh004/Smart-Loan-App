@@ -118,9 +118,9 @@ def verify_document_with_ai(user, data):
     return process_loan_document(
         image_file=data.get('document'),
         user=user,
-        declared_org=data.get('organization_name', ''),
-        declared_income=data.get('monthly_income', ''),
-        declared_years=data.get('years_at_previous_bank', ''),
+        declared_org=data.get('declared_org', ''),
+        declared_income=data.get('declared_income', ''),
+        declared_years=data.get('declared_years', ''),
         expected_doc_type=data.get('expected_doc_type', 'Unknown')
     )
 

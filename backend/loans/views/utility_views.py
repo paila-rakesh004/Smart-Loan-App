@@ -14,7 +14,6 @@ class UtilityViewSet(ViewSet):
     def calculate_risk(self, request, pk=None):
         try:
             predicted_label = calculate_loan_risk(pk)
-            print("risk calculated")
             return Response({"risk_score": predicted_label})
            
         except LoanApplication.DoesNotExist:

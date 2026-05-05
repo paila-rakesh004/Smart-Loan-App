@@ -76,12 +76,16 @@ export const useApplyLoan = () => {
       });
     }
   };
-  const handleLogout = () => {
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("refresh_token");
-    localStorage.removeItem("username");
-    localStorage.removeItem('is_officer');
-    router.push("/login");
+  const handleLogout = async () => {
+    try{
+      await API.post("users/logout/");
+    }
+    catch(error){
+      toast.error(error?.response?.data?.error || "Failed to Logout.");
+    }
+    finally{
+      router.push("/login");
+    }
   };
   const handlevalueChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -103,53 +107,102 @@ export const useApplyLoan = () => {
       docAdmissionLetter: "Admission Letter", docFeeStructure: "Fee Structure", docGuarantorKyc: "PAN Card", 
       docGuarantorFinancials: "Salary Slip", docAgreementSale: "Agreement to Sale", docNoc: "No Objection Certificate"
     };
+    
     const expectedDocType = documentTypeMap[fieldName] || "Unknown";
     const formData = new FormData();
     formData.append("document", file);
     formData.append("expected_doc_type", expectedDocType); 
     formData.append("first_name", form.firstName);
     formData.append("last_name", form.lastName);
-    formData.append("organization_name", form.organizationName);
-    formData.append("monthly_income", form.monthlyIncome);
+    
+    formData.append("declared_org", form.organizationName);
+    formData.append("declared_income", form.monthlyIncome);
+    formData.append("declared_years", form.tenure); 
+
     try {
       const res = await API.post("loans/verify-document/", formData);
       const { decision, confidence_score, ai_reasoning, extracted_data } = res.data;
       const scorePct = (confidence_score * 100).toFixed(0);
+      
       setAiStatuses((prev) => ({
         ...prev,
         [fieldName]: { loading: false, decision: decision, confidence: scorePct, reasoning: ai_reasoning },
       }));
+      
       if (fieldName === "aadharCard" && extracted_data?.calculated_age) {
           setForm(prev => ({ ...prev, age: extracted_data.calculated_age }));
           toast.info(`Age Extracted: ${extracted_data.calculated_age} years old`);
       }
+      
       if (decision === "REJECTED_PLEASE_REUPLOAD") {
         toast.error(`Document Rejected: ${ai_reasoning}`);
         setForm((prev) => ({ ...prev, [fieldName]: null }));
         if (inputElement) inputElement.value = "";
       }
-    } catch {
+      
+    } catch (error) {
+      const errorMessage = error.response?.data?.reason || error.response?.data?.error || "AI scan failed. Will be manually reviewed.";
+      
+      if (error.response?.status === 422) {
+          toast.warning(errorMessage);
+      } else {
+          toast.error(errorMessage);
+      }
+
       setAiStatuses((prev) => ({
         ...prev,
-        [fieldName]: { loading: false, decision: "MANUAL_REVIEW", reasoning: "AI scan failed. Will be manually reviewed." },
+        [fieldName]: { loading: false, decision: "MANUAL_REVIEW", reasoning: errorMessage },
       }));
+      
+      setForm((prev) => ({ ...prev, [fieldName]: null }));
+      if (inputElement) inputElement.value = "";
     }
   };
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     const fieldName = e.target.name;
     if (!file) return;
+
     const aiWorthyDocs = new Set([
       "panCard", "aadharCard", "salarySlips", "empIdCard", "itrDocument",
       "doc10thCert", "doc12thCert", "docDegreeCert", "docAdmissionLetter", "docFeeStructure",
       "docAgreementSale", "docNoc"
     ]);
+
     if (aiWorthyDocs.has(fieldName) && (!form.firstName || !form.lastName)) {
       toast.error("Please enter and lock your Legal First and Last Name before uploading documents!");
       e.target.value = ""; 
       return;
     }
+
+    const validationRules = {
+      salarySlips: {
+        isValid: Boolean(form.monthlyIncome && form.organizationName),
+        message: "Frontend Check: Please type your Monthly Income and Organization Name first!"
+      },
+      itrDocument: {
+        isValid: Boolean(form.monthlyIncome),
+        message: "Frontend Check: Please type your Monthly Income first!"
+      },
+      empIdCard: {
+        isValid: Boolean(form.organizationName),
+        message: "Frontend Check: Please type your Organization Name first!"
+      },
+      bankStatements: {
+        isValid: Boolean(form.tenure),
+        message: "Frontend Check: Please enter your Tenure first!"
+      }
+    };
+
+    const rule = validationRules[fieldName];
+    if (rule && !rule.isValid) {
+      toast.warning(rule.message);
+      e.target.value = ""; 
+      return;
+    }
+
     setForm({ ...form, [fieldName]: file });
+    
     if (aiWorthyDocs.has(fieldName)) {
       verifyDocumentWithAI(fieldName, file, e.target);
     }

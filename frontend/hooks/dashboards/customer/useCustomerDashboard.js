@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import API from "@/lib/api";
 import { toast } from "react-toastify";
-import { getCookie } from "@/hooks/utils/cookies"; 
 
 export const useCustomerDashboard = () => {
   const router = useRouter();
@@ -30,8 +29,6 @@ export const useCustomerDashboard = () => {
   };
 
   useEffect(() => {
-    const storedUser = getCookie("username");
-    if (storedUser) setUser(storedUser);
 
     const fetchData = async () => {
       try {
@@ -39,7 +36,7 @@ export const useCustomerDashboard = () => {
           API.get("users/profile/"),
           API.get("loans/my-loans/")
         ]);
-        
+        setUser(profileRes.data.username);
         setProfile(profileRes.data);
         setLoans(loanRes.data);
       } catch (error) {
@@ -53,7 +50,7 @@ export const useCustomerDashboard = () => {
     };
 
     fetchData();
-  }, []);
+  }, [router]);
 
   return {
     user,

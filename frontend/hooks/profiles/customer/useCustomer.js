@@ -18,7 +18,6 @@ export const useCustomerProfile = () => {
     try {
       const res = await API.put('users/update-profile/', editForm);
       setProfile({ ...profile, ...res.data });
-      localStorage.setItem('username', res.data.username); 
       toast.success("Profile updated successfully!");
     } catch (error) {
       toast.error(error.response?.data?.error || "Details Already Exists!");
@@ -38,11 +37,7 @@ export const useCustomerProfile = () => {
     }
   };
   useEffect(() => {
-    const token = localStorage.getItem('access_token');
-    if (!token) {
-      router.push('/login');
-      return;
-    }
+  
     const fetchProfileData = async () => {
       try {
         const [profileRes, statsRes] = await Promise.all([
