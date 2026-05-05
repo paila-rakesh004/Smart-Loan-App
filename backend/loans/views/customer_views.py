@@ -12,9 +12,7 @@ class CustomerLoanViewSet(ViewSet):
 
     def apply_loan(self, request):
         try:
-            loan, vault_updated = process_loan_submission(
-                request.user, request.data, request.FILES
-            )
+            loan, vault_updated = process_loan_submission(request.user, request.data, request.FILES)
             return Response({
                 "message": "Loan application submitted successfully!",
                 "loan_id": loan.id,

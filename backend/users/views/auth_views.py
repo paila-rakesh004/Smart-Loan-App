@@ -93,9 +93,7 @@ class AuthViewSet(ViewSet):
             return Response({"error": message}, status=status_code)
 
         except User.DoesNotExist:
-            return Response({
-                "message": "If this username exists, an OTP has been sent."
-            })
+            return Response({ "message": "If this username exists, an OTP has been sent." })
 
 
     def verify_otp(self, request):
