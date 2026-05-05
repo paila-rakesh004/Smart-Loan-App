@@ -33,3 +33,4 @@ def extract_text_from_image(image_file):
         logger.exception("OCR Failed")
         image_file.seek(0)
         return ""
+    return None

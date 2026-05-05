@@ -7,7 +7,6 @@ import re
 
 logger = logging.getLogger(__name__)
 
-
 def _safe_int(value, default=0):
     try:
         clean_val = "".join(filter(str.isdigit, str(value)))
@@ -15,138 +14,121 @@ def _safe_int(value, default=0):
     except (ValueError, TypeError):
         return default
 
-def _validate_profile_name(db_name, anomalies):
+def extract_user_data(user):
+    return {
+        "name": f"{getattr(user, 'first_name', '').strip()} {getattr(user, 'last_name', '').strip()}".strip(),
+        "pan": getattr(user, 'pan_card_number', ''),
+        "aadhaar": getattr(user, 'aadhar_card_number', '')
+    }
+
+def clean_text_data(raw_text):
+    return re.sub(r'[^A-Z0-9]', '', raw_text.upper())
+
+def validate_name(db_name, extracted_name):
+    errors = []
     if not db_name.strip():
-        anomalies.append("Profile Error: You must update your legal First and Last Name in your profile before verifying documents.")
-
-def _validate_extracted_name(db_name, extracted_name, anomalies):
+        return ["Profile Error: Update your legal name in profile."]
     if not extracted_name:
-        anomalies.append("Missing Name: Could not extract a recognizable name from this document.")
-    elif db_name:
-        name_score = fuzz.token_sort_ratio(db_name.lower(), extracted_name.lower())
-        if name_score < 75:
-            anomalies.append(f"Name Mismatch: Document says '{extracted_name}' but DB says '{db_name}'.")
+        return ["Missing Name: Could not extract name from document."]
 
-def _validate_pan_document(db_pan, clean_raw_text, anomalies):
+    score = fuzz.token_sort_ratio(db_name.lower(), extracted_name.lower())
+    if score < 75:
+        errors.append(f"Name Mismatch: '{extracted_name}' vs '{db_name}'.")
+    return errors
+
+def validate_pan_document(db_pan, clean_raw_text):
     clean_db_pan = str(db_pan).upper().strip()
-    if len(clean_db_pan) >= 10:
-        pan_numbers = clean_db_pan[5:9]
-        if clean_db_pan not in clean_raw_text and pan_numbers not in clean_raw_text:
-            anomalies.append("PAN Mismatch: Your registered PAN number was not found on this card.")
-    else:
-        anomalies.append("PAN Error: Registered PAN in database is invalid.")
+    if len(clean_db_pan) < 10:
+        return ["PAN Error: Registered PAN is invalid."]
 
-def _validate_aadhaar_document(db_aadhaar, clean_raw_text, anomalies):
-    clean_db_aadhaar = re.sub(r'\D', '', str(db_aadhaar))
-    
-    if len(clean_db_aadhaar) >= 4:
-        last_4_aadhaar = clean_db_aadhaar[-4:]
-        if last_4_aadhaar not in clean_raw_text:
-            anomalies.append(f"Aadhaar Mismatch: Your registered Aadhaar ending in {last_4_aadhaar} was not found.")
-    else:
-        anomalies.append("Aadhaar Error: Registered Aadhaar in database is invalid.")
+    pan_numbers = clean_db_pan[5:9]
+    if clean_db_pan not in clean_raw_text and pan_numbers not in clean_raw_text:
+        return ["PAN Mismatch: PAN not found in document."]
+    return []
 
-def _validate_salary_slip(extracted, declared_org, declared_income, anomalies):
+def validate_aadhaar_document(db_aadhaar, clean_raw_text):
+    clean_db = re.sub(r'\D', '', str(db_aadhaar))
+    if len(clean_db) < 4:
+        return ["Aadhaar Error: Registered Aadhaar is invalid."]
+
+    last_4 = clean_db[-4:]
+    if last_4 not in clean_raw_text:
+        return [f"Aadhaar Mismatch: Ending in {last_4} not found."]
+    return []
+
+def validate_salary_slip(extracted, declared_org, declared_income):
+    errors = []
     months = extracted.get("months_present", 0)
     if isinstance(months, int) and months < 3:
-        anomalies.append(f"Insufficient Salary Slips: Only {months} month(s) found. 3 months required.")
-        
-    ext_org = extracted.get("organization_name", "")
-    if declared_org and ext_org:
-        if fuzz.token_sort_ratio(declared_org.lower(), ext_org.lower()) < 70:
-            anomalies.append(f"Employer Mismatch: Slip says '{ext_org}' but you entered '{declared_org}'.")
-    elif not ext_org:
-        anomalies.append("Missing Data: Could not find an Organization Name on the Salary Slip.")
-        
-    ext_income_int = _safe_int(extracted.get("monthly_income", ""))
-    dec_income_int = _safe_int(declared_income)
-    
-    if ext_income_int and dec_income_int:
-        diff = abs(ext_income_int - dec_income_int)
-        if diff > (dec_income_int * 0.20):
-            anomalies.append(f"Income Mismatch: Slip shows ~{ext_income_int} but you declared {dec_income_int}.")
+        errors.append(f"Only {months} month(s) found. Minimum 3 required.")
 
-def _validate_employee_id(extracted, declared_org, anomalies):
-    ext_org = extracted.get("organization_name", "")
-    if declared_org and ext_org:
-        if fuzz.token_sort_ratio(declared_org.lower(), ext_org.lower()) < 70:
-            anomalies.append(f"Employer Mismatch: ID Card says '{ext_org}' but you entered '{declared_org}'.")
-            
+    org = extracted.get("organization_name", "")
+    if not org:
+        errors.append("Missing Organization Name.")
+    elif declared_org:
+        score = fuzz.token_sort_ratio(declared_org.lower(), org.lower())
+        if score < 70:
+            errors.append(f"Employer mismatch: '{org}' vs '{declared_org}'.")
+
+    ext_income = _safe_int(extracted.get("monthly_income"))
+    dec_income = _safe_int(declared_income)
+
+    if ext_income and dec_income:
+        diff = abs(ext_income - dec_income)
+        if diff > (dec_income * 0.20):
+            errors.append(f"Income mismatch: {ext_income} vs {dec_income}")
+    return errors
+
+def validate_employee_id(extracted, declared_org):
+    errors = []
+    org = extracted.get("organization_name", "")
+    if declared_org and org:
+        score = fuzz.token_sort_ratio(declared_org.lower(), org.lower())
+        if score < 70:
+            errors.append(f"Employer mismatch: '{org}' vs '{declared_org}'.")
+
     if extracted.get("is_expired") is True:
-        anomalies.append("Expired Employee ID: The validity date on this card has passed.")
+        errors.append("Employee ID is expired.")
     if not extracted.get("id_number"):
-        anomalies.append("Missing Employee Number: Could not extract a valid Employee ID number.")
+        errors.append("Missing Employee ID number.")
+    return errors
 
-def _validate_itr(db_pan, extracted, clean_raw_text, declared_income, anomalies):
-    if db_pan:
-        clean_db_pan = str(db_pan).upper().strip()
-        if len(clean_db_pan) == 10:
-            pan_numbers = clean_db_pan[5:9]
-            if clean_db_pan not in clean_raw_text and pan_numbers not in clean_raw_text:
-                anomalies.append("PAN Mismatch: Your registered PAN was not found on this ITR.")
-                
+def validate_itr(db_pan, extracted, clean_text, declared_income):
+    errors = []
+    clean_pan = str(db_pan).upper().strip()
+    if len(clean_pan) == 10:
+        pan_numbers = clean_pan[5:9]
+        if clean_pan not in clean_text and pan_numbers not in clean_text:
+            errors.append("PAN not found in ITR.")
+
     ay = str(extracted.get("assessment_year", ""))
-    if not any(year in ay for year in ["2024", "2025", "2026"]):
-        anomalies.append(f"Outdated ITR: The Assessment Year '{ay}' is too old. Must be from the last 2 years.")
-        
-    ext_gross_int = _safe_int(extracted.get("gross_income", ""))
-    dec_annual_int = _safe_int(declared_income) * 12
-    
-    if ext_gross_int and dec_annual_int:
-        if ext_gross_int < (dec_annual_int * 0.8):
-            anomalies.append(f"Income Inflation: You declared {dec_annual_int}/yr, but ITR shows only {ext_gross_int}.")
+    if not any(y in ay for y in ["2024", "2025", "2026"]):
+        errors.append(f"Outdated ITR: {ay}")
 
-def _validate_vintage(extracted, declared_years, anomalies):
-    account_year = str(extracted.get("account_opening_year", ""))
-    actual_year = _safe_int(account_year)
-    
-    if actual_year >= 1000 and declared_years: 
-        try:
-            declared_years_int = int(declared_years)
-            expected_max_year = 2026 - declared_years_int 
-            
-            if actual_year > expected_max_year:
-                anomalies.append(f"Vintage Mismatch: You claimed {declared_years_int} years, meaning account should be opened by {expected_max_year}, but document shows {actual_year}.")
-        except ValueError:
-            logger.exception("Could not parse declared_years into integer")
-    elif not actual_year:
-        anomalies.append("Missing Data: Could not extract an account opening or transaction year from this document.")
+    ext_income = _safe_int(extracted.get("gross_income"))
+    dec_income = _safe_int(declared_income) * 12
 
-def _validate_unknown_document(anomalies):
-    anomalies.append("Invalid Document: AI could not identify this as a valid official document.")
+    if ((ext_income and dec_income) and (ext_income < (dec_income * 0.8))):
+            errors.append(f"Income mismatch: {ext_income} vs {dec_income}")
+    return errors
 
-def _check_document_mismatch(expected_doc_type, actual_doc_type, llm_result):
-    if expected_doc_type != "Unknown" and actual_doc_type != "Unknown":
-        if expected_doc_type.lower() not in actual_doc_type.lower() and actual_doc_type.lower() not in expected_doc_type.lower():
-            llm_result["confidence_score"] = 0.0
-            llm_result["decision"] = "REJECTED_PLEASE_REUPLOAD"
-            llm_result["ai_reasoning"] = f"Document Mismatch: Expected {expected_doc_type}, but found {actual_doc_type}."
-            return True
-    return False
+def validate_vintage(extracted, declared_years):
+    errors = []
+    actual_year = _safe_int(extracted.get("account_opening_year"))
+    if not actual_year:
+        return ["Missing account opening year."]
 
-def _calculate_final_decision(confidence, anomaly_count):
-    if confidence >= 0.85 and anomaly_count == 0:
-        return "AUTO_APPROVE"
-    elif confidence >= 0.60:
-        return "MANUAL_REVIEW"
-    return "REJECTED_PLEASE_REUPLOAD"
+    try:
+        declared = int(declared_years)
+        expected_year = 2026 - declared
+        if actual_year > expected_year:
+            errors.append(f"Vintage mismatch: expected before {expected_year}, got {actual_year}")
+    except ValueError:
+        logger.exception("Invalid declared_years")
+    return errors
 
-def _validate_by_document_type(doc_type_upper, extracted, db_pan, db_aadhaar, declared_org, declared_income, declared_years, clean_raw_text, anomalies):
-    validators = {
-        "PAN": lambda: _validate_pan_document(db_pan, clean_raw_text, anomalies),
-        "AADHAAR": lambda: _validate_aadhaar_document(db_aadhaar, clean_raw_text, anomalies),
-        "SALARY": lambda: _validate_salary_slip(extracted, declared_org, declared_income, anomalies),
-        "EMPLOYEE ID": lambda: _validate_employee_id(extracted, declared_org, anomalies),
-        "ITR": lambda: _validate_itr(db_pan, extracted, clean_raw_text, declared_income, anomalies),
-        "VINTAGE": lambda: _validate_vintage(extracted, declared_years, anomalies),
-        "UNKNOWN": lambda: _validate_unknown_document(anomalies)
-    }
-    
-    for key, validator_func in validators.items():
-        if key in doc_type_upper:
-            validator_func()
-            break 
-           
+def validate_unknown():
+    return ["Invalid Document: Could not identify document."]
 
 def _get_pre_llm_validation_error(doc_type_upper, declared_org, declared_income, declared_years):
     validation_rules = {
@@ -171,54 +153,97 @@ def _get_pre_llm_validation_error(doc_type_upper, declared_org, declared_income,
     for key, (is_valid, error_message) in validation_rules.items():
         if key in doc_type_upper and not is_valid:
             return error_message
-            
     return None
 
-def process_loan_document(image_file, user, declared_org="", declared_income="", declared_years="", expected_doc_type="Unknown"):
-    
-    doc_type_upper = str(expected_doc_type).upper()
-    
-    validation_error = _get_pre_llm_validation_error(doc_type_upper, declared_org, declared_income, declared_years)
-    
-    if validation_error:
-        return {
-            "status": "failed", 
-            "decision": "MANUAL_REVIEW", 
-            "reason": validation_error
-        }
+def validate_by_document_type(doc_type, extracted, db_pan, db_aadhaar,
+                              declared_org, declared_income, declared_years, clean_text):
 
-    raw_text = extract_text_from_image(image_file)
-    if not raw_text:
-        return {"status": "failed", "decision": "MANUAL_REVIEW", "reason": "OCR failed."}
-        
-    llm_result = analyze_document_with_llm(mask_sensitive_data(raw_text), expected_doc_type=expected_doc_type)
-    doc_type = llm_result.get("document_type", "Unknown")
-    
-    if _check_document_mismatch(expected_doc_type, doc_type, llm_result):
-        return llm_result
-    if "error" in llm_result:
-        return {"status": "failed", "decision": "MANUAL_REVIEW", "reason": "AI Error"}
+    doc_type = doc_type.upper()
 
-    confidence = float(llm_result.get("confidence_score", 0.0))
-    anomalies = llm_result.get("anomalies", [])
-    extracted = llm_result.get("extracted_fields", {})
-    
-    db_name = f"{getattr(user, 'first_name', '').strip()} {getattr(user, 'last_name', '').strip()}".strip()
-    db_pan = getattr(user, 'pan_card_number', '')
-    db_aadhaar = getattr(user, 'aadhar_card_number', '')
-    
-    clean_raw_text = re.sub(r'[^A-Z0-9]', '', raw_text.upper())
+    validators = {
+        "PAN": lambda: validate_pan_document(db_pan, clean_text),
+        "AADHAAR": lambda: validate_aadhaar_document(db_aadhaar, clean_text),
+        "SALARY": lambda: validate_salary_slip(extracted, declared_org, declared_income),
+        "EMPLOYEE ID": lambda: validate_employee_id(extracted, declared_org),
+        "ITR": lambda: validate_itr(db_pan, extracted, clean_text, declared_income),
+        "VINTAGE": lambda: validate_vintage(extracted, declared_years),
+        "UNKNOWN": validate_unknown
+    }
 
-    _validate_profile_name(db_name, anomalies)
-    _validate_extracted_name(db_name, extracted.get("name", ""), anomalies)
-    _validate_by_document_type(doc_type.upper(), extracted, db_pan, db_aadhaar, declared_org, declared_income, declared_years, clean_raw_text, anomalies)
+    for key, func in validators.items():
+        if key in doc_type:
+            return func()
 
+    return ["Invalid Document Type"]
+
+def build_failure(reason):
+    return {
+        "status": "failed",
+        "decision": "MANUAL_REVIEW",
+        "reason": reason
+    }
+
+def build_success(llm_result, confidence, anomalies):
     return {
         "status": "success",
         "decision": _calculate_final_decision(confidence, len(anomalies)),
         "confidence_score": confidence,
-        "document_type": doc_type,
-        "extracted_data": extracted,
+        "document_type": llm_result.get("document_type", "Unknown"),
+        "extracted_data": llm_result.get("extracted_fields", {}),
         "anomalies_found": anomalies,
         "ai_reasoning": " | ".join(anomalies) if anomalies else llm_result.get("ai_reasoning", "Perfect match.")
     }
+
+def _calculate_final_decision(confidence, anomaly_count):
+    if confidence >= 0.85 and anomaly_count == 0:
+        return "AUTO_APPROVE"
+    if confidence >= 0.60:
+        return "MANUAL_REVIEW"
+    return "REJECTED_PLEASE_REUPLOAD"
+
+def _check_document_mismatch(expected, actual, llm_result):
+    if expected != "Unknown" and actual != "Unknown":
+        if expected.lower() not in actual.lower() and actual.lower() not in expected.lower():
+            llm_result["confidence_score"] = 0.0
+            llm_result["decision"] = "REJECTED_PLEASE_REUPLOAD"
+            llm_result["ai_reasoning"] = f"Expected {expected}, got {actual}"
+            return True
+    return False
+
+def process_loan_document(image_file, user, declared_org="", declared_income="", declared_years="", expected_doc_type="Unknown"):
+    validation_error = _get_pre_llm_validation_error(str(expected_doc_type).upper(), declared_org, declared_income, declared_years)
+    if validation_error:
+        return build_failure(validation_error)
+    raw_text = extract_text_from_image(image_file)
+    if not raw_text:
+        return build_failure("OCR failed")
+    llm_result = analyze_document_with_llm(
+        mask_sensitive_data(raw_text),
+        expected_doc_type=expected_doc_type
+    )
+
+    if "error" in llm_result:
+        return build_failure("AI Error")
+
+    doc_type = llm_result.get("document_type", "Unknown")
+
+    if _check_document_mismatch(expected_doc_type, doc_type, llm_result):
+        return llm_result
+
+    extracted = llm_result.get("extracted_fields", {})
+    confidence = float(llm_result.get("confidence_score", 0.0))
+    user_data = extract_user_data(user)
+    clean_text = clean_text_data(raw_text)
+
+    anomalies = []
+    anomalies.extend(validate_name(user_data["name"], extracted.get("name", "")))
+    anomalies.extend(
+        validate_by_document_type(
+            doc_type, extracted,
+            user_data["pan"], user_data["aadhaar"],
+            declared_org, declared_income,
+            declared_years, clean_text
+        )
+    )
+
+    return build_success(llm_result, confidence, anomalies)

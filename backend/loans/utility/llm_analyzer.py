@@ -66,3 +66,4 @@ def analyze_document_with_llm(masked_ocr_text, expected_doc_type="Unknown"):
         return {"error": "LLM returned invalid JSON"}
     except Exception as e:
         return {"error": str(e), "error_type": type(e).__name__}
+    return {"error": "LLM Failed to process the request"}
