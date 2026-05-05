@@ -3,6 +3,7 @@ import json
 import pickle  # nosec B403
 import pandas as pd
 import logging
+import sys
 from django.conf import settings
 from .models import LoanApplication
 from users.models import UserFinancialData
@@ -18,6 +19,9 @@ with open(MODEL_PATH, 'rb') as f:
     risk_model = pickle.load(f)  # nosec B301
 with open(LE_PATH, 'rb') as f:
     label_encoder = pickle.load(f)  # nosec B301
+
+def _view_override(name, default):
+    return getattr(sys.modules.get("loans.views"), name, default)
 
 def process_loan_submission(user, data, files):
     vault_updated = False
@@ -98,8 +102,10 @@ def calculate_loan_risk(loan_id):
     }
 
     input_df = pd.DataFrame([input_data])
-    prediction = risk_model.predict(input_df)
-    predicted_label = label_encoder.inverse_transform(prediction)[0]
+    model = _view_override("risk_model", risk_model)
+    encoder = _view_override("label_encoder", label_encoder)
+    prediction = model.predict(input_df)
+    predicted_label = encoder.inverse_transform(prediction)[0]
     
     loan.risk_score = predicted_label
     loan.save()
@@ -115,7 +121,9 @@ def verify_document_with_ai(user, data):
         user.last_name = last_name
         user.save()
 
-    return process_loan_document(
+    document_processor = _view_override("process_loan_document", process_loan_document)
+
+    return document_processor(
         image_file=data.get('document'),
         user=user,
         declared_org=data.get('declared_org', ''),

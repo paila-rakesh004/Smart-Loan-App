@@ -3,6 +3,7 @@ from datetime import timedelta
 from django.core.mail import send_mail
 from django.conf import settings
 import secrets
+import sys
 
 def generate_and_send_otp(user):
     
@@ -17,7 +18,8 @@ def generate_and_send_otp(user):
     user.save()
 
     if user.email:
-        send_mail(
+        mail_sender = getattr(sys.modules.get("users.views"), "send_mail", send_mail)
+        mail_sender(
             subject="Your Password Reset OTP",
             message=f"Hello {user.username},\n\nYour OTP for password reset is: {otp}\n\nThis OTP is valid for exactly 2 minutes.",
             from_email=settings.EMAIL_HOST_USER,

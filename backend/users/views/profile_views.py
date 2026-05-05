@@ -21,6 +21,7 @@ class ProfileViewSet(ViewSet):
         email = request.data.get('email')
         phone_number = request.data.get('phone_number')
 
+
         if new_username and new_username != user.username:
             users = get_user_model()
             if users.objects.filter(username=new_username).exclude(id=user.id).exists():

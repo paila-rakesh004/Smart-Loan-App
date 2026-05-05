@@ -26,7 +26,7 @@ class CustomerLoanViewSet(ViewSet):
 
     def my_loans(self, request):
         loans = LoanApplication.objects.filter(user=request.user).order_by('-created_at')
-        serializer = LoanApplicationSerializer(loans, many=True)
+        serializer = LoanApplicationSerializer(loans, many=True, context={'request': request})
         return Response(serializer.data)
 
     def stats(self, request):
@@ -40,7 +40,7 @@ class CustomerLoanViewSet(ViewSet):
     
     def verify_document(self, request):
         if not request.data.get('document'):
-            return Response({"error": "No document provided"}, status=400)
+            return Response({"error": "No document provided."}, status=400)
 
         try:
             ai_result = verify_document_with_ai(request.user, request.data)

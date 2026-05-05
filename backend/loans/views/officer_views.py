@@ -15,7 +15,7 @@ class OfficerLoanViewSet(ViewSet):
 
     def all_loans(self, request):
         loans = LoanApplication.objects.all().order_by('-created_at')
-        serializer = LoanApplicationSerializer(loans, many=True)
+        serializer = LoanApplicationSerializer(loans, many=True, context={'request': request})
 
         data = serializer.data
         for item in data:

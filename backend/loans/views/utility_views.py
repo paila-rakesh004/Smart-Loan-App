@@ -1,6 +1,6 @@
 from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
-from rest_framework import permissions
+from rest_framework import permissions, status
 from rest_framework.parsers import MultiPartParser, FormParser
 from users.permissions import IsOfficerUser
 from loans.models import LoanApplication
@@ -17,9 +17,9 @@ class UtilityViewSet(ViewSet):
             return Response({"risk_score": predicted_label})
            
         except LoanApplication.DoesNotExist:
-            return Response({"error": "Loan not found"}, status=404)
+            return Response({"error": "Loan application not found."}, status=status.HTTP_404_NOT_FOUND)
         except UserFinancialData.DoesNotExist:
-            return Response({"error": "Financial data missing"}, status=400)
+            return Response({"error": "Financial ML data not found for this user."}, status=status.HTTP_400_BAD_REQUEST)
 
 
     def recalculate_cibil(self, request, pk=None):

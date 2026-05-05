@@ -106,7 +106,7 @@ class AuthViewSet(ViewSet):
             user = User.objects.get(username=username, reset_otp=otp)
 
             if user.otp_expiry and timezone.now() > user.otp_expiry:
-                return Response({"error": "OTP expired."}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"error": "This OTP has expired. Please request a new one."}, status=status.HTTP_400_BAD_REQUEST)
 
             return Response({"message": "OTP verified!"})
 
@@ -131,4 +131,4 @@ class AuthViewSet(ViewSet):
             return Response({"message": "Password reset successful!"})
 
         except User.DoesNotExist:
-            return Response({"error": "Validation failed."},  status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Security validation failed. Please try again."},  status=status.HTTP_400_BAD_REQUEST)
