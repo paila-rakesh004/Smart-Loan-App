@@ -41,8 +41,7 @@ export const useCustomerDashboard = () => {
         setLoans(loanRes.data);
       } catch (error) {
         if (error?.response?.status !== 401) {
-            const message = error?.response?.data?.error || "Failed to fetch dashboard data.";
-            toast.error(message);
+            toast.error(error?.response?.data?.error || "Failed to fetch dashboard data.");
         }
       } finally {
         setLoading(false);

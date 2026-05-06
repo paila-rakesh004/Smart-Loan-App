@@ -29,8 +29,7 @@ API.interceptors.response.use(
         
         return API(originalRequest);
       } catch (refreshError) {
-        const message = refreshError?.response?.data?.error || "Session completely expired. Logging out.";
-        toast.error(message);
+        toast.error(refreshError?.response?.data?.error || "Session completely expired. Logging out.");
         if (globalThis.window != undef) {
           await axios.post(`${BASE_URL}users/logout/`, {}, { withCredentials: true });
           globalThis.window.location.href = '/login'; 

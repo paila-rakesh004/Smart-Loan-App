@@ -37,8 +37,7 @@ export const useOfficerDashboard = () => {
       setLoans(loans.map(l => l.id === loan.id ? { ...l, actual_cibil: freshScore } : l));
       toast.success("Cibil Score Calculated");
     } catch (error) {
-      const message = error?.response?.data?.message ||error?.message ||"Failed to calculate CIBIL score.";
-      toast.error(message);
+      toast.error(error?.response?.data?.message ||error?.message ||"Failed to calculate CIBIL score.");
     }
   };
   const handleCalculateRisk = async () => {
@@ -49,8 +48,7 @@ export const useOfficerDashboard = () => {
       toast.success("Risk Score calculated successfully!");
       setLoans(loans.map(loan => loan.id === selectedLoan.id ? { ...loan, risk_score: res.data.risk_score } : loan));
     } catch (error) {
-      const message = error?.response?.data?.error || "Failed to calculate risk score.";
-      toast.error(message);
+      toast.error(error?.response?.data?.error || "Failed to calculate risk score.");
     }
   };
   const confirmUpdate = async (newStatus) => {
@@ -65,8 +63,7 @@ export const useOfficerDashboard = () => {
       setLoans(loans.map(loan => loan.id === selectedLoan.id ? { ...loan, status: newStatus } : loan));
       setSelectedLoan(null);
     } catch (error) {
-      const message = error?.response?.data?.error || "Failed to update application status.";
-      toast.error(message);
+      toast.error(error?.response?.data?.error || "Failed to update application status.");
     } finally {
       setSure(false);
     }

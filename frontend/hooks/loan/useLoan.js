@@ -178,19 +178,19 @@ export const useApplyLoan = () => {
     const validationRules = {
       salarySlips: {
         isValid: Boolean(form.monthlyIncome && form.organizationName),
-        message: "Frontend Check: Please type your Monthly Income and Organization Name first!"
+        message: "Please type your Monthly Income and Organization Name first!"
       },
       itrDocument: {
         isValid: Boolean(form.monthlyIncome),
-        message: "Frontend Check: Please type your Monthly Income first!"
+        message: "Please type your Monthly Income first!"
       },
       empIdCard: {
         isValid: Boolean(form.organizationName),
-        message: "Frontend Check: Please type your Organization Name first!"
+        message: "Please type your Organization Name first!"
       },
       bankStatements: {
         isValid: Boolean(form.tenure),
-        message: "Frontend Check: Please enter your Tenure first!"
+        message: "Please enter your Tenure first!"
       }
     };
 

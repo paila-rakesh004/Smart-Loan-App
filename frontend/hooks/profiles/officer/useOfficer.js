@@ -20,8 +20,7 @@ export const useOfficerProfile = () => {
       setProfile({ ...profile, username: res.data.username});
       toast.success("Profile updated successfully!");
     } catch (error) {
-      const message = error?.response?.data?.error || "Username Already Exists!";
-      toast.error(message);
+      toast.error(error?.response?.data?.error || "Username Already Exists!");
     }
   };
   const handleChangePassword = async (e) => {
@@ -32,8 +31,7 @@ export const useOfficerProfile = () => {
       setPasswords({ old_password: '', new_password: '' });
       toast.success("Password changed securely!");
     } catch (error) {
-      const message = error?.response?.data?.error || "Failed to change password.";
-      toast.error(message);
+      toast.error(error?.response?.data?.error || "Failed to change password.");
     }
     finally{
       setClick(false);

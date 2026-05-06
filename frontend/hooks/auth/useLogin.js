@@ -40,8 +40,7 @@ export const useLogin = () => {
         toast.error("You are not authorized as Customer");
       }
     } catch (error) {
-      const message = error?.response?.data?.error || "Login Failed! Please check your credentials.";
-      toast.error(message);
+      toast.error(error?.response?.data?.error || "Login Failed! Please check your credentials.");
     } finally {
       setLoading(false);
     }
