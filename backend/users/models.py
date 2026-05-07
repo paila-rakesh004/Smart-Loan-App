@@ -19,18 +19,16 @@ class User(AbstractUser):
 
 @receiver(models.signals.pre_save, sender=User)
 def auto_delete_file_on_change(sender, instance, **kwargs):
-    if not instance.pk:
+    old_user = ( User.objects.filter(pk=instance.pk).first() if instance.pk else None)
+    if not old_user:
         return False
-    try:
-        old_user = User.objects.get(pk=instance.pk)
-    except User.DoesNotExist:
-        return False
-    if old_user.pan_card_file and old_user.pan_card_file != instance.pan_card_file:
-        old_user.pan_card_file.delete(save=False)
-    if old_user.aadhar_card_file and old_user.aadhar_card_file != instance.aadhar_card_file:
-        old_user.aadhar_card_file.delete(save=False)
-    if old_user.passport_photo and old_user.passport_photo != instance.passport_photo:
-        old_user.passport_photo.delete(save=False)
+    file_fields = ['pan_card_file', 'aadhar_card_file', 'passport_photo']
+    for field in file_fields:
+        old_file = getattr(old_user, field)
+        new_file = getattr(instance, field)
+        match old_file:
+            case file if file and file != new_file:
+                file.delete(save=False)
 
 class UserFinancialData(models.Model):
     id = models.AutoField(primary_key=True)

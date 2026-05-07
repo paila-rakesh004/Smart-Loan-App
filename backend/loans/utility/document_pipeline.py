@@ -231,9 +231,13 @@ def process_loan_document(image_file, user, declared_org="", declared_income="",
         return llm_result
 
     extracted = llm_result.get("extracted_fields", {})
-    confidence = float(llm_result.get("confidence_score", 0.0))
     user_data = extract_user_data(user)
     clean_text = clean_text_data(raw_text)
+    try:
+        confidence = float(llm_result.get("confidence_score", 0.0))
+    except (ValueError, TypeError):
+        confidence = 0.0
+        logger.warning("Invalid confidence score from LLM, defaulting to 0.0")
 
     anomalies = []
     anomalies.extend(validate_name(user_data["name"], extracted.get("name", "")))
