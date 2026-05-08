@@ -8,7 +8,7 @@ export default function LoanRequestSection({ handlevalueChange, isStudent }) {
         
         <div className="flex flex-col gap-2">
           <label htmlFor="LoanType" className="font-bold text-gray-700">Select Loan Type</label>
-          <select id="LoanType" name="LoanType" onChange={handlevalueChange} required defaultValue="" className="p-3 rounded-lg border border-gray-300 w-full">
+          <select id="LoanType" name="LoanType" onChange={handlevalueChange} required defaultValue="" className="p-3 rounded-lg border cursor-pointer border-gray-300 w-full">
             <option value="" disabled>Select Type</option>
             <option value="Personal">Personal Loan</option>
             {!isStudent && <option value="Home">Home Loan</option>}
